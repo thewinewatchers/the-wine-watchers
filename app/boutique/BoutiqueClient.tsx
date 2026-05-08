@@ -11,6 +11,7 @@ type BoutiqueClientProps = {
 export default function BoutiqueClient({ wines }: BoutiqueClientProps) {
   const [categorieActive, setCategorieActive] = useState("Tous");
   const [appellationActive, setAppellationActive] = useState("Toutes");
+  const [afficherAppellations, setAfficherAppellations] = useState(false);
 
   const categories = [
     "Tous",
@@ -49,6 +50,7 @@ export default function BoutiqueClient({ wines }: BoutiqueClientProps) {
   function changerCategorie(categorie: string) {
     setCategorieActive(categorie);
     setAppellationActive("Toutes");
+    setAfficherAppellations(false);
   }
 
   return (
@@ -130,52 +132,102 @@ export default function BoutiqueClient({ wines }: BoutiqueClientProps) {
           </div>
         </div>
 
-        {/* SOUS-CATÉGORIES / APPELLATIONS */}
-        {appellations.length > 1 && (
-          <div style={{ marginTop: 32 }}>
-            <p
+        {/* APPELLATIONS MASQUÉES PAR DÉFAUT */}
+        {categorieActive !== "Tous" && appellations.length > 1 && (
+          <div style={{ marginTop: 28 }}>
+            <button
+              onClick={() => setAfficherAppellations(!afficherAppellations)}
               style={{
-                letterSpacing: 4,
-                color: "#d6b36a",
-                textTransform: "uppercase",
-                fontSize: 13,
-                marginBottom: 15,
+                padding: "11px 22px",
+                borderRadius: 999,
+                border: "1px solid rgba(214,179,106,0.45)",
+                background: "rgba(255,250,243,0.08)",
+                color: "#fffaf3",
+                fontWeight: "bold",
+                cursor: "pointer",
+                fontFamily: "Georgia, serif",
               }}
             >
-              Appellations
-            </p>
+              {afficherAppellations
+                ? "Masquer les appellations"
+                : "Afficher les appellations"}
+            </button>
 
-            <div
-              style={{
-                display: "flex",
-                gap: 14,
-                flexWrap: "wrap",
-              }}
-            >
-              {appellations.map((appellation) => (
-                <button
-                  key={appellation}
-                  onClick={() => setAppellationActive(appellation)}
+            {appellationActive !== "Toutes" && (
+              <button
+                onClick={() => setAppellationActive("Toutes")}
+                style={{
+                  marginLeft: 12,
+                  padding: "11px 22px",
+                  borderRadius: 999,
+                  border: "none",
+                  background: "#d6b36a",
+                  color: "#1f1a17",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                  fontFamily: "Georgia, serif",
+                }}
+              >
+                Réinitialiser : {appellationActive}
+              </button>
+            )}
+
+            {afficherAppellations && (
+              <div
+                style={{
+                  marginTop: 22,
+                  padding: 24,
+                  borderRadius: 28,
+                  background: "rgba(255,250,243,0.08)",
+                  border: "1px solid rgba(214,179,106,0.25)",
+                }}
+              >
+                <p
                   style={{
-                    padding: "9px 18px",
-                    borderRadius: 999,
-                    border:
-                      appellationActive === appellation
-                        ? "1px solid #d6b36a"
-                        : "1px solid rgba(255,250,243,0.25)",
-                    background:
-                      appellationActive === appellation
-                        ? "rgba(214,179,106,0.22)"
-                        : "rgba(255,250,243,0.08)",
-                    color: "#fffaf3",
-                    fontWeight: "bold",
-                    cursor: "pointer",
+                    letterSpacing: 4,
+                    color: "#d6b36a",
+                    textTransform: "uppercase",
+                    fontSize: 13,
+                    marginTop: 0,
+                    marginBottom: 15,
                   }}
                 >
-                  {appellation}
-                </button>
-              ))}
-            </div>
+                  Appellations
+                </p>
+
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 14,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  {appellations.map((appellation) => (
+                    <button
+                      key={appellation}
+                      onClick={() => setAppellationActive(appellation)}
+                      style={{
+                        padding: "9px 18px",
+                        borderRadius: 999,
+                        border:
+                          appellationActive === appellation
+                            ? "1px solid #d6b36a"
+                            : "1px solid rgba(255,250,243,0.25)",
+                        background:
+                          appellationActive === appellation
+                            ? "rgba(214,179,106,0.22)"
+                            : "rgba(255,250,243,0.08)",
+                        color: "#fffaf3",
+                        fontWeight: "bold",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {appellation}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
