@@ -146,6 +146,11 @@ export default function AdminPage() {
       return;
     }
 
+    if (!form.category) {
+      setMessage("La catégorie du vin est obligatoire.");
+      return;
+    }
+
     const vinSupabase = convertirVersSupabase(form);
 
     const { error } = await supabase
@@ -372,12 +377,27 @@ export default function AdminPage() {
                   placeholder="/images/lafite.jpg"
                 />
 
-                <Input
-                  label="Catégorie"
-                  value={form.category}
-                  onChange={(value) => modifierChamp("category", value)}
-                  placeholder="Bordeaux"
-                />
+                <label style={{ display: "grid", gap: 8 }}>
+                  <span style={{ fontWeight: "bold" }}>Catégorie</span>
+
+                  <select
+                    value={form.category}
+                    onChange={(event) =>
+                      modifierChamp("category", event.target.value)
+                    }
+                    style={inputStyle}
+                  >
+                    <option value="">Choisir une catégorie</option>
+                    <option value="Bordeaux">Bordeaux</option>
+                    <option value="Bourgogne">Bourgogne</option>
+                    <option value="Grands vins d’Italie">
+                      Grands vins d’Italie
+                    </option>
+                    <option value="Grands vins d’Espagne">
+                      Grands vins d’Espagne
+                    </option>
+                  </select>
+                </label>
 
                 <Input
                   label="Note"
