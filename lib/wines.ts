@@ -112,7 +112,7 @@ export async function getWines(): Promise<Wine[]> {
     .order("name", { ascending: true });
 
   if (error || !data) {
-    console.error("Erreur Supabase getWines:", error);
+    console.error("Erreur Supabase getWines:", error?.message);
     return fallbackWines as Wine[];
   }
 
@@ -120,14 +120,22 @@ export async function getWines(): Promise<Wine[]> {
 }
 
 export async function getWineBySlug(slug: string): Promise<Wine | undefined> {
+  if (!slug) {
+    return undefined;
+  }
+
   const { data, error } = await supabase
     .from("wines")
     .select("*")
     .eq("slug", slug)
-    .single();
+    .maybeSingle();
 
-  if (error || !data) {
-    console.error("Erreur Supabase getWineBySlug:", error);
+  if (error) {
+    console.error("Erreur Supabase getWineBySlug:", error.message);
+    return (fallbackWines as Wine[]).find((wine) => wine.slug === slug);
+  }
+
+  if (!data) {
     return (fallbackWines as Wine[]).find((wine) => wine.slug === slug);
   }
 

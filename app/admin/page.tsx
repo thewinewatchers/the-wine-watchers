@@ -377,27 +377,57 @@ export default function AdminPage() {
                   placeholder="/images/lafite.jpg"
                 />
 
-                <label style={{ display: "grid", gap: 8 }}>
+                <div style={{ display: "grid", gap: 10 }}>
                   <span style={{ fontWeight: "bold" }}>Catégorie</span>
 
-                  <select
-                    value={form.category}
-                    onChange={(event) =>
-                      modifierChamp("category", event.target.value)
-                    }
-                    style={inputStyle}
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 10,
+                      flexWrap: "wrap",
+                    }}
                   >
-                    <option value="">Choisir une catégorie</option>
-                    <option value="Bordeaux">Bordeaux</option>
-                    <option value="Bourgogne">Bourgogne</option>
-                    <option value="Grands vins d’Italie">
-                      Grands vins d’Italie
-                    </option>
-                    <option value="Grands vins d’Espagne">
-                      Grands vins d’Espagne
-                    </option>
-                  </select>
-                </label>
+                    {[
+                      "Bordeaux",
+                      "Bourgogne",
+                      "Grands vins d’Italie",
+                      "Grands vins d’Espagne",
+                    ].map((categorie) => (
+                      <button
+                        key={categorie}
+                        type="button"
+                        onClick={() => modifierChamp("category", categorie)}
+                        style={{
+                          padding: "11px 16px",
+                          borderRadius: 999,
+                          border:
+                            form.category === categorie
+                              ? "2px solid #1f1a17"
+                              : "1px solid #d8cbbb",
+                          background:
+                            form.category === categorie ? "#d6b36a" : "white",
+                          color: "#1f1a17",
+                          fontWeight: "bold",
+                          cursor: "pointer",
+                          fontFamily: "Georgia, serif",
+                        }}
+                      >
+                        {categorie}
+                      </button>
+                    ))}
+                  </div>
+
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: 14,
+                      color: form.category ? "#4a3b32" : "#8b0000",
+                    }}
+                  >
+                    Catégorie sélectionnée :{" "}
+                    <strong>{form.category || "aucune"}</strong>
+                  </p>
+                </div>
 
                 <Input
                   label="Note"
