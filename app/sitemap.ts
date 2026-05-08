@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getWines } from "@/lib/wines";
 
-const siteUrl = "https://www.thewinewatchers.com";
+const siteUrl = "https://the-wine-watchers.vercel.app";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const wines = await getWines();
