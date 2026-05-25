@@ -1,130 +1,125 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-
-type ArticlePanier = {
-  nom: string;
-  prix: number;
-  quantite: number;
-  image?: string;
-  slug?: string;
-};
+import { supabase } from "@/lib/supabaseClient";
 
 export default function Menu() {
-  const pathname = usePathname();
-  const [nombreArticles, setNombreArticles] = useState(0);
-
-  function mettreAJourCompteur() {
-    try {
-      const panierSauvegarde = localStorage.getItem("panier");
-
-      if (!panierSauvegarde) {
-        setNombreArticles(0);
-        return;
-      }
-
-      const panier: ArticlePanier[] = JSON.parse(panierSauvegarde);
-
-      const total = panier.reduce((somme, article) => {
-        return somme + Number(article.quantite || 0);
-      }, 0);
-
-      setNombreArticles(total);
-    } catch {
-      setNombreArticles(0);
-    }
-  }
+  const [open, setOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
   useEffect(() => {
-    mettreAJourCompteur();
+    async function checkUser() {
+      const { data } = await supabase.auth.getUser();
+      setIsLoggedIn(Boolean(data.user));
+    }
 
-    window.addEventListener("storage", mettreAJourCompteur);
-    window.addEventListener("panier-modifie", mettreAJourCompteur);
-    window.addEventListener("focus", mettreAJourCompteur);
-    window.addEventListener("click", mettreAJourCompteur);
+    checkUser();
 
-    const interval = window.setInterval(mettreAJourCompteur, 300);
+    const { data: listener } = supabase.auth.onAuthStateChange(() => {
+      checkUser();
+    });
 
     return () => {
-      window.removeEventListener("storage", mettreAJourCompteur);
-      window.removeEventListener("panier-modifie", mettreAJourCompteur);
-      window.removeEventListener("focus", mettreAJourCompteur);
-      window.removeEventListener("click", mettreAJourCompteur);
-      window.clearInterval(interval);
+      listener.subscription.unsubscribe();
     };
-  }, [pathname]);
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setIsLoggedIn(false);
+    setOpen(false);
+    window.location.href = "/boutique";
+  };
+
+  const showLoggedOutLinks = isLoggedIn === false;
+  const showLoggedInLinks = isLoggedIn === true;
 
   return (
-    <nav
-      style={{
-        padding: "20px 40px",
-        background: "#1f1a17",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        fontFamily: "Georgia, serif",
-        gap: 25,
-        flexWrap: "wrap",
-      }}
-    >
-      <Link
-        href="/"
-        style={{
-          color: "#d6b36a",
-          textDecoration: "none",
-          fontSize: 22,
-          fontWeight: "bold",
-        }}
-      >
-        The Wine Watchers
-      </Link>
-
-      <div
-        style={{
-          display: "flex",
-          gap: 25,
-          alignItems: "center",
-          flexWrap: "wrap",
-        }}
-      >
-        <Link href="/" style={linkStyle}>
-          Accueil
+    <header className="sticky top-0 z-50 border-b border-neutral-200 bg-white/95 backdrop-blur">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+        <Link href="/" className="text-xl font-serif tracking-wide text-neutral-900">
+          The Wine Watchers
         </Link>
 
-        <Link href="/a-propos" style={linkStyle}>
-          À propos
-        </Link>
-
-        <Link href="/boutique" style={linkStyle}>
-          Boutique
-        </Link>
-
-        <Link
-          href="/panier"
-          style={{
-            color: "#d6b36a",
-            textDecoration: "none",
-            fontWeight: "bold",
-          }}
+        <button
+          onClick={() => setOpen(!open)}
+          className="rounded border border-neutral-300 px-3 py-2 text-sm md:hidden"
         >
-          Panier ({nombreArticles})
-        </Link>
+          Menu
+        </button>
 
-        <Link href="/livraison" style={linkStyle}>
-          Livraison
-        </Link>
+        <nav className="hidden items-center gap-6 text-sm uppercase tracking-wide text-neutral-700 md:flex">
+          <Link href="/" className="transition hover:text-[#8B1E2D]">Accueil</Link>
+          <Link href="/boutique" className="transition hover:text-[#8B1E2D]">Boutique</Link>
 
-        <Link href="/contact" style={linkStyle}>
-          Contact
-        </Link>
+          {showLoggedOutLinks && (
+            <>
+              <Link href="/connexion" className="transition hover:text-[#8B1E2D]">Connexion</Link>
+              <Link href="/inscription" className="transition hover:text-[#8B1E2D]">Inscription</Link>
+            </>
+          )}
+
+          {showLoggedInLinks && (
+            <Link href="/mon-compte" className="transition hover:text-[#8B1E2D]">Mon compte</Link>
+          )}
+
+          <Link href="/a-propos" className="transition hover:text-[#8B1E2D]">À propos</Link>
+
+          <Link
+            href="/panier"
+            className="rounded-full border border-[#8B1E2D] px-4 py-2 text-[#8B1E2D] transition hover:bg-[#8B1E2D] hover:text-white"
+          >
+            Voir le panier
+          </Link>
+
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="rounded-full bg-[#8B1E2D] px-4 py-2 text-white transition hover:bg-black"
+          >
+            Se déconnecter
+          </button>
+        </nav>
       </div>
-    </nav>
+
+      {open && (
+        <nav className="border-t border-neutral-200 bg-white px-6 py-4 text-sm uppercase tracking-wide text-neutral-700 md:hidden">
+          <div className="flex flex-col gap-4">
+            <Link href="/" onClick={() => setOpen(false)}>Accueil</Link>
+            <Link href="/boutique" onClick={() => setOpen(false)}>Boutique</Link>
+
+            {showLoggedOutLinks && (
+              <>
+                <Link href="/connexion" onClick={() => setOpen(false)}>Connexion</Link>
+                <Link href="/inscription" onClick={() => setOpen(false)}>Inscription</Link>
+              </>
+            )}
+
+            {showLoggedInLinks && (
+              <Link href="/mon-compte" onClick={() => setOpen(false)}>Mon compte</Link>
+            )}
+
+            <Link href="/a-propos" onClick={() => setOpen(false)}>À propos</Link>
+
+            <Link
+              href="/panier"
+              onClick={() => setOpen(false)}
+              className="rounded-full border border-[#8B1E2D] px-4 py-2 text-center text-[#8B1E2D]"
+            >
+              Voir le panier
+            </Link>
+
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="rounded-full bg-[#8B1E2D] px-4 py-2 text-center text-white transition hover:bg-black"
+            >
+              Se déconnecter
+            </button>
+          </div>
+        </nav>
+      )}
+    </header>
   );
 }
-
-const linkStyle: React.CSSProperties = {
-  color: "white",
-  textDecoration: "none",
-};

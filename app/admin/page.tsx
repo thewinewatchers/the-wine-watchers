@@ -1,107 +1,56 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
-import type { Wine } from "@/lib/wines";
+import { wines } from "@/data/wines";
 
-type WineForm = Wine;
-
-const emptyWine: WineForm = {
-  slug: "",
-  name: "",
-  region: "",
-  vintage: "",
-  price: "",
-  image: "/images/",
-  category: "",
-  rating: "",
-
-  seoTitle: "",
-  seoDescription: "",
-  keywords: [],
-
-  producer: "",
-  appellation: "",
-  country: "France",
-  color: "",
-  grapeVarieties: [],
-  classification: "",
-  soil: "",
-  style: "",
-
-  description: "",
-  story: "",
-  tastingNotes: [],
-  nose: "",
-  palate: "",
-  pairing: "",
-  servingTemperature: "",
-  agingPotential: "",
-  metaContent: "",
+type WineForm = {
+  slug: string;
+  name: string;
+  region: string;
+  vintage: string;
+  price: string;
+  image: string;
+  category: string;
+  rating: string;
+  seoTitle: string;
+  seoDescription: string;
+  producer: string;
+  appellation: string;
+  country: string;
+  color: string;
+  classification: string;
+  style: string;
+  description: string;
 };
 
 export default function AdminPage() {
-  const router = useRouter();
-
-  const [wines, setWines] = useState<Wine[]>([]);
-  const [selectedSlug, setSelectedSlug] = useState("");
-  const [form, setForm] = useState<WineForm>(emptyWine);
+  const [selectedSlug, setSelectedSlug] = useState(wines[0]?.slug || "");
   const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [checkingAuth, setCheckingAuth] = useState(true);
 
   const selectedWine = useMemo(() => {
-    return wines.find((wine) => wine.slug === selectedSlug);
-  }, [wines, selectedSlug]);
+    return wines.find((wine) => wine.slug === selectedSlug) || wines[0];
+  }, [selectedSlug]);
 
-  useEffect(() => {
-    verifierAccesAdmin();
-  }, []);
-
-  async function verifierAccesAdmin() {
-    const { data } = await supabase.auth.getSession();
-
-    if (!data.session) {
-      router.push("/admin/login");
-      return;
-    }
-
-    setCheckingAuth(false);
-    await chargerVins();
-  }
-
-  async function seDeconnecter() {
-    await supabase.auth.signOut();
-    router.push("/admin/login");
-    router.refresh();
-  }
-
-  async function chargerVins() {
-    setLoading(true);
-
-    const { data, error } = await supabase
-      .from("wines")
-      .select("*")
-      .order("name", { ascending: true });
-
-    if (error) {
-      setMessage(`Erreur Supabase : ${error.message}`);
-      setLoading(false);
-      return;
-    }
-
-    const vinsConvertis = (data || []).map(convertirDepuisSupabase);
-    setWines(vinsConvertis);
-
-    if (vinsConvertis.length > 0 && !selectedSlug) {
-      setSelectedSlug(vinsConvertis[0].slug);
-      setForm(vinsConvertis[0]);
-    }
-
-    setLoading(false);
-  }
+  const [form, setForm] = useState<WineForm>({
+    slug: selectedWine?.slug || "",
+    name: selectedWine?.name || "",
+    region: selectedWine?.region || "",
+    vintage: selectedWine?.vintage || "",
+    price: selectedWine?.price || "",
+    image: selectedWine?.image || "",
+    category: selectedWine?.category || "",
+    rating: selectedWine?.rating || "",
+    seoTitle: selectedWine?.seoTitle || "",
+    seoDescription: selectedWine?.seoDescription || "",
+    producer: selectedWine?.producer || "",
+    appellation: selectedWine?.appellation || "",
+    country: selectedWine?.country || "",
+    color: selectedWine?.color || "",
+    classification: selectedWine?.classification || "",
+    style: selectedWine?.style || "",
+    description: selectedWine?.description || "",
+  });
 
   function chargerVin(slug: string) {
     const wine = wines.find((item) => item.slug === slug);
@@ -109,14 +58,27 @@ export default function AdminPage() {
     if (!wine) return;
 
     setSelectedSlug(slug);
-    setForm(wine);
     setMessage("");
-  }
 
-  function nouveauVin() {
-    setSelectedSlug("");
-    setForm(emptyWine);
-    setMessage("");
+    setForm({
+      slug: wine.slug,
+      name: wine.name,
+      region: wine.region,
+      vintage: wine.vintage,
+      price: wine.price,
+      image: wine.image,
+      category: wine.category,
+      rating: wine.rating,
+      seoTitle: wine.seoTitle,
+      seoDescription: wine.seoDescription,
+      producer: wine.producer,
+      appellation: wine.appellation,
+      country: wine.country,
+      color: wine.color,
+      classification: wine.classification,
+      style: wine.style,
+      description: wine.description,
+    });
   }
 
   function modifierChamp(champ: keyof WineForm, valeur: string) {
@@ -126,91 +88,44 @@ export default function AdminPage() {
     }));
   }
 
-  function modifierListe(champ: keyof WineForm, valeur: string) {
-    const valeurs = valeur
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean);
-
-    setForm((ancienFormulaire) => ({
-      ...ancienFormulaire,
-      [champ]: valeurs,
-    }));
-  }
-
-  async function enregistrerVin(event: React.FormEvent<HTMLFormElement>) {
+  function enregistrerPrototype(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!form.slug || !form.name) {
-      setMessage("Le slug et le nom du vin sont obligatoires.");
-      return;
-    }
+    const vinsAdmin = JSON.parse(localStorage.getItem("vins-admin") || "[]");
+    const autresVins = vinsAdmin.filter((vin: WineForm) => vin.slug !== form.slug);
+    const nouveauStockage = [...autresVins, form];
 
-    if (!form.category) {
-      setMessage("La catégorie du vin est obligatoire.");
-      return;
-    }
+    localStorage.setItem("vins-admin", JSON.stringify(nouveauStockage));
 
-    const vinSupabase = convertirVersSupabase(form);
-
-    const { error } = await supabase
-      .from("wines")
-      .upsert(vinSupabase, { onConflict: "slug" });
-
-    if (error) {
-      setMessage(`Erreur lors de l’enregistrement : ${error.message}`);
-      return;
-    }
-
-    setMessage("Vin enregistré dans Supabase avec succès.");
-    await chargerVins();
-    setSelectedSlug(form.slug);
+    setMessage(
+      "Prototype enregistré dans ce navigateur. Pour un vrai site, il faudra connecter cette page à Supabase ou une autre base de données."
+    );
   }
 
-  async function supprimerVin() {
-    if (!form.slug) {
-      setMessage("Aucun vin sélectionné.");
-      return;
-    }
-
-    const confirmation = window.confirm(
-      `Supprimer définitivement ${form.name || form.slug} ?`
-    );
-
-    if (!confirmation) return;
-
-    const { error } = await supabase
-      .from("wines")
-      .delete()
-      .eq("slug", form.slug);
-
-    if (error) {
-      setMessage(`Erreur lors de la suppression : ${error.message}`);
-      return;
-    }
-
-    setMessage("Vin supprimé de Supabase.");
+  function nouveauVin() {
     setSelectedSlug("");
-    setForm(emptyWine);
-    await chargerVins();
-  }
 
-  if (checkingAuth) {
-    return (
-      <main
-        style={{
-          minHeight: "100vh",
-          background: "linear-gradient(135deg, #16080b, #2b0f16)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontFamily: "Georgia, serif",
-          color: "#fffaf3",
-        }}
-      >
-        <p>Vérification de l’accès admin...</p>
-      </main>
-    );
+    setForm({
+      slug: "",
+      name: "",
+      region: "",
+      vintage: "",
+      price: "",
+      image: "/images/",
+      category: "",
+      rating: "",
+      seoTitle: "",
+      seoDescription: "",
+      producer: "",
+      appellation: "",
+      country: "France",
+      color: "",
+      classification: "",
+      style: "",
+      description: "",
+    });
+
+    setMessage("");
   }
 
   return (
@@ -224,40 +139,34 @@ export default function AdminPage() {
       }}
     >
       <div style={{ maxWidth: 1280, margin: "0 auto" }}>
-        <div
+        <p
           style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            gap: 20,
-            flexWrap: "wrap",
+            letterSpacing: 5,
+            textTransform: "uppercase",
+            color: "#d6b36a",
+            fontSize: 13,
           }}
         >
-          <div>
-            <p style={kicker}>Back-office sécurisé</p>
+          Back-office
+        </p>
 
-            <h1 style={{ fontSize: 56, margin: "10px 0 18px" }}>
-              Administration des vins
-            </h1>
+        <h1 style={{ fontSize: 56, margin: "10px 0 18px" }}>
+          Administration des vins
+        </h1>
 
-            <p
-              style={{
-                maxWidth: 780,
-                color: "#e8dccb",
-                fontSize: 18,
-                lineHeight: 1.7,
-                marginBottom: 35,
-              }}
-            >
-              Cette page est protégée par Supabase Auth. Seul l’utilisateur
-              admin connecté peut ajouter, modifier ou supprimer les vins.
-            </p>
-          </div>
-
-          <button onClick={seDeconnecter} style={logoutButton}>
-            Se déconnecter
-          </button>
-        </div>
+        <p
+          style={{
+            maxWidth: 760,
+            color: "#e8dccb",
+            fontSize: 18,
+            lineHeight: 1.7,
+            marginBottom: 35,
+          }}
+        >
+          Cette première version permet de préparer l’interface de gestion des
+          vins, des contenus SEO et des informations produit. Les modifications
+          sont sauvegardées uniquement dans le navigateur pour le moment.
+        </p>
 
         <div
           style={{
@@ -275,53 +184,70 @@ export default function AdminPage() {
               padding: 24,
             }}
           >
-            <button onClick={nouveauVin} style={goldButton}>
+            <button
+              onClick={nouveauVin}
+              style={{
+                width: "100%",
+                padding: "14px 18px",
+                borderRadius: 999,
+                border: "none",
+                background: "#d6b36a",
+                color: "#1f1a17",
+                fontWeight: "bold",
+                cursor: "pointer",
+                marginBottom: 22,
+              }}
+            >
               + Ajouter un vin
             </button>
 
-            <h2 style={{ marginTop: 24, fontSize: 24 }}>Vins Supabase</h2>
+            <h2 style={{ marginTop: 0, fontSize: 24 }}>Vins existants</h2>
 
-            {loading ? (
-              <p style={{ color: "#e8dccb" }}>Chargement...</p>
-            ) : (
-              <div style={{ display: "grid", gap: 12 }}>
-                {wines.map((wine) => (
-                  <button
-                    key={wine.slug}
-                    onClick={() => chargerVin(wine.slug)}
-                    style={{
-                      textAlign: "left",
-                      padding: 14,
-                      borderRadius: 18,
-                      border:
-                        selectedSlug === wine.slug
-                          ? "1px solid #d6b36a"
-                          : "1px solid rgba(255,250,243,0.15)",
-                      background:
-                        selectedSlug === wine.slug
-                          ? "rgba(214,179,106,0.18)"
-                          : "rgba(255,250,243,0.06)",
-                      color: "#fffaf3",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <strong>{wine.name}</strong>
-                    <br />
-                    <span style={{ color: "#e8dccb", fontSize: 14 }}>
-                      {wine.region} · {wine.vintage}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            )}
+            <div style={{ display: "grid", gap: 12 }}>
+              {wines.map((wine) => (
+                <button
+                  key={wine.slug}
+                  onClick={() => chargerVin(wine.slug)}
+                  style={{
+                    textAlign: "left",
+                    padding: 14,
+                    borderRadius: 18,
+                    border:
+                      selectedSlug === wine.slug
+                        ? "1px solid #d6b36a"
+                        : "1px solid rgba(255,250,243,0.15)",
+                    background:
+                      selectedSlug === wine.slug
+                        ? "rgba(214,179,106,0.18)"
+                        : "rgba(255,250,243,0.06)",
+                    color: "#fffaf3",
+                    cursor: "pointer",
+                  }}
+                >
+                  <strong>{wine.name}</strong>
+                  <br />
+                  <span style={{ color: "#e8dccb", fontSize: 14 }}>
+                    {wine.region} · {wine.vintage}
+                  </span>
+                </button>
+              ))}
+            </div>
 
-            <Link href="/boutique" style={asideLink}>
+            <Link
+              href="/boutique"
+              style={{
+                display: "inline-block",
+                marginTop: 24,
+                color: "#d6b36a",
+                textDecoration: "none",
+              }}
+            >
               ← Voir la boutique
             </Link>
           </aside>
 
           <form
-            onSubmit={enregistrerVin}
+            onSubmit={enregistrerPrototype}
             style={{
               background: "#fffaf3",
               color: "#1f1a17",
@@ -339,7 +265,7 @@ export default function AdminPage() {
                   label="Slug URL"
                   value={form.slug}
                   onChange={(value) => modifierChamp("slug", value)}
-                  placeholder="lafite"
+                  placeholder="exemple : lafite"
                 />
 
                 <Input
@@ -377,57 +303,12 @@ export default function AdminPage() {
                   placeholder="/images/lafite.jpg"
                 />
 
-                <div style={{ display: "grid", gap: 10 }}>
-                  <span style={{ fontWeight: "bold" }}>Catégorie</span>
-
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: 10,
-                      flexWrap: "wrap",
-                    }}
-                  >
-                    {[
-                      "Bordeaux",
-                      "Bourgogne",
-                      "Grands vins d’Italie",
-                      "Grands vins d’Espagne",
-                    ].map((categorie) => (
-                      <button
-                        key={categorie}
-                        type="button"
-                        onClick={() => modifierChamp("category", categorie)}
-                        style={{
-                          padding: "11px 16px",
-                          borderRadius: 999,
-                          border:
-                            form.category === categorie
-                              ? "2px solid #1f1a17"
-                              : "1px solid #d8cbbb",
-                          background:
-                            form.category === categorie ? "#d6b36a" : "white",
-                          color: "#1f1a17",
-                          fontWeight: "bold",
-                          cursor: "pointer",
-                          fontFamily: "Georgia, serif",
-                        }}
-                      >
-                        {categorie}
-                      </button>
-                    ))}
-                  </div>
-
-                  <p
-                    style={{
-                      margin: 0,
-                      fontSize: 14,
-                      color: form.category ? "#4a3b32" : "#8b0000",
-                    }}
-                  >
-                    Catégorie sélectionnée :{" "}
-                    <strong>{form.category || "aucune"}</strong>
-                  </p>
-                </div>
+                <Input
+                  label="Catégorie"
+                  value={form.category}
+                  onChange={(value) => modifierChamp("category", value)}
+                  placeholder="Bordeaux"
+                />
 
                 <Input
                   label="Note"
@@ -446,62 +327,42 @@ export default function AdminPage() {
                   label="Domaine"
                   value={form.producer}
                   onChange={(value) => modifierChamp("producer", value)}
+                  placeholder="Château Lafite Rothschild"
                 />
 
                 <Input
                   label="Appellation"
                   value={form.appellation}
                   onChange={(value) => modifierChamp("appellation", value)}
+                  placeholder="Pauillac"
                 />
 
                 <Input
                   label="Pays"
                   value={form.country}
                   onChange={(value) => modifierChamp("country", value)}
+                  placeholder="France"
                 />
 
                 <Input
                   label="Couleur"
                   value={form.color}
                   onChange={(value) => modifierChamp("color", value)}
+                  placeholder="Rouge"
                 />
 
                 <Input
                   label="Classification"
                   value={form.classification}
                   onChange={(value) => modifierChamp("classification", value)}
+                  placeholder="Premier Grand Cru Classé"
                 />
 
                 <Input
                   label="Style"
                   value={form.style}
                   onChange={(value) => modifierChamp("style", value)}
-                />
-
-                <Input
-                  label="Sol"
-                  value={form.soil}
-                  onChange={(value) => modifierChamp("soil", value)}
-                />
-
-                <Input
-                  label="Garde"
-                  value={form.agingPotential}
-                  onChange={(value) => modifierChamp("agingPotential", value)}
-                />
-
-                <Input
-                  label="Température de service"
-                  value={form.servingTemperature}
-                  onChange={(value) =>
-                    modifierChamp("servingTemperature", value)
-                  }
-                />
-
-                <Input
-                  label="Cépages, séparés par des virgules"
-                  value={form.grapeVarieties.join(", ")}
-                  onChange={(value) => modifierListe("grapeVarieties", value)}
+                  placeholder="Grand rouge de garde"
                 />
               </div>
 
@@ -509,46 +370,7 @@ export default function AdminPage() {
                 label="Description courte"
                 value={form.description}
                 onChange={(value) => modifierChamp("description", value)}
-              />
-
-              <Textarea
-                label="Histoire du vin"
-                value={form.story}
-                onChange={(value) => modifierChamp("story", value)}
-              />
-
-              <Textarea
-                label="Meta contenu visible"
-                value={form.metaContent}
-                onChange={(value) => modifierChamp("metaContent", value)}
-              />
-            </section>
-
-            <section>
-              <p style={sectionLabel}>Dégustation</p>
-
-              <Input
-                label="Notes, séparées par des virgules"
-                value={form.tastingNotes.join(", ")}
-                onChange={(value) => modifierListe("tastingNotes", value)}
-              />
-
-              <Textarea
-                label="Nez"
-                value={form.nose}
-                onChange={(value) => modifierChamp("nose", value)}
-              />
-
-              <Textarea
-                label="Bouche"
-                value={form.palate}
-                onChange={(value) => modifierChamp("palate", value)}
-              />
-
-              <Textarea
-                label="Accords mets-vins"
-                value={form.pairing}
-                onChange={(value) => modifierChamp("pairing", value)}
+                placeholder="Description visible sur la fiche vin..."
               />
             </section>
 
@@ -559,18 +381,14 @@ export default function AdminPage() {
                 label="Titre SEO Google"
                 value={form.seoTitle}
                 onChange={(value) => modifierChamp("seoTitle", value)}
+                placeholder="Château Lafite Rothschild 2018 | Grand vin de Pauillac"
               />
 
               <Textarea
                 label="Meta description SEO"
                 value={form.seoDescription}
                 onChange={(value) => modifierChamp("seoDescription", value)}
-              />
-
-              <Input
-                label="Mots-clés, séparés par des virgules"
-                value={form.keywords.join(", ")}
-                onChange={(value) => modifierListe("keywords", value)}
+                placeholder="Description optimisée pour les résultats Google..."
               />
             </section>
 
@@ -636,25 +454,42 @@ export default function AdminPage() {
               </p>
             )}
 
-            <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
-              <button type="submit" style={darkButton}>
-                Enregistrer dans Supabase
+            <div
+              style={{
+                display: "flex",
+                gap: 14,
+                flexWrap: "wrap",
+              }}
+            >
+              <button
+                type="submit"
+                style={{
+                  padding: "15px 26px",
+                  borderRadius: 999,
+                  border: "none",
+                  background: "#1f1a17",
+                  color: "white",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                }}
+              >
+                Enregistrer le prototype
               </button>
 
               {form.slug && (
-                <Link href={`/boutique/${form.slug}`} style={goldLinkButton}>
+                <Link
+                  href={`/boutique/${form.slug}`}
+                  style={{
+                    padding: "15px 26px",
+                    borderRadius: 999,
+                    background: "#d6b36a",
+                    color: "#1f1a17",
+                    textDecoration: "none",
+                    fontWeight: "bold",
+                  }}
+                >
                   Voir la fiche vin
                 </Link>
-              )}
-
-              {selectedWine && (
-                <button
-                  type="button"
-                  onClick={supprimerVin}
-                  style={dangerButton}
-                >
-                  Supprimer ce vin
-                </button>
               )}
             </div>
           </form>
@@ -662,78 +497,6 @@ export default function AdminPage() {
       </div>
     </main>
   );
-}
-
-function convertirDepuisSupabase(vin: any): Wine {
-  return {
-    slug: vin.slug || "",
-    name: vin.name || "",
-    region: vin.region || "",
-    vintage: vin.vintage || "",
-    price: vin.price || "",
-    image: vin.image || "",
-    category: vin.category || "",
-    rating: vin.rating || "",
-
-    seoTitle: vin.seo_title || "",
-    seoDescription: vin.seo_description || "",
-    keywords: vin.keywords || [],
-
-    producer: vin.producer || "",
-    appellation: vin.appellation || "",
-    country: vin.country || "",
-    color: vin.color || "",
-    grapeVarieties: vin.grape_varieties || [],
-    classification: vin.classification || "",
-    soil: vin.soil || "",
-    style: vin.style || "",
-
-    description: vin.description || "",
-    story: vin.story || "",
-    tastingNotes: vin.tasting_notes || [],
-    nose: vin.nose || "",
-    palate: vin.palate || "",
-    pairing: vin.pairing || "",
-    servingTemperature: vin.serving_temperature || "",
-    agingPotential: vin.aging_potential || "",
-    metaContent: vin.meta_content || "",
-  };
-}
-
-function convertirVersSupabase(vin: Wine) {
-  return {
-    slug: vin.slug,
-    name: vin.name,
-    region: vin.region,
-    vintage: vin.vintage,
-    price: vin.price,
-    image: vin.image,
-    category: vin.category,
-    rating: vin.rating,
-
-    seo_title: vin.seoTitle,
-    seo_description: vin.seoDescription,
-    keywords: vin.keywords,
-
-    producer: vin.producer,
-    appellation: vin.appellation,
-    country: vin.country,
-    color: vin.color,
-    grape_varieties: vin.grapeVarieties,
-    classification: vin.classification,
-    soil: vin.soil,
-    style: vin.style,
-
-    description: vin.description,
-    story: vin.story,
-    tasting_notes: vin.tastingNotes,
-    nose: vin.nose,
-    palate: vin.palate,
-    pairing: vin.pairing,
-    serving_temperature: vin.servingTemperature,
-    aging_potential: vin.agingPotential,
-    meta_content: vin.metaContent,
-  };
 }
 
 function Input({
@@ -779,18 +542,14 @@ function Textarea({
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
         rows={4}
-        style={{ ...inputStyle, resize: "vertical" }}
+        style={{
+          ...inputStyle,
+          resize: "vertical",
+        }}
       />
     </label>
   );
 }
-
-const kicker: React.CSSProperties = {
-  letterSpacing: 5,
-  textTransform: "uppercase",
-  color: "#d6b36a",
-  fontSize: 13,
-};
 
 const gridTwo: React.CSSProperties = {
   display: "grid",
@@ -816,61 +575,4 @@ const inputStyle: React.CSSProperties = {
   color: "#1f1a17",
   fontFamily: "Georgia, serif",
   fontSize: 15,
-};
-
-const goldButton: React.CSSProperties = {
-  width: "100%",
-  padding: "14px 18px",
-  borderRadius: 999,
-  border: "none",
-  background: "#d6b36a",
-  color: "#1f1a17",
-  fontWeight: "bold",
-  cursor: "pointer",
-};
-
-const darkButton: React.CSSProperties = {
-  padding: "15px 26px",
-  borderRadius: 999,
-  border: "none",
-  background: "#1f1a17",
-  color: "white",
-  fontWeight: "bold",
-  cursor: "pointer",
-};
-
-const dangerButton: React.CSSProperties = {
-  padding: "15px 26px",
-  borderRadius: 999,
-  border: "none",
-  background: "#8b0000",
-  color: "white",
-  fontWeight: "bold",
-  cursor: "pointer",
-};
-
-const logoutButton: React.CSSProperties = {
-  padding: "13px 22px",
-  borderRadius: 999,
-  border: "1px solid rgba(214,179,106,0.45)",
-  background: "rgba(255,250,243,0.08)",
-  color: "#fffaf3",
-  fontWeight: "bold",
-  cursor: "pointer",
-};
-
-const goldLinkButton: React.CSSProperties = {
-  padding: "15px 26px",
-  borderRadius: 999,
-  background: "#d6b36a",
-  color: "#1f1a17",
-  textDecoration: "none",
-  fontWeight: "bold",
-};
-
-const asideLink: React.CSSProperties = {
-  display: "inline-block",
-  marginTop: 24,
-  color: "#d6b36a",
-  textDecoration: "none",
-};
+}

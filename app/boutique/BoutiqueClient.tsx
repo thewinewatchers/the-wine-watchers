@@ -1,343 +1,571 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import type { Wine } from "@/lib/wines";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
 
-type BoutiqueClientProps = {
-  wines: Wine[];
+type Wine = {
+  id: string;
+  name?: string;
+  title?: string;
+  chateau?: string;
+  vintage?: string | number;
+  millesime?: string | number;
+  price?: string | number;
+  prix?: string | number;
+  quantity?: string | number;
+  stock?: string | number;
+  category?: string;
+  categorie?: string;
+  region?: string;
+  appellation?: string;
+  image_url?: string;
+  image?: string;
+  imageUrl?: string;
+  description?: string;
+  rating?: string | number;
+  producer?: string;
+  classification?: string;
+  color?: string;
+  bottle_size?: string;
+  packaging?: string;
 };
 
-export default function BoutiqueClient({ wines }: BoutiqueClientProps) {
-  const [categorieActive, setCategorieActive] = useState("Tous");
-  const [appellationActive, setAppellationActive] = useState("Toutes");
-  const [afficherAppellations, setAfficherAppellations] = useState(false);
+type BoutiqueClientProps = {
+  slug: string;
+  categoryTitle: string;
+  appellations: string[];
+};
 
-  const categories = [
-    "Tous",
-    ...Array.from(
-      new Set([
-        ...wines.map((vin) => vin.category).filter(Boolean),
-        "Grands vins d’Italie",
-        "Grands vins d’Espagne",
-      ])
-    ),
-  ];
+const WINES_PER_PAGE = 24;
 
-  const vinsApresCategorie =
-    categorieActive === "Tous"
-      ? wines
-      : wines.filter((vin) => vin.category === categorieActive);
+function normalize(value?: string | number | null) {
+  return String(value ?? "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[’']/g, "")
+    .replace(/-/g, " ")
+    .trim();
+}
 
-  const appellations = [
-    "Toutes",
-    ...Array.from(
-      new Set(
-        vinsApresCategorie
-          .map((vin) => vin.appellation)
-          .filter((appellation) => appellation && appellation.trim() !== "")
-      )
-    ),
-  ];
+function getWineName(wine: Wine) {
+  return wine.name || wine.title || wine.chateau || "Vin sans nom";
+}
 
-  const produitsFiltres =
-    appellationActive === "Toutes"
-      ? vinsApresCategorie
-      : vinsApresCategorie.filter(
-          (vin) => vin.appellation === appellationActive
-        );
+function getWineVintage(wine: Wine) {
+  return wine.vintage || wine.millesime || "";
+}
 
-  function changerCategorie(categorie: string) {
-    setCategorieActive(categorie);
-    setAppellationActive("Toutes");
-    setAfficherAppellations(false);
+function getWinePrice(wine: Wine) {
+  return wine.price || wine.prix || "";
+}
+
+function getWineImage(wine: Wine) {
+  return wine.image_url || wine.imageUrl || wine.image || "";
+}
+
+function uniqueSorted(values: Array<string | number | undefined | null>) {
+  return Array.from(
+    new Set(
+      values
+        .map((value) => String(value ?? "").trim())
+        .filter(Boolean)
+    )
+  ).sort((a, b) => a.localeCompare(b, "fr"));
+}
+
+export default function BoutiqueClient({
+  slug,
+  categoryTitle,
+  appellations,
+}: BoutiqueClientProps) {
+  const searchParams = useSearchParams();
+  const selectedAppellationFromUrl = searchParams.get("appellation");
+
+  const [wines, setWines] = useState<Wine[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const [search, setSearch] = useState("");
+  const [selectedProducer, setSelectedProducer] = useState("");
+  const [selectedAppellation, setSelectedAppellation] = useState("");
+  const [selectedClassification, setSelectedClassification] = useState("");
+  const [selectedVintage, setSelectedVintage] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const normalizedSlug = normalize(slug);
+  const normalizedCategoryTitle = normalize(categoryTitle);
+
+  const normalizedAppellations = useMemo(
+    () => appellations.map((item) => normalize(item)),
+    [appellations]
+  );
+
+  useEffect(() => {
+    async function loadWines() {
+      setLoading(true);
+      setErrorMessage("");
+
+      const { data, error } = await supabase
+        .from("wines")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        setErrorMessage(error.message);
+        setWines([]);
+        setLoading(false);
+        return;
+      }
+
+      setWines((data as Wine[]) || []);
+      setLoading(false);
+    }
+
+    loadWines();
+  }, []);
+
+  useEffect(() => {
+    setSelectedAppellation(selectedAppellationFromUrl || "");
+    setCurrentPage(1);
+  }, [selectedAppellationFromUrl, slug]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    search,
+    selectedProducer,
+    selectedAppellation,
+    selectedClassification,
+    selectedVintage,
+  ]);
+
+  const categoryWines = useMemo(() => {
+    return wines.filter((wine) => {
+      const wineCategory = normalize(wine.category);
+      const wineCategorie = normalize(wine.categorie);
+      const wineRegion = normalize(wine.region);
+      const wineAppellation = normalize(wine.appellation);
+
+      return (
+        wineCategory === normalizedSlug ||
+        wineCategorie === normalizedSlug ||
+        wineRegion === normalizedSlug ||
+        wineCategory === normalizedCategoryTitle ||
+        wineCategorie === normalizedCategoryTitle ||
+        wineRegion === normalizedCategoryTitle ||
+        normalizedAppellations.includes(wineRegion) ||
+        normalizedAppellations.includes(wineAppellation)
+      );
+    });
+  }, [wines, normalizedSlug, normalizedCategoryTitle, normalizedAppellations]);
+
+  const producerOptions = useMemo(() => {
+    return uniqueSorted(categoryWines.map((wine) => wine.producer));
+  }, [categoryWines]);
+
+  const appellationOptions = useMemo(() => {
+    return uniqueSorted(categoryWines.map((wine) => wine.appellation));
+  }, [categoryWines]);
+
+  const classificationOptions = useMemo(() => {
+    return uniqueSorted(categoryWines.map((wine) => wine.classification));
+  }, [categoryWines]);
+
+  const vintageOptions = useMemo(() => {
+    return uniqueSorted(
+      categoryWines.map((wine) => wine.vintage || wine.millesime)
+    ).sort((a, b) => Number(b) - Number(a));
+  }, [categoryWines]);
+
+  const filteredWines = useMemo(() => {
+    return categoryWines.filter((wine) => {
+      const wineProducer = normalize(wine.producer);
+      const wineAppellation = normalize(wine.appellation);
+      const wineRegion = normalize(wine.region);
+      const wineClassification = normalize(wine.classification);
+      const wineVintage = normalize(wine.vintage || wine.millesime);
+
+      const matchesProducer = selectedProducer
+        ? wineProducer === normalize(selectedProducer)
+        : true;
+
+      const matchesAppellation = selectedAppellation
+        ? wineAppellation === normalize(selectedAppellation) ||
+          wineRegion === normalize(selectedAppellation)
+        : true;
+
+      const matchesClassification = selectedClassification
+        ? wineClassification === normalize(selectedClassification)
+        : true;
+
+      const matchesVintage = selectedVintage
+        ? wineVintage === normalize(selectedVintage)
+        : true;
+
+      const searchText = normalize(
+        [
+          wine.name,
+          wine.title,
+          wine.chateau,
+          wine.producer,
+          wine.region,
+          wine.appellation,
+          wine.vintage,
+          wine.millesime,
+          wine.classification,
+          wine.color,
+          wine.bottle_size,
+          wine.packaging,
+          wine.description,
+        ]
+          .filter(Boolean)
+          .join(" ")
+      );
+
+      const matchesSearch = search
+        ? searchText.includes(normalize(search))
+        : true;
+
+      return (
+        matchesProducer &&
+        matchesAppellation &&
+        matchesClassification &&
+        matchesVintage &&
+        matchesSearch
+      );
+    });
+  }, [
+    categoryWines,
+    selectedProducer,
+    selectedAppellation,
+    selectedClassification,
+    selectedVintage,
+    search,
+  ]);
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredWines.length / WINES_PER_PAGE)
+  );
+
+  const paginatedWines = filteredWines.slice(
+    (currentPage - 1) * WINES_PER_PAGE,
+    currentPage * WINES_PER_PAGE
+  );
+
+  function resetFilters() {
+    setSearch("");
+    setSelectedProducer("");
+    setSelectedAppellation("");
+    setSelectedClassification("");
+    setSelectedVintage("");
+    setCurrentPage(1);
   }
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        background: "linear-gradient(135deg, #16080b, #2b0f16)",
-        padding: "80px 30px",
-        fontFamily: "Georgia, serif",
-        color: "#fffaf3",
-      }}
-    >
-      <div style={{ maxWidth: 1250, margin: "0 auto" }}>
-        <p
-          style={{
-            letterSpacing: 6,
-            color: "#d6b36a",
-            textTransform: "uppercase",
-          }}
-        >
-          Collection privée
-        </p>
+    <section className="relative overflow-hidden bg-[#f7f1e8] px-6 pb-28">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(216,181,109,0.20),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(138,31,31,0.10),transparent_32%)]" />
 
-        <h1 style={{ fontSize: 64, margin: "10px 0", lineHeight: 1 }}>
-          Grands Vins d’Exception
-        </h1>
+      <div className="relative mx-auto max-w-7xl">
+        <div className="mb-10 rounded-[2rem] border border-[#e1d1bd] bg-[#fffaf3]/90 p-6 shadow-sm backdrop-blur md:p-8">
+          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
+            <div>
+              <p className="text-sm uppercase tracking-[0.3em] text-[#8a6a2f]">
+                Vins disponibles
+              </p>
 
-        <p
-          style={{
-            color: "#e8dccb",
-            maxWidth: 620,
-            fontSize: 19,
-            lineHeight: 1.6,
-          }}
-        >
-          Une sélection rare de crus prestigieux, destinée aux collectionneurs et
-          amateurs de grands domaines.
-        </p>
+              <h2 className="mt-3 font-serif text-4xl leading-tight text-[#24110d] md:text-5xl">
+                {selectedAppellation
+                  ? selectedAppellation
+                  : `Sélection ${categoryTitle}`}
+              </h2>
 
-        {/* CATÉGORIES PRINCIPALES */}
-        <div style={{ marginTop: 40 }}>
-          <p
-            style={{
-              letterSpacing: 4,
-              color: "#d6b36a",
-              textTransform: "uppercase",
-              fontSize: 13,
-              marginBottom: 15,
-            }}
-          >
-            Catégories
-          </p>
+              <p className="mt-4 max-w-2xl text-base leading-8 text-[#6d5b50]">
+                Filtrez la sélection par domaine, appellation, classification,
+                millésime ou recherche libre.
+              </p>
+            </div>
 
-          <div
-            style={{
-              display: "flex",
-              gap: 18,
-              flexWrap: "wrap",
-            }}
-          >
-            {categories.map((categorie) => (
-              <button
-                key={categorie}
-                onClick={() => changerCategorie(categorie)}
-                style={{
-                  padding: "10px 20px",
-                  borderRadius: 999,
-                  border: "none",
-                  background:
-                    categorieActive === categorie ? "#d6b36a" : "#fffaf3",
-                  color: "#1f1a17",
-                  fontWeight: "bold",
-                  cursor: "pointer",
-                }}
-              >
-                {categorie}
-              </button>
-            ))}
+            <div className="rounded-full border border-[#d8c6ae] bg-white px-5 py-3 text-sm text-[#6d5b50] shadow-sm">
+              {filteredWines.length} vin{filteredWines.length > 1 ? "s" : ""}{" "}
+              affiché{filteredWines.length > 1 ? "s" : ""}
+            </div>
+          </div>
+
+          <div className="mt-8 grid gap-4 lg:grid-cols-[1.4fr_1fr_1fr_1fr_0.8fr]">
+            <input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              type="search"
+              placeholder="Rechercher un domaine, un cru, un millésime..."
+              className="rounded-full border border-[#d8c6ae] bg-white px-5 py-3 text-sm text-[#24110d] outline-none transition placeholder:text-[#9b8c7d] focus:border-[#8a1f1f]"
+            />
+
+            <select
+              value={selectedProducer}
+              onChange={(event) => setSelectedProducer(event.target.value)}
+              className="rounded-full border border-[#d8c6ae] bg-white px-5 py-3 text-sm text-[#24110d] outline-none transition focus:border-[#8a1f1f]"
+            >
+              <option value="">Tous les domaines</option>
+              {producerOptions.map((producer) => (
+                <option key={producer} value={producer}>
+                  {producer}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={selectedAppellation}
+              onChange={(event) => setSelectedAppellation(event.target.value)}
+              className="rounded-full border border-[#d8c6ae] bg-white px-5 py-3 text-sm text-[#24110d] outline-none transition focus:border-[#8a1f1f]"
+            >
+              <option value="">Toutes les appellations</option>
+              {appellationOptions.map((appellation) => (
+                <option key={appellation} value={appellation}>
+                  {appellation}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={selectedClassification}
+              onChange={(event) =>
+                setSelectedClassification(event.target.value)
+              }
+              className="rounded-full border border-[#d8c6ae] bg-white px-5 py-3 text-sm text-[#24110d] outline-none transition focus:border-[#8a1f1f]"
+            >
+              <option value="">Toutes les classifications</option>
+              {classificationOptions.map((classification) => (
+                <option key={classification} value={classification}>
+                  {classification}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={selectedVintage}
+              onChange={(event) => setSelectedVintage(event.target.value)}
+              className="rounded-full border border-[#d8c6ae] bg-white px-5 py-3 text-sm text-[#24110d] outline-none transition focus:border-[#8a1f1f]"
+            >
+              <option value="">Millésimes</option>
+              {vintageOptions.map((vintage) => (
+                <option key={vintage} value={vintage}>
+                  {vintage}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="mt-5 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="rounded-full border border-[#8a1f1f] px-5 py-2.5 text-sm font-semibold text-[#8a1f1f] transition hover:bg-[#8a1f1f] hover:text-white"
+            >
+              Réinitialiser les filtres
+            </button>
+
+            {selectedProducer && (
+              <span className="rounded-full bg-[#f1e8dc] px-4 py-2 text-xs text-[#6d5b50]">
+                Domaine : {selectedProducer}
+              </span>
+            )}
+
+            {selectedAppellation && (
+              <span className="rounded-full bg-[#f1e8dc] px-4 py-2 text-xs text-[#6d5b50]">
+                Appellation : {selectedAppellation}
+              </span>
+            )}
+
+            {selectedClassification && (
+              <span className="rounded-full bg-[#f1e8dc] px-4 py-2 text-xs text-[#6d5b50]">
+                Classification : {selectedClassification}
+              </span>
+            )}
+
+            {selectedVintage && (
+              <span className="rounded-full bg-[#f1e8dc] px-4 py-2 text-xs text-[#6d5b50]">
+                Millésime : {selectedVintage}
+              </span>
+            )}
           </div>
         </div>
 
-        {/* APPELLATIONS MASQUÉES PAR DÉFAUT */}
-        {categorieActive !== "Tous" && appellations.length > 1 && (
-          <div style={{ marginTop: 28 }}>
-            <button
-              onClick={() => setAfficherAppellations(!afficherAppellations)}
-              style={{
-                padding: "11px 22px",
-                borderRadius: 999,
-                border: "1px solid rgba(214,179,106,0.45)",
-                background: "rgba(255,250,243,0.08)",
-                color: "#fffaf3",
-                fontWeight: "bold",
-                cursor: "pointer",
-                fontFamily: "Georgia, serif",
-              }}
-            >
-              {afficherAppellations
-                ? "Masquer les appellations"
-                : "Afficher les appellations"}
-            </button>
+        {loading && (
+          <div className="rounded-[2rem] border border-[#e5d8c7] bg-[#fffaf3] p-10 text-center shadow-sm">
+            <p className="text-[#6d5b50]">Chargement des vins...</p>
+          </div>
+        )}
 
-            {appellationActive !== "Toutes" && (
-              <button
-                onClick={() => setAppellationActive("Toutes")}
-                style={{
-                  marginLeft: 12,
-                  padding: "11px 22px",
-                  borderRadius: 999,
-                  border: "none",
-                  background: "#d6b36a",
-                  color: "#1f1a17",
-                  fontWeight: "bold",
-                  cursor: "pointer",
-                  fontFamily: "Georgia, serif",
-                }}
-              >
-                Réinitialiser : {appellationActive}
-              </button>
-            )}
+        {!loading && errorMessage && (
+          <div className="rounded-[2rem] border border-red-200 bg-white p-10 text-center shadow-sm">
+            <p className="font-medium text-red-700">
+              Erreur Supabase : {errorMessage}
+            </p>
+          </div>
+        )}
 
-            {afficherAppellations && (
-              <div
-                style={{
-                  marginTop: 22,
-                  padding: 24,
-                  borderRadius: 28,
-                  background: "rgba(255,250,243,0.08)",
-                  border: "1px solid rgba(214,179,106,0.25)",
-                }}
-              >
-                <p
-                  style={{
-                    letterSpacing: 4,
-                    color: "#d6b36a",
-                    textTransform: "uppercase",
-                    fontSize: 13,
-                    marginTop: 0,
-                    marginBottom: 15,
-                  }}
+        {!loading && !errorMessage && filteredWines.length === 0 && (
+          <div className="rounded-[2rem] border border-[#e5d8c7] bg-[#fffaf3] p-10 text-center shadow-sm">
+            <p className="text-sm uppercase tracking-[0.25em] text-[#8a6a2f]">
+              Aucun vin affiché
+            </p>
+
+            <h3 className="mt-3 font-serif text-3xl text-[#24110d]">
+              Aucun vin trouvé pour cette sélection
+            </h3>
+
+            <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-[#6d5b50]">
+              Essayez de modifier les filtres ou de réinitialiser la sélection.
+            </p>
+          </div>
+        )}
+
+        {!loading && !errorMessage && paginatedWines.length > 0 && (
+          <>
+            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+              {paginatedWines.map((wine) => {
+                const image = getWineImage(wine);
+                const name = getWineName(wine);
+                const vintage = getWineVintage(wine);
+                const price = getWinePrice(wine);
+                const location = wine.appellation || wine.region || categoryTitle;
+
+                return (
+                  <article
+                    key={wine.id}
+                    className="group overflow-hidden rounded-[1.7rem] border border-[#dfcfb8] bg-[#fffaf3] shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#d8b56d] hover:shadow-xl"
+                  >
+                    <Link href={`/boutique/vin/${wine.id}`} className="block">
+                      <div className="relative flex h-[245px] items-center justify-center overflow-hidden bg-[#efe3d2] p-6">
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(216,181,109,0.24),transparent_38%)]" />
+
+                        <div className="absolute left-4 top-4 z-10 max-w-[78%] rounded-full bg-[#24110d]/90 px-3 py-1.5 text-[10px] uppercase tracking-[0.16em] text-[#d8b56d]">
+                          {location}
+                        </div>
+
+                        {wine.rating && (
+                          <div className="absolute right-4 top-4 z-10 rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-semibold text-[#8a1f1f] shadow-sm">
+                            {wine.rating}
+                          </div>
+                        )}
+
+                        {image ? (
+                          <img
+                            src={image}
+                            alt={name}
+                            className="relative z-10 max-h-[205px] w-auto object-contain transition duration-500 group-hover:scale-105"
+                          />
+                        ) : (
+                          <div className="relative z-10 flex h-full w-full items-center justify-center rounded-2xl border border-dashed border-[#cdbb9f] text-sm text-[#8a6a2f]">
+                            Image non disponible
+                          </div>
+                        )}
+                      </div>
+                    </Link>
+
+                    <div className="p-5">
+                      <div className="mb-3 flex flex-wrap items-center gap-2">
+                        {vintage && (
+                          <span className="rounded-full border border-[#dfcfb8] bg-white px-3 py-1 text-[11px] text-[#6d5b50]">
+                            {vintage}
+                          </span>
+                        )}
+
+                        {wine.classification && (
+                          <span className="rounded-full border border-[#dfcfb8] bg-white px-3 py-1 text-[11px] text-[#6d5b50]">
+                            {wine.classification}
+                          </span>
+                        )}
+
+                        {wine.bottle_size && (
+                          <span className="rounded-full border border-[#dfcfb8] bg-white px-3 py-1 text-[11px] text-[#6d5b50]">
+                            {wine.bottle_size}
+                          </span>
+                        )}
+
+                        {wine.packaging && (
+                          <span className="rounded-full border border-[#dfcfb8] bg-white px-3 py-1 text-[11px] text-[#6d5b50]">
+                            {wine.packaging}
+                          </span>
+                        )}
+                      </div>
+
+                      <Link href={`/boutique/vin/${wine.id}`}>
+                        <h3 className="min-h-[64px] font-serif text-xl leading-tight text-[#24110d] transition group-hover:text-[#8a1f1f]">
+                          {name}
+                        </h3>
+                      </Link>
+
+                      {(wine.producer || wine.region) && (
+                        <p className="mt-3 truncate text-[11px] uppercase tracking-[0.18em] text-[#b08a43]">
+                          {wine.producer || wine.region}
+                        </p>
+                      )}
+
+                      <div className="mt-5 flex items-end justify-between gap-4 border-t border-[#eadfce] pt-4">
+                        <div>
+                          <p className="text-[10px] uppercase tracking-[0.2em] text-[#8a6a2f]">
+                            Prix
+                          </p>
+
+                          {price ? (
+                            <p className="mt-1 font-serif text-2xl text-[#8a1f1f]">
+                              {price}
+                            </p>
+                          ) : (
+                            <p className="mt-2 text-sm text-[#6d5b50]">
+                              Sur demande
+                            </p>
+                          )}
+                        </div>
+
+                        <Link
+                          href={`/boutique/vin/${wine.id}`}
+                          className="rounded-full bg-[#8a1f1f] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#641313]"
+                        >
+                          Détails
+                        </Link>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+
+            {totalPages > 1 && (
+              <div className="mt-12 flex flex-wrap items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                  disabled={currentPage === 1}
+                  className="rounded-full border border-[#d8c6ae] bg-[#fffaf3] px-5 py-3 text-sm font-semibold text-[#24110d] transition hover:border-[#8a1f1f] disabled:cursor-not-allowed disabled:opacity-40"
                 >
-                  Appellations
-                </p>
+                  ← Précédent
+                </button>
 
-                <div
-                  style={{
-                    display: "flex",
-                    gap: 14,
-                    flexWrap: "wrap",
-                  }}
+                <span className="rounded-full border border-[#d8c6ae] bg-white px-5 py-3 text-sm text-[#6d5b50]">
+                  Page {currentPage} / {totalPages}
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCurrentPage((page) => Math.min(totalPages, page + 1))
+                  }
+                  disabled={currentPage === totalPages}
+                  className="rounded-full border border-[#d8c6ae] bg-[#fffaf3] px-5 py-3 text-sm font-semibold text-[#24110d] transition hover:border-[#8a1f1f] disabled:cursor-not-allowed disabled:opacity-40"
                 >
-                  {appellations.map((appellation) => (
-                    <button
-                      key={appellation}
-                      onClick={() => setAppellationActive(appellation)}
-                      style={{
-                        padding: "9px 18px",
-                        borderRadius: 999,
-                        border:
-                          appellationActive === appellation
-                            ? "1px solid #d6b36a"
-                            : "1px solid rgba(255,250,243,0.25)",
-                        background:
-                          appellationActive === appellation
-                            ? "rgba(214,179,106,0.22)"
-                            : "rgba(255,250,243,0.08)",
-                        color: "#fffaf3",
-                        fontWeight: "bold",
-                        cursor: "pointer",
-                      }}
-                    >
-                      {appellation}
-                    </button>
-                  ))}
-                </div>
+                  Suivant →
+                </button>
               </div>
             )}
-          </div>
-        )}
-
-        {produitsFiltres.length === 0 ? (
-          <div
-            style={{
-              marginTop: 60,
-              background: "rgba(255,250,243,0.08)",
-              border: "1px solid rgba(214,179,106,0.3)",
-              borderRadius: 28,
-              padding: 30,
-              color: "#e8dccb",
-            }}
-          >
-            Aucun vin disponible actuellement dans cette sélection.
-          </div>
-        ) : (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-              gap: 42,
-              marginTop: 60,
-            }}
-          >
-            {produitsFiltres.map((vin) => (
-              <Link
-                key={vin.slug}
-                href={`/boutique/${vin.slug}`}
-                style={{ textDecoration: "none", color: "inherit" }}
-              >
-                <article
-                  className="card-luxe"
-                  style={{
-                    background: "#fffaf3",
-                    borderRadius: 32,
-                    padding: 22,
-                  }}
-                >
-                  <div style={{ overflow: "hidden", borderRadius: 26 }}>
-                    <img
-                      className="image-luxe"
-                      src={vin.image}
-                      alt={vin.name}
-                      style={{
-                        width: "100%",
-                        height: 340,
-                        objectFit: "cover",
-                      }}
-                    />
-                  </div>
-
-                  <div style={{ padding: "24px 6px 6px" }}>
-                    <p
-                      style={{
-                        color: "#9b6a24",
-                        letterSpacing: 3,
-                        textTransform: "uppercase",
-                        fontSize: 13,
-                      }}
-                    >
-                      {vin.region}
-                    </p>
-
-                    <h2 style={{ fontSize: 28, color: "#1f1a17" }}>
-                      {vin.name}
-                    </h2>
-
-                    {vin.appellation && (
-                      <p
-                        style={{
-                          color: "#6e5a49",
-                          fontSize: 15,
-                          marginTop: -6,
-                        }}
-                      >
-                        {vin.appellation}
-                      </p>
-                    )}
-
-                    <p
-                      style={{
-                        fontSize: 22,
-                        fontWeight: "bold",
-                        color: "#1f1a17",
-                      }}
-                    >
-                      {vin.price}
-                    </p>
-
-                    <span
-                      style={{
-                        display: "inline-block",
-                        marginTop: 18,
-                        padding: "12px 24px",
-                        borderRadius: 999,
-                        background: "#1f1a17",
-                        color: "white",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      Voir le vin
-                    </span>
-                  </div>
-                </article>
-              </Link>
-            ))}
-          </div>
+          </>
         )}
       </div>
-    </main>
+    </section>
   );
 }

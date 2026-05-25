@@ -7,15 +7,12 @@ export default function Home() {
           "linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.65)), url('/images/lafite.jpg')",
         backgroundSize: "cover",
         backgroundPosition: "center",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
         textAlign: "center",
         padding: "40px",
         fontFamily: "Georgia, serif",
       }}
     >
-      <div style={{ maxWidth: 850 }}>
+      <div style={{ maxWidth: 850, margin: "0 auto", paddingTop: 90 }}>
         <p
           style={{
             letterSpacing: 6,
@@ -49,8 +46,8 @@ export default function Home() {
             margin: "0 auto 40px",
           }}
         >
-          Une sélection confidentielle de vins rares et prestigieux
-          destinée aux amateurs, investisseurs et collectionneurs.
+          Une sélection confidentielle de vins rares et prestigieux destinée aux
+          amateurs, investisseurs et collectionneurs.
         </p>
 
         <a
@@ -68,6 +65,28 @@ export default function Home() {
         >
           Découvrir la collection
         </a>
+
+        <div
+          style={{
+            marginTop: 42,
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          <img
+            src="/images/accueil-sommelier.jpg"
+            alt="Sommelier dégustant un grand vin - The Wine Watchers"
+            style={{
+              width: "100%",
+              maxWidth: 620,
+              height: 340,
+              borderRadius: 24,
+              boxShadow: "0 24px 60px rgba(0,0,0,0.40)",
+              objectFit: "cover",
+              objectPosition: "center top",
+            }}
+          />
+        </div>
       </div>
     </main>
   );
