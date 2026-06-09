@@ -63,13 +63,7 @@ const categories = {
     title: "Espagne",
     description:
       "Une sélection de grandes bouteilles espagnoles issues des régions les plus réputées.",
-    appellations: [
-      "Ribera del Duero",
-      "Rioja",
-      "Priorat",
-      "Toro",
-      "Rías Baixas",
-    ],
+    appellations: ["Ribera del Duero", "Rioja", "Priorat", "Toro", "Rías Baixas"],
   },
   usa: {
     title: "USA",
@@ -98,6 +92,24 @@ const categories = {
   },
 };
 
+const popularAppellations: Record<string, { name: string; href: string }[]> = {
+  bordeaux: [
+    { name: "Pauillac", href: "/appellation/pauillac" },
+    { name: "Margaux", href: "/appellation/margaux" },
+    { name: "Saint-Julien", href: "/appellation/saint-julien" },
+    { name: "Saint-Estèphe", href: "/appellation/saint-estephe" },
+    { name: "Saint-Émilion", href: "/appellation/saint-emilion" },
+    { name: "Pomerol", href: "/appellation/pomerol" },
+    { name: "Sauternes", href: "/appellation/sauternes" },
+  ],
+  bourgogne: [
+    { name: "Meursault", href: "/appellation/meursault" },
+    { name: "Vosne-Romanée", href: "/appellation/vosne-romanee" },
+    { name: "Gevrey-Chambertin", href: "/appellation/gevrey-chambertin" },
+    { name: "Chambolle-Musigny", href: "/appellation/chambolle-musigny" },
+  ],
+};
+
 type CategoryKey = keyof typeof categories;
 
 type PageProps = {
@@ -114,6 +126,8 @@ export default async function BoutiqueCategoryPage({ params }: PageProps) {
   if (!category) {
     notFound();
   }
+
+  const appellationsToShow = popularAppellations[slug] || [];
 
   return (
     <main className="min-h-screen bg-[#f8f4ee]">
@@ -141,6 +155,28 @@ export default async function BoutiqueCategoryPage({ params }: PageProps) {
           </p>
         </div>
       </section>
+
+      {appellationsToShow.length > 0 && (
+        <section className="mx-auto max-w-7xl px-6 pt-10">
+          <div className="rounded-2xl bg-white p-6 shadow-sm">
+            <h2 className="mb-4 font-serif text-2xl text-[#3b1f1f]">
+              Appellations populaires
+            </h2>
+
+            <div className="flex flex-wrap gap-3">
+              {appellationsToShow.map((appellation) => (
+                <Link
+                  key={appellation.href}
+                  href={appellation.href}
+                  className="rounded-full border border-[#d8b56d]/50 bg-[#f8f4ee] px-4 py-2 text-sm font-medium text-[#3b1f1f] transition hover:border-[#3b1f1f] hover:bg-[#3b1f1f] hover:text-white"
+                >
+                  {appellation.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <BoutiqueClient
         slug={slug}

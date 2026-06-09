@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getWines } from "@/lib/wines";
 
-const siteUrl = "https://the-wine-watchers.vercel.app";
+const siteUrl = "https://www.thewinewatchers.com";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const wines = await getWines();
@@ -18,6 +18,36 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 0.9,
+    },
+    {
+      url: `${siteUrl}/boutique/bordeaux`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: `${siteUrl}/boutique/primeurs-2025`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: `${siteUrl}/boutique/bourgogne`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: `${siteUrl}/boutique/italie`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    {
+      url: `${siteUrl}/boutique/espagne`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.8,
     },
     {
       url: `${siteUrl}/a-propos`,
@@ -45,12 +75,31 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
+  const pagesAppellations: MetadataRoute.Sitemap = [
+    "pauillac",
+    "margaux",
+    "pomerol",
+    "saint-emilion",
+    "saint-julien",
+    "saint-estephe",
+    "sauternes",
+    "meursault",
+    "vosne-romanee",
+    "gevrey-chambertin",
+    "chambolle-musigny",
+  ].map((slug) => ({
+    url: `${siteUrl}/appellation/${slug}`,
+    lastModified: new Date(),
+    changeFrequency: "weekly",
+    priority: 0.85,
+  }));
+
   const pagesVins: MetadataRoute.Sitemap = wines.map((wine) => ({
-    url: `${siteUrl}/boutique/${wine.slug}`,
+    url: `${siteUrl}/boutique/vin/${wine.slug}`,
     lastModified: new Date(),
     changeFrequency: "monthly",
     priority: 0.85,
   }));
 
-  return [...pagesPrincipales, ...pagesVins];
+  return [...pagesPrincipales, ...pagesAppellations, ...pagesVins];
 }

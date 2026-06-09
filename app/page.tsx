@@ -1,3 +1,5 @@
+import NewsletterForm from "./components/NewsletterForm";
+
 export default function Home() {
   return (
     <main
@@ -65,6 +67,44 @@ export default function Home() {
         >
           Découvrir la collection
         </a>
+
+        <div
+          style={{
+            margin: "48px auto 0",
+            maxWidth: 720,
+            borderRadius: 28,
+            padding: "34px 28px",
+            background: "rgba(255,250,243,0.12)",
+            border: "1px solid rgba(214,179,106,0.45)",
+            boxShadow: "0 24px 60px rgba(0,0,0,0.35)",
+            backdropFilter: "blur(8px)",
+          }}
+        >
+          <h2
+            style={{
+              color: "#fffaf3",
+              fontSize: 30,
+              marginBottom: 12,
+            }}
+          >
+            Recevez nos allocations et offres exclusives
+          </h2>
+
+          <p
+            style={{
+              color: "#e8dccb",
+              fontSize: 17,
+              lineHeight: 1.6,
+              margin: "0 auto",
+              maxWidth: 560,
+            }}
+          >
+            Primeurs Bordeaux, Bourgognes rares, nouvelles disponibilités et
+            arrivages exceptionnels.
+          </p>
+
+          <NewsletterForm />
+        </div>
 
         <div
           style={{

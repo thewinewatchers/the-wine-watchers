@@ -426,27 +426,28 @@ export default function CheckoutPage() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/orders", {
-        method: "POST",
+     const response = await fetch("/api/orders", {
+  method: "POST",
 
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${sessionData.session.access_token}`,
-        },
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${sessionData.session.access_token}`,
+  },
 
-        body: JSON.stringify({
-          customer: form,
-          cart,
-          paymentMethod,
-          deliveryMethod,
-          deliveryFee,
-          deliveryNote,
-          vat: vatCalculation,
-          totalToPay,
-        }),
-      });
+  body: JSON.stringify({
+    customer: form,
+    cart,
+    paymentMethod,
+    deliveryMethod,
+    deliveryFee,
+    deliveryNote,
+    vat: vatCalculation,
+    totalToPay,
+    sessionId: localStorage.getItem("wine_watchers_session_id"),
+  }),
+});
 
-      const result = await response.json();
+const result = await response.json();
 
       if (!response.ok) {
         setErrorMessage(

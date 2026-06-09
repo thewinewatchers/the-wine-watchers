@@ -30,6 +30,7 @@ type Wine = {
   color?: string;
   bottle_size?: string;
   packaging?: string;
+  hidden_from_site?: boolean | null;
 };
 
 type BoutiqueClientProps = {
@@ -50,6 +51,10 @@ function normalize(value?: string | number | null) {
     .trim();
 }
 
+function isVisibleWine(wine: Wine) {
+  return wine.hidden_from_site !== true;
+}
+
 function getWineName(wine: Wine) {
   return wine.name || wine.title || wine.chateau || "Vin sans nom";
 }
@@ -62,17 +67,28 @@ function getWinePrice(wine: Wine) {
   return wine.price || wine.prix || "";
 }
 
+function formatPrice(price: string | number | undefined) {
+  if (!price) return "";
+
+  const value = Number(price);
+
+  if (Number.isNaN(value)) return String(price);
+
+  return (
+    value.toLocaleString("fr-FR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }) + " € HT"
+  );
+}
+
 function getWineImage(wine: Wine) {
   return wine.image_url || wine.imageUrl || wine.image || "";
 }
 
 function uniqueSorted(values: Array<string | number | undefined | null>) {
   return Array.from(
-    new Set(
-      values
-        .map((value) => String(value ?? "").trim())
-        .filter(Boolean)
-    )
+    new Set(values.map((value) => String(value ?? "").trim()).filter(Boolean))
   ).sort((a, b) => a.localeCompare(b, "fr"));
 }
 
@@ -83,6 +99,7 @@ export default function BoutiqueClient({
 }: BoutiqueClientProps) {
   const searchParams = useSearchParams();
   const selectedAppellationFromUrl = searchParams.get("appellation");
+  const selectedSearchFromUrl = searchParams.get("search");
 
   const [wines, setWines] = useState<Wine[]>([]);
   const [loading, setLoading] = useState(true);
@@ -120,7 +137,9 @@ export default function BoutiqueClient({
         return;
       }
 
-      setWines((data as Wine[]) || []);
+      const visibleWines = ((data as Wine[]) || []).filter(isVisibleWine);
+
+      setWines(visibleWines);
       setLoading(false);
     }
 
@@ -129,8 +148,9 @@ export default function BoutiqueClient({
 
   useEffect(() => {
     setSelectedAppellation(selectedAppellationFromUrl || "");
+    setSearch(selectedSearchFromUrl || "");
     setCurrentPage(1);
-  }, [selectedAppellationFromUrl, slug]);
+  }, [selectedAppellationFromUrl, selectedSearchFromUrl, slug]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -142,101 +162,128 @@ export default function BoutiqueClient({
     selectedVintage,
   ]);
 
-  const categoryWines = useMemo(() => {
-    return wines.filter((wine) => {
-      const wineCategory = normalize(wine.category);
-      const wineCategorie = normalize(wine.categorie);
-      const wineRegion = normalize(wine.region);
-      const wineAppellation = normalize(wine.appellation);
+ const categoryWines = useMemo(() => {
+  return wines.filter((wine) => {
+    if (!isVisibleWine(wine)) return false;
 
-      return (
-        wineCategory === normalizedSlug ||
-        wineCategorie === normalizedSlug ||
-        wineRegion === normalizedSlug ||
-        wineCategory === normalizedCategoryTitle ||
-        wineCategorie === normalizedCategoryTitle ||
-        wineRegion === normalizedCategoryTitle ||
-        normalizedAppellations.includes(wineRegion) ||
-        normalizedAppellations.includes(wineAppellation)
-      );
-    });
-  }, [wines, normalizedSlug, normalizedCategoryTitle, normalizedAppellations]);
+    const wineCategory = normalize(wine.category);
+    const wineCategorie = normalize(wine.categorie);
+
+    return (
+      wineCategory === normalizedSlug ||
+      wineCategorie === normalizedSlug ||
+      wineCategory === normalizedCategoryTitle ||
+      wineCategorie === normalizedCategoryTitle
+    );
+  });
+}, [wines, normalizedSlug, normalizedCategoryTitle]);
 
   const producerOptions = useMemo(() => {
-    return uniqueSorted(categoryWines.map((wine) => wine.producer));
+    return uniqueSorted(
+      categoryWines.filter(isVisibleWine).map((wine) => wine.producer)
+    );
   }, [categoryWines]);
 
   const appellationOptions = useMemo(() => {
-    return uniqueSorted(categoryWines.map((wine) => wine.appellation));
+    return uniqueSorted(
+      categoryWines.filter(isVisibleWine).map((wine) => wine.appellation)
+    );
   }, [categoryWines]);
 
   const classificationOptions = useMemo(() => {
-    return uniqueSorted(categoryWines.map((wine) => wine.classification));
+    return uniqueSorted(
+      categoryWines.filter(isVisibleWine).map((wine) => wine.classification)
+    );
   }, [categoryWines]);
 
   const vintageOptions = useMemo(() => {
     return uniqueSorted(
-      categoryWines.map((wine) => wine.vintage || wine.millesime)
+      categoryWines
+        .filter(isVisibleWine)
+        .map((wine) => wine.vintage || wine.millesime)
     ).sort((a, b) => Number(b) - Number(a));
   }, [categoryWines]);
 
-  const filteredWines = useMemo(() => {
-    return categoryWines.filter((wine) => {
-      const wineProducer = normalize(wine.producer);
-      const wineAppellation = normalize(wine.appellation);
-      const wineRegion = normalize(wine.region);
-      const wineClassification = normalize(wine.classification);
-      const wineVintage = normalize(wine.vintage || wine.millesime);
+    const filteredWines = useMemo(() => {
+    return categoryWines
+      .filter((wine) => {
+        if (!isVisibleWine(wine)) return false;
 
-      const matchesProducer = selectedProducer
-        ? wineProducer === normalize(selectedProducer)
-        : true;
+        const wineProducer = normalize(wine.producer);
+        const wineAppellation = normalize(wine.appellation);
+        const wineRegion = normalize(wine.region);
+        const wineClassification = normalize(wine.classification);
+        const wineVintage = normalize(wine.vintage || wine.millesime);
 
-      const matchesAppellation = selectedAppellation
-        ? wineAppellation === normalize(selectedAppellation) ||
-          wineRegion === normalize(selectedAppellation)
-        : true;
+        const matchesProducer = selectedProducer
+          ? wineProducer === normalize(selectedProducer)
+          : true;
 
-      const matchesClassification = selectedClassification
-        ? wineClassification === normalize(selectedClassification)
-        : true;
+        const matchesAppellation = selectedAppellation
+          ? wineAppellation === normalize(selectedAppellation) ||
+            wineRegion === normalize(selectedAppellation)
+          : true;
 
-      const matchesVintage = selectedVintage
-        ? wineVintage === normalize(selectedVintage)
-        : true;
+        const matchesClassification = selectedClassification
+          ? wineClassification === normalize(selectedClassification)
+          : true;
 
-      const searchText = normalize(
-        [
-          wine.name,
-          wine.title,
-          wine.chateau,
-          wine.producer,
-          wine.region,
-          wine.appellation,
-          wine.vintage,
-          wine.millesime,
-          wine.classification,
-          wine.color,
-          wine.bottle_size,
-          wine.packaging,
-          wine.description,
-        ]
-          .filter(Boolean)
-          .join(" ")
-      );
+        const matchesVintage = selectedVintage
+          ? wineVintage === normalize(selectedVintage)
+          : true;
 
-      const matchesSearch = search
-        ? searchText.includes(normalize(search))
-        : true;
+        const searchText = normalize(
+          [
+            wine.name,
+            wine.title,
+            wine.chateau,
+            wine.producer,
+            wine.region,
+            wine.appellation,
+            wine.vintage,
+            wine.millesime,
+            wine.classification,
+            wine.color,
+            wine.bottle_size,
+            wine.packaging,
+            wine.description,
+          ]
+            .filter(Boolean)
+            .join(" ")
+        );
 
-      return (
-        matchesProducer &&
-        matchesAppellation &&
-        matchesClassification &&
-        matchesVintage &&
-        matchesSearch
-      );
-    });
+        const matchesSearch = search
+          ? searchText.includes(normalize(search))
+          : true;
+
+        return (
+          matchesProducer &&
+          matchesAppellation &&
+          matchesClassification &&
+          matchesVintage &&
+          matchesSearch
+        );
+      })
+      .sort((a, b) => {
+        const appellationA = normalize(a.appellation || a.region || "");
+        const appellationB = normalize(b.appellation || b.region || "");
+
+        if (appellationA !== appellationB) {
+          return appellationA.localeCompare(appellationB, "fr");
+        }
+
+        const nameA = normalize(getWineName(a));
+        const nameB = normalize(getWineName(b));
+
+        if (nameA !== nameB) {
+          return nameA.localeCompare(nameB, "fr");
+        }
+
+        const vintageA = Number(a.vintage || a.millesime || 0);
+        const vintageB = Number(b.vintage || b.millesime || 0);
+
+        return vintageB - vintageA;
+      });
   }, [
     categoryWines,
     selectedProducer,
@@ -245,7 +292,6 @@ export default function BoutiqueClient({
     selectedVintage,
     search,
   ]);
-
   const totalPages = Math.max(
     1,
     Math.ceil(filteredWines.length / WINES_PER_PAGE)
@@ -350,14 +396,23 @@ export default function BoutiqueClient({
               onChange={(event) => setSelectedVintage(event.target.value)}
               className="rounded-full border border-[#d8c6ae] bg-white px-5 py-3 text-sm text-[#24110d] outline-none transition focus:border-[#8a1f1f]"
             >
-              <option value="">Millésimes</option>
-              {vintageOptions.map((vintage) => (
-                <option key={vintage} value={vintage}>
-                  {vintage}
-                </option>
-              ))}
-            </select>
-          </div>
+             <option value="">Millésimes</option>
+{vintageOptions.map((vintage) => (
+  <option key={vintage} value={vintage}>
+    {vintage}
+  </option>
+))}
+</select>
+
+{slug === "bordeaux" && (
+  <Link
+    href="/boutique/primeurs-2025"
+    className="rounded-full border border-[#8a1f1f] bg-white px-5 py-3 text-center text-sm font-semibold text-[#8a1f1f] transition hover:bg-[#8a1f1f] hover:text-white"
+  >
+    Primeurs 2025
+  </Link>
+)}
+</div>
 
           <div className="mt-5 flex flex-wrap items-center gap-3">
             <button
@@ -367,30 +422,6 @@ export default function BoutiqueClient({
             >
               Réinitialiser les filtres
             </button>
-
-            {selectedProducer && (
-              <span className="rounded-full bg-[#f1e8dc] px-4 py-2 text-xs text-[#6d5b50]">
-                Domaine : {selectedProducer}
-              </span>
-            )}
-
-            {selectedAppellation && (
-              <span className="rounded-full bg-[#f1e8dc] px-4 py-2 text-xs text-[#6d5b50]">
-                Appellation : {selectedAppellation}
-              </span>
-            )}
-
-            {selectedClassification && (
-              <span className="rounded-full bg-[#f1e8dc] px-4 py-2 text-xs text-[#6d5b50]">
-                Classification : {selectedClassification}
-              </span>
-            )}
-
-            {selectedVintage && (
-              <span className="rounded-full bg-[#f1e8dc] px-4 py-2 text-xs text-[#6d5b50]">
-                Millésime : {selectedVintage}
-              </span>
-            )}
           </div>
         </div>
 
@@ -417,10 +448,6 @@ export default function BoutiqueClient({
             <h3 className="mt-3 font-serif text-3xl text-[#24110d]">
               Aucun vin trouvé pour cette sélection
             </h3>
-
-            <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-[#6d5b50]">
-              Essayez de modifier les filtres ou de réinitialiser la sélection.
-            </p>
           </div>
         )}
 
@@ -443,10 +470,6 @@ export default function BoutiqueClient({
                       <div className="relative flex h-[245px] items-center justify-center overflow-hidden bg-[#efe3d2] p-6">
                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(216,181,109,0.24),transparent_38%)]" />
 
-                        <div className="absolute left-4 top-4 z-10 max-w-[78%] rounded-full bg-[#24110d]/90 px-3 py-1.5 text-[10px] uppercase tracking-[0.16em] text-[#d8b56d]">
-                          {location}
-                        </div>
-
                         {wine.rating && (
                           <div className="absolute right-4 top-4 z-10 rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-semibold text-[#8a1f1f] shadow-sm">
                             {wine.rating}
@@ -468,6 +491,10 @@ export default function BoutiqueClient({
                     </Link>
 
                     <div className="p-5">
+                      <p className="mb-3 rounded-full bg-[#24110d]/90 px-3 py-1.5 text-center text-[10px] uppercase tracking-[0.16em] text-[#d8b56d]">
+                        {location}
+                      </p>
+
                       <div className="mb-3 flex flex-wrap items-center gap-2">
                         {vintage && (
                           <span className="rounded-full border border-[#dfcfb8] bg-white px-3 py-1 text-[11px] text-[#6d5b50]">
@@ -495,10 +522,10 @@ export default function BoutiqueClient({
                       </div>
 
                       <Link href={`/boutique/vin/${wine.id}`}>
-                        <h3 className="min-h-[64px] font-serif text-xl leading-tight text-[#24110d] transition group-hover:text-[#8a1f1f]">
-                          {name}
-                        </h3>
-                      </Link>
+  <h3 className="min-h-[64px] truncate font-serif text-sm leading-tight text-[#24110d] transition group-hover:text-[#8a1f1f]">
+    {name}
+  </h3>
+</Link>
 
                       {(wine.producer || wine.region) && (
                         <p className="mt-3 truncate text-[11px] uppercase tracking-[0.18em] text-[#b08a43]">
@@ -514,7 +541,7 @@ export default function BoutiqueClient({
 
                           {price ? (
                             <p className="mt-1 font-serif text-2xl text-[#8a1f1f]">
-                              {price}
+                              {formatPrice(price)}
                             </p>
                           ) : (
                             <p className="mt-2 text-sm text-[#6d5b50]">

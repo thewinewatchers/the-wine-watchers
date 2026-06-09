@@ -15,9 +15,28 @@ type CartItem = {
   image?: string;
   bottle_size?: string;
   packaging?: string;
+  reservation_expires_at?: string;
 };
 
 const CART_KEY = "cart";
+const SESSION_KEY = "wine_watchers_session_id";
+
+function getSessionId() {
+  if (typeof window === "undefined") return "";
+
+  let sessionId = localStorage.getItem(SESSION_KEY);
+
+  if (!sessionId) {
+    sessionId =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+    localStorage.setItem(SESSION_KEY, sessionId);
+  }
+
+  return sessionId;
+}
 
 function parsePrice(value?: string | number) {
   if (value === undefined || value === null) return 0;
@@ -42,10 +61,25 @@ function formatPrice(value?: string | number) {
   });
 }
 
+function formatReservationTime(value?: string) {
+  if (!value) return "";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  return date.toLocaleTimeString("fr-FR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 export default function PanierClient() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [cartMessage, setCartMessage] = useState("");
+  const [updatingIndex, setUpdatingIndex] = useState<number | null>(null);
+  const [clearingCart, setClearingCart] = useState(false);
 
   useEffect(() => {
     async function loadPanier() {
@@ -65,7 +99,6 @@ export default function PanierClient() {
       }
 
       setCart(foundCart);
-      localStorage.setItem(CART_KEY, JSON.stringify(foundCart));
       setIsLoaded(true);
     }
 
@@ -97,7 +130,7 @@ export default function PanierClient() {
         return;
       }
 
-      const { error } = await supabase.from("abandoned_carts").upsert(
+      await supabase.from("abandoned_carts").upsert(
         {
           user_id: data.user.id,
           customer_email: data.user.email,
@@ -108,10 +141,6 @@ export default function PanierClient() {
         },
         { onConflict: "user_id" }
       );
-
-      if (error) {
-        console.error("Erreur sauvegarde panier abandonné :", error);
-      }
     }
 
     syncCart();
@@ -129,25 +158,118 @@ export default function PanierClient() {
     return cart.reduce((sum, item) => sum + Number(item.quantity || 1), 0);
   }, [cart]);
 
-  const updateQuantity = (index: number, newQuantity: number) => {
+  async function reserveQuantity(item: CartItem, quantity: number) {
+    const sessionId = getSessionId();
+
+    const response = await fetch("/api/stock-reservations", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        wineId: item.id,
+        sessionId,
+        quantity,
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        result?.availableStock !== undefined
+          ? `Stock insuffisant. Il reste ${result.availableStock} caisse${
+              Number(result.availableStock) > 1 ? "s" : ""
+            } disponible${Number(result.availableStock) > 1 ? "s" : ""}.`
+          : result?.error || "Impossible de réserver ce vin."
+      );
+    }
+
+    return result;
+  }
+
+  async function releaseReservation(item?: CartItem) {
+    const sessionId = getSessionId();
+
+    await fetch("/api/stock-reservations", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        wineId: item?.id,
+        sessionId,
+      }),
+    });
+  }
+
+  const updateQuantity = async (index: number, newQuantity: number) => {
     if (newQuantity < 1) return;
 
-    setCart((previousCart) =>
-      previousCart.map((item, itemIndex) =>
-        itemIndex === index ? { ...item, quantity: newQuantity } : item
-      )
-    );
+    const item = cart[index];
+    if (!item) return;
+
+    setUpdatingIndex(index);
+    setCartMessage("");
+
+    try {
+      const result = await reserveQuantity(item, newQuantity);
+
+      setCart((previousCart) =>
+        previousCart.map((cartItem, itemIndex) =>
+          itemIndex === index
+            ? {
+                ...cartItem,
+                quantity: newQuantity,
+                reservation_expires_at: result.expiresAt,
+              }
+            : cartItem
+        )
+      );
+    } catch (error) {
+      setCartMessage(
+        error instanceof Error
+          ? error.message
+          : "Erreur lors de la modification de la quantité."
+      );
+    } finally {
+      setUpdatingIndex(null);
+    }
   };
 
-  const removeItem = (index: number) => {
-    setCart((previousCart) =>
-      previousCart.filter((_, itemIndex) => itemIndex !== index)
-    );
+  const removeItem = async (index: number) => {
+    const item = cart[index];
+    if (!item) return;
+
+    setUpdatingIndex(index);
+    setCartMessage("");
+
+    try {
+      await releaseReservation(item);
+
+      setCart((previousCart) =>
+        previousCart.filter((_, itemIndex) => itemIndex !== index)
+      );
+    } catch (error) {
+      setCartMessage("Erreur lors de la suppression de l’article.");
+    } finally {
+      setUpdatingIndex(null);
+    }
   };
 
-  const clearCart = () => {
-    setCart([]);
-    localStorage.setItem(CART_KEY, JSON.stringify([]));
+  const clearCart = async () => {
+    setClearingCart(true);
+    setCartMessage("");
+
+    try {
+      await releaseReservation();
+      setCart([]);
+      localStorage.setItem(CART_KEY, JSON.stringify([]));
+    } catch (error) {
+      setCartMessage("Erreur lors du vidage du panier.");
+    } finally {
+      setClearingCart(false);
+    }
   };
 
   const checkoutHref = isLoggedIn
@@ -173,6 +295,12 @@ export default function PanierClient() {
             Retrouvez ici les vins sélectionnés avant de finaliser votre
             commande.
           </p>
+
+          {cartMessage && (
+            <p className="mt-5 rounded-2xl border border-red-200 bg-red-50 px-5 py-3 text-sm text-red-800">
+              {cartMessage}
+            </p>
+          )}
         </div>
 
         {!isLoaded ? (
@@ -203,6 +331,10 @@ export default function PanierClient() {
                 const price = parsePrice(item.price);
                 const quantity = Number(item.quantity || 1);
                 const lineTotal = price * quantity;
+                const isUpdating = updatingIndex === index;
+                const reservationTime = formatReservationTime(
+                  item.reservation_expires_at
+                );
 
                 return (
                   <article
@@ -240,6 +372,18 @@ export default function PanierClient() {
                                 <p>Caissage : {item.packaging}</p>
                               )}
                             </div>
+
+                            <div className="mt-4 rounded-2xl border border-[#e6dcc8] bg-[#fffaf3] px-4 py-3 text-sm text-neutral-700">
+                              <p className="font-medium text-[#8a6a2f]">
+                                Réservation temporaire active
+                              </p>
+                              <p className="mt-1">
+                                Stock réservé pendant 30 minutes
+                                {reservationTime
+                                  ? `, jusqu’à ${reservationTime}.`
+                                  : "."}
+                              </p>
+                            </div>
                           </div>
 
                           <div className="text-left md:text-right">
@@ -263,7 +407,8 @@ export default function PanierClient() {
                               onClick={() =>
                                 updateQuantity(index, quantity - 1)
                               }
-                              className="h-9 w-9 rounded-full border border-neutral-300 text-lg hover:border-black"
+                              disabled={quantity <= 1 || isUpdating}
+                              className="h-9 w-9 rounded-full border border-neutral-300 text-lg hover:border-black disabled:cursor-not-allowed disabled:opacity-40"
                             >
                               −
                             </button>
@@ -277,7 +422,8 @@ export default function PanierClient() {
                               onClick={() =>
                                 updateQuantity(index, quantity + 1)
                               }
-                              className="h-9 w-9 rounded-full border border-neutral-300 text-lg hover:border-black"
+                              disabled={isUpdating}
+                              className="h-9 w-9 rounded-full border border-neutral-300 text-lg hover:border-black disabled:cursor-not-allowed disabled:opacity-40"
                             >
                               +
                             </button>
@@ -297,9 +443,10 @@ export default function PanierClient() {
                             <button
                               type="button"
                               onClick={() => removeItem(index)}
-                              className="text-sm text-red-700 hover:text-red-900"
+                              disabled={isUpdating}
+                              className="text-sm text-red-700 hover:text-red-900 disabled:cursor-not-allowed disabled:opacity-40"
                             >
-                              Supprimer
+                              {isUpdating ? "Mise à jour..." : "Supprimer"}
                             </button>
                           </div>
                         </div>
@@ -327,8 +474,9 @@ export default function PanierClient() {
                 </div>
 
                 <p className="text-xs leading-5 text-neutral-500">
-                  Les frais de livraison seront confirmés selon la destination,
-                  le poids et les conditions de transport.
+                  Les vins placés au panier sont réservés temporairement pendant
+                  30 minutes. Les frais de livraison seront confirmés selon la
+                  destination, le poids et les conditions de transport.
                 </p>
               </div>
 
@@ -371,9 +519,10 @@ export default function PanierClient() {
               <button
                 type="button"
                 onClick={clearCart}
-                className="mt-4 w-full text-sm text-neutral-500 hover:text-red-700"
+                disabled={clearingCart}
+                className="mt-4 w-full text-sm text-neutral-500 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                Vider le panier
+                {clearingCart ? "Vidage du panier..." : "Vider le panier"}
               </button>
             </aside>
           </div>

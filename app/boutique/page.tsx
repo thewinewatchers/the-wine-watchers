@@ -69,6 +69,14 @@ export default function BoutiquePage() {
               Boutique de grands vins
             </h1>
 
+            <div className="mt-8 overflow-hidden rounded-[2rem] border border-white/15 shadow-2xl">
+              <img
+                src="/images/boutique-hero.png"
+                alt="Boutique de grands vins The Wine Watchers"
+                className="h-72 w-full object-cover md:h-96"
+              />
+            </div>
+
             <p className="mt-7 max-w-2xl text-base leading-8 text-white/75 md:text-lg">
               Une sélection soignée de grands crus, domaines prestigieux,
               bouteilles rares et références de collection, organisée par
@@ -95,7 +103,6 @@ export default function BoutiquePage() {
           </div>
         </div>
       </section>
-
       {/* TRUST / INTRO */}
       <section className="border-b border-[#e2d2bd] bg-[#fffaf3]">
         <div className="mx-auto grid max-w-7xl gap-8 px-6 py-10 md:grid-cols-3">

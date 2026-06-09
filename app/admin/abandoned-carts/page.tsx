@@ -29,6 +29,9 @@ export default function AbandonedCartsPage() {
   const [carts, setCarts] = useState<AbandonedCart[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [sendingId, setSendingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadCarts() {
@@ -57,6 +60,60 @@ export default function AbandonedCartsPage() {
     loadCarts();
   }, []);
 
+  async function sendReminder(cart: AbandonedCart) {
+    setErrorMessage("");
+    setSuccessMessage("");
+    setSendingId(cart.id);
+
+    const response = await fetch("/api/send-abandoned-cart-email", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: cart.customer_email,
+        cartId: cart.id,
+      }),
+    });
+
+    setSendingId(null);
+
+    if (!response.ok) {
+      setErrorMessage("L’email n’a pas pu être envoyé.");
+      return;
+    }
+
+    setSuccessMessage(`Email envoyé à ${cart.customer_email}`);
+  }
+
+  async function deleteCart(cartId: string) {
+    const confirmed = window.confirm("Supprimer ce panier abandonné ?");
+
+    if (!confirmed) return;
+
+    setErrorMessage("");
+    setSuccessMessage("");
+    setDeletingId(cartId);
+
+    const { error } = await supabase
+      .from("abandoned_carts")
+      .delete()
+      .eq("id", cartId);
+
+    setDeletingId(null);
+
+    if (error) {
+      setErrorMessage(error.message);
+      return;
+    }
+
+    setCarts((currentCarts) =>
+      currentCarts.filter((cart) => cart.id !== cartId)
+    );
+
+    setSuccessMessage("Panier supprimé.");
+  }
+
   return (
     <main className="min-h-screen bg-[#f8f3ea] px-6 py-10 text-[#1f1a17]">
       <div className="mx-auto max-w-7xl">
@@ -75,6 +132,12 @@ export default function AbandonedCartsPage() {
           Liste des clients connectés ayant laissé un panier ouvert sans finaliser
           leur commande.
         </p>
+
+        {successMessage && (
+          <div className="mt-8 rounded-3xl border border-green-200 bg-green-50 p-5 text-green-700">
+            {successMessage}
+          </div>
+        )}
 
         {loading ? (
           <div className="mt-8 rounded-3xl bg-white p-8 shadow-sm">
@@ -158,12 +221,23 @@ export default function AbandonedCartsPage() {
                 </div>
 
                 <div className="mt-6 flex flex-wrap gap-3">
-                  <a
-                    href={`mailto:${cart.customer_email}?subject=Votre sélection de vins The Wine Watchers&body=Bonjour,%0D%0A%0D%0ANous avons remarqué que vous aviez laissé une sélection de vins dans votre panier.%0D%0ANous restons à votre disposition pour toute question ou conseil.%0D%0A%0D%0AThe Wine Watchers SL`}
-                    className="rounded-full bg-black px-6 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-[#8a6a2f]"
+                  <button
+                    type="button"
+                    onClick={() => sendReminder(cart)}
+                    disabled={sendingId === cart.id}
+                    className="rounded-full bg-black px-6 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-[#8a6a2f] disabled:opacity-60"
                   >
-                    Relancer par email
-                  </a>
+                    {sendingId === cart.id ? "Envoi..." : "Relancer par email"}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => deleteCart(cart.id)}
+                    disabled={deletingId === cart.id}
+                    className="rounded-full bg-red-700 px-6 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-red-900 disabled:opacity-60"
+                  >
+                    {deletingId === cart.id ? "Suppression..." : "Supprimer"}
+                  </button>
                 </div>
               </article>
             ))}

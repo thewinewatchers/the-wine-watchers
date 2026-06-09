@@ -162,9 +162,8 @@ function validateRows(rows: CsvRow[]): ValidationError[] {
     const rowNumber = index + 2;
     const slug = String(row.slug || "").trim();
     const name = String(row.name || "").trim();
-    const category = String(row.category || "").trim();
-    const appellation = String(row.appellation || "").trim();
     const image = String(row.image || "").trim();
+    const category = String(row.category || "").trim();
     const bottleSize = String(row.bottle_size || "").trim();
     const packaging = String(row.packaging || "").trim();
 
@@ -184,29 +183,11 @@ function validateRows(rows: CsvRow[]): ValidationError[] {
       });
     }
 
-    if (!category) {
+    if (!image) {
       errors.push({
         rowNumber,
         slug: slug || "-",
-        message: "Catégorie manquante.",
-      });
-    }
-
-    if (category && !allowedCategories.includes(category)) {
-      errors.push({
-        rowNumber,
-        slug: slug || "-",
-        message: `Catégorie invalide : "${category}". Catégories autorisées : ${allowedCategories.join(
-          ", "
-        )}.`,
-      });
-    }
-
-    if (!appellation) {
-      errors.push({
-        rowNumber,
-        slug: slug || "-",
-        message: "Appellation manquante.",
+        message: "Image manquante.",
       });
     }
 
@@ -218,17 +199,13 @@ function validateRows(rows: CsvRow[]): ValidationError[] {
       });
     }
 
-    if (
-      image &&
-      !image.startsWith("/images/") &&
-      !image.startsWith("https://") &&
-      !image.startsWith("http://")
-    ) {
+    if (category && !allowedCategories.includes(category)) {
       errors.push({
         rowNumber,
         slug: slug || "-",
-        message:
-          'Chemin image suspect. Utilisez "/images/nom-image.jpg" ou une URL complète https://...',
+        message: `Catégorie invalide : "${category}". Catégories autorisées : ${allowedCategories.join(
+          ", "
+        )}.`,
       });
     }
 
@@ -258,7 +235,6 @@ function validateRows(rows: CsvRow[]): ValidationError[] {
 
   return errors;
 }
-
 export default function AdminImportPage() {
   const router = useRouter();
 
@@ -458,62 +434,44 @@ export default function AdminImportPage() {
             Mode d’emploi
           </p>
 
-          <h2 className="mt-4 font-serif text-3xl">Import sécurisé</h2>
+          <h2 className="mt-4 font-serif text-3xl">Import rapide</h2>
 
           <ol className="mt-6 space-y-4 text-sm leading-7 text-[#6d5b50]">
             <li>
               <strong>1.</strong> Ouvre ton fichier Excel.
             </li>
             <li>
-              <strong>2.</strong> Sélectionne la ligne des titres de colonnes et
-              les vins à importer.
+              <strong>2.</strong> Remplis au minimum <strong>slug</strong>,{" "}
+              <strong>name</strong> et <strong>image</strong>.
             </li>
             <li>
-              <strong>3.</strong> Fais <strong>CTRL + C</strong>.
+              <strong>3.</strong> Les autres colonnes peuvent rester vides.
             </li>
             <li>
-              <strong>4.</strong> Colle le contenu dans la grande zone à droite.
+              <strong>4.</strong> Enregistre en <strong>CSV UTF-8</strong> ou
+              copie-colle les lignes depuis Excel.
             </li>
             <li>
-              <strong>5.</strong> Vérifie l’aperçu, les catégories, le
-              flaconnage, le caissage et les erreurs éventuelles.
-            </li>
-            <li>
-              <strong>6.</strong> Clique sur importer seulement si aucune erreur
-              n’est affichée.
+              <strong>5.</strong> Importe seulement si aucune erreur n’est
+              affichée.
             </li>
           </ol>
 
           <div className="mt-8 rounded-2xl bg-[#f1e8dc] p-5 text-sm leading-7 text-[#6d5b50]">
             <p>
-              <strong>Catégories autorisées :</strong>
+              <strong>Colonnes obligatoires :</strong>
             </p>
-
             <ul className="mt-3 grid gap-1">
-              {allowedCategories.map((category) => (
-                <li key={category}>• {category}</li>
-              ))}
+              <li>• slug</li>
+              <li>• name</li>
+              <li>• image</li>
             </ul>
           </div>
 
           <div className="mt-5 rounded-2xl bg-white p-5 text-sm leading-7 text-[#6d5b50]">
             <p>
-              <strong>Flaconnage :</strong> utilisez par exemple{" "}
-              <strong>75cl</strong>, <strong>150cl</strong>,{" "}
-              <strong>300cl</strong>, <strong>600cl</strong>.
-            </p>
-
-            <p className="mt-3">
-              <strong>Caissage :</strong> utilisez par exemple{" "}
-              <strong>CBO/1</strong>, <strong>CBO/3</strong>,{" "}
-              <strong>CBO/6</strong>, <strong>CBO/12</strong>.
-            </p>
-          </div>
-
-          <div className="mt-5 rounded-2xl bg-white p-5 text-sm leading-7 text-[#6d5b50]">
-            <p>
-              Le champ <strong>slug</strong> est l’identifiant unique. Si un vin
-              avec le même slug existe déjà, il sera mis à jour.
+              <strong>Image :</strong> utilisez par exemple{" "}
+              <strong>/images/chateau-lafite.jpg</strong>.
             </p>
           </div>
 
@@ -637,10 +595,10 @@ slug	name	region	vintage	price	bottle_size	packaging	image	category	rating	seo_t
                     <tr>
                       <th className="px-4 py-3">Slug</th>
                       <th className="px-4 py-3">Nom</th>
+                      <th className="px-4 py-3">Image</th>
                       <th className="px-4 py-3">Catégorie</th>
                       <th className="px-4 py-3">Appellation</th>
                       <th className="px-4 py-3">Flaconnage</th>
-                      <th className="px-4 py-3">Caissage</th>
                     </tr>
                   </thead>
 
@@ -649,10 +607,10 @@ slug	name	region	vintage	price	bottle_size	packaging	image	category	rating	seo_t
                       <tr key={`${row.slug}-${index}`} className="border-t">
                         <td className="px-4 py-3">{row.slug}</td>
                         <td className="px-4 py-3">{row.name}</td>
+                        <td className="px-4 py-3">{row.image}</td>
                         <td className="px-4 py-3">{row.category}</td>
                         <td className="px-4 py-3">{row.appellation}</td>
                         <td className="px-4 py-3">{row.bottle_size}</td>
-                        <td className="px-4 py-3">{row.packaging}</td>
                       </tr>
                     ))}
                   </tbody>

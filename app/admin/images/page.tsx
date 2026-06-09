@@ -1,125 +1,128 @@
 "use client";
 
 import { useState } from "react";
+import * as XLSX from "xlsx";
+import { supabase } from "@/lib/supabaseClient";
+
+type ImportRow = {
+  slug: string;
+  image: string;
+};
 
 export default function AdminImagesPage() {
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [uploaded, setUploaded] = useState<string[]>([]);
+  const [rows, setRows] = useState<ImportRow[]>([]);
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  function handleFileSelection(
-    event: React.ChangeEvent<HTMLInputElement>
-  ) {
-    const files = Array.from(event.target.files || []);
+  async function handleFileSelection(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
 
-    setSelectedFiles((previous) => [...previous, ...files]);
+    if (!file) return;
 
-    event.target.value = "";
+    setError("");
+    setMessage("");
+
+    const buffer = await file.arrayBuffer();
+    const workbook = XLSX.read(buffer);
+    const firstSheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[firstSheetName];
+
+    const data = XLSX.utils.sheet_to_json<ImportRow>(worksheet, {
+      defval: "",
+    });
+
+    const cleanedRows = data
+      .map((row) => ({
+        slug: String(row.slug || "").trim(),
+        image: String(row.image || "").trim(),
+      }))
+      .filter((row) => row.slug && row.image);
+
+    setRows(cleanedRows);
   }
 
-  async function handleUpload() {
-    if (selectedFiles.length === 0) {
-      setError("Veuillez sélectionner au moins une image.");
+  async function handleImport() {
+    if (rows.length === 0) {
+      setError("Veuillez sélectionner un fichier Excel avec les colonnes slug et image.");
       return;
     }
 
     setLoading(true);
     setError("");
+    setMessage("");
 
-    try {
-      const formData = new FormData();
+    let successCount = 0;
+    let errorCount = 0;
 
-      selectedFiles.forEach((file) => {
-        formData.append("images", file);
-      });
+    for (const row of rows) {
+      const { error } = await supabase
+        .from("wines")
+        .update({ image: row.image })
+        .eq("slug", row.slug);
 
-      const res = await fetch("/api/admin/upload-images", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Erreur lors de l'import.");
+      if (error) {
+        errorCount += 1;
+      } else {
+        successCount += 1;
       }
-
-      setUploaded(data.paths || []);
-      setSelectedFiles([]);
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "L'import a échoué."
-      );
-    } finally {
-      setLoading(false);
     }
-  }
 
-  function clearSelection() {
-    setSelectedFiles([]);
+    setLoading(false);
+    setMessage(`${successCount} image(s) mise(s) à jour. ${errorCount} erreur(s).`);
   }
 
   return (
     <main className="min-h-screen bg-[#f8f5ef] px-6 py-12">
       <div className="mx-auto max-w-4xl rounded-2xl bg-white p-8 shadow">
         <h1 className="mb-4 text-3xl font-serif text-[#2b1b16]">
-          Import automatique des images
+          Import images par Excel
         </h1>
 
         <p className="mb-6 text-neutral-600">
-          Tu peux sélectionner plusieurs images en plusieurs fois,
-          puis tout importer ensemble.
+          Importe un fichier Excel .xlsx avec deux colonnes : slug et image.
         </p>
+
+        <div className="mb-6 rounded-xl bg-[#fff8ed] p-4 text-sm text-neutral-700">
+          Exemple :
+          <pre className="mt-3 whitespace-pre-wrap">
+{`slug | image
+chateau-lafite | /images/chateau-lafite.jpg
+pavillon-rouge-2025-mu | /images/pavillon-rouge-2025-mu.png`}
+          </pre>
+        </div>
 
         <input
           type="file"
-          multiple
-          accept="image/*"
+          accept=".xlsx,.xls"
           onChange={handleFileSelection}
           className="mb-6 block w-full rounded border border-neutral-300 bg-white p-3 text-neutral-800"
         />
 
-        {selectedFiles.length > 0 && (
+        {rows.length > 0 && (
           <div className="mb-6 rounded border border-neutral-200 bg-neutral-50 p-4">
             <h2 className="mb-3 font-semibold text-neutral-800">
-              Images sélectionnées :
+              Lignes détectées : {rows.length}
             </h2>
 
-            <div className="space-y-2 text-sm text-neutral-700">
-              {selectedFiles.map((file, index) => (
-                <div key={`${file.name}-${index}`}>
-                  {file.name}
+            <div className="max-h-80 space-y-2 overflow-auto text-sm text-neutral-700">
+              {rows.map((row, index) => (
+                <div key={`${row.slug}-${index}`}>
+                  <strong>{row.slug}</strong> → {row.image}
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        <div className="flex flex-wrap gap-3">
-          <button
-            type="button"
-            onClick={handleUpload}
-            disabled={loading}
-            className="rounded-full bg-[#8B1E2D] px-6 py-3 text-white transition hover:bg-[#6f1824] disabled:opacity-50"
-          >
-            {loading
-              ? "Import en cours..."
-              : "Importer les images"}
-          </button>
-
-          {selectedFiles.length > 0 && (
-            <button
-              type="button"
-              onClick={clearSelection}
-              className="rounded-full border border-neutral-300 px-6 py-3 text-neutral-700 transition hover:bg-neutral-100"
-            >
-              Vider la sélection
-            </button>
-          )}
-        </div>
+        <button
+          type="button"
+          onClick={handleImport}
+          disabled={loading || rows.length === 0}
+          className="rounded-full bg-[#8B1E2D] px-6 py-3 text-white transition hover:bg-[#6f1824] disabled:opacity-50"
+        >
+          {loading ? "Import en cours..." : "Mettre à jour les images"}
+        </button>
 
         {error && (
           <p className="mt-6 rounded border border-red-300 bg-red-50 p-4 text-red-700">
@@ -127,18 +130,10 @@ export default function AdminImagesPage() {
           </p>
         )}
 
-        {uploaded.length > 0 && (
-          <div className="mt-8">
-            <h2 className="mb-4 text-xl font-semibold text-green-700">
-              Images présentes dans public/images :
-            </h2>
-
-            <textarea
-              readOnly
-              value={uploaded.join("\n")}
-              className="h-80 w-full rounded border border-neutral-300 bg-white p-4 font-mono text-sm text-neutral-800"
-            />
-          </div>
+        {message && (
+          <p className="mt-6 rounded border border-green-300 bg-green-50 p-4 text-green-700">
+            {message}
+          </p>
         )}
       </div>
     </main>

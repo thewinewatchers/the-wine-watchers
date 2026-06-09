@@ -67,7 +67,6 @@ const COUNTRY_NAME_TO_CODE: Record<string, string> = {
 
 function parsePrice(value?: string | number) {
   if (value === undefined || value === null) return 0;
-
   if (typeof value === "number") return value;
 
   const cleaned = value
@@ -77,7 +76,6 @@ function parsePrice(value?: string | number) {
     .replace(",", ".");
 
   const parsed = Number(cleaned);
-
   return Number.isNaN(parsed) ? 0 : parsed;
 }
 
@@ -119,8 +117,7 @@ function calculateVat({
     EU_VAT_RATES[countryCode] || EU_VAT_RATES[SELLER_COUNTRY_CODE];
 
   const isProfessional =
-    Boolean(companyName?.trim()) &&
-    Boolean(vatNumber?.trim());
+    Boolean(companyName?.trim()) && Boolean(vatNumber?.trim());
 
   const reverseCharge =
     isProfessional &&
@@ -141,53 +138,28 @@ function calculateVat({
     };
   }
 
-  const vatAmount = roundMoney(
-    cartTotalExclVat * (vatRate / 100)
-  );
-
-  const totalInclVat = roundMoney(
-    cartTotalExclVat + vatAmount
-  );
+  const vatAmount = roundMoney(cartTotalExclVat * (vatRate / 100));
+  const totalInclVat = roundMoney(cartTotalExclVat + vatAmount);
 
   return {
-    customerType: isProfessional
-      ? "professional"
-      : "individual",
-
+    customerType: isProfessional ? "professional" : "individual",
     vatCountry: countryCode,
     vatRate,
     vatAmount,
-
     totalExclVat: roundMoney(cartTotalExclVat),
     totalInclVat,
-
     reverseCharge: false,
     vatNote: `TVA ${vatRate}% ajoutée au prix HT.`,
   };
 }
 
 function getBankTransferInstructions(orderId: string) {
-  const accountName =
-    process.env.BANK_ACCOUNT_NAME ||
-    "The Wine Watchers SL";
-
-  const bankName =
-    process.env.BANK_NAME ||
-    "Banque à confirmer";
-
-  const iban =
-    process.env.BANK_IBAN ||
-    "IBAN à confirmer";
-
-  const swift =
-    process.env.BANK_SWIFT ||
-    "SWIFT/BIC à confirmer";
-
-  const bankAddress =
-    process.env.BANK_ADDRESS || "";
-
-  const bankCountry =
-    process.env.BANK_COUNTRY || "";
+  const accountName = process.env.BANK_ACCOUNT_NAME || "The Wine Watchers SL";
+  const bankName = process.env.BANK_NAME || "Banque à confirmer";
+  const iban = process.env.BANK_IBAN || "IBAN à confirmer";
+  const swift = process.env.BANK_SWIFT || "SWIFT/BIC à confirmer";
+  const bankAddress = process.env.BANK_ADDRESS || "";
+  const bankCountry = process.env.BANK_COUNTRY || "";
 
   return [
     "Merci d’effectuer votre virement bancaire en indiquant impérativement le numéro de commande en communication.",
@@ -199,12 +171,8 @@ function getBankTransferInstructions(orderId: string) {
     `Banque : ${bankName}`,
     `IBAN : ${iban}`,
     `SWIFT/BIC : ${swift}`,
-    bankAddress
-      ? `Adresse banque : ${bankAddress}`
-      : "",
-    bankCountry
-      ? `Pays : ${bankCountry}`
-      : "",
+    bankAddress ? `Adresse banque : ${bankAddress}` : "",
+    bankCountry ? `Pays : ${bankCountry}` : "",
     "",
     "Votre commande sera confirmée après réception du paiement.",
     "The Wine Watchers SL vous contactera si des informations complémentaires sont nécessaires.",
@@ -215,18 +183,12 @@ function getBankTransferInstructions(orderId: string) {
 
 export async function POST(request: Request) {
   try {
-    const authHeader =
-      request.headers.get("authorization");
-
-    const token =
-      authHeader?.replace("Bearer ", "");
+    const authHeader = request.headers.get("authorization");
+    const token = authHeader?.replace("Bearer ", "");
 
     if (!token) {
       return NextResponse.json(
-        {
-          error:
-            "Vous devez être connecté pour passer commande.",
-        },
+        { error: "Vous devez être connecté pour passer commande." },
         { status: 401 }
       );
     }
@@ -236,10 +198,7 @@ export async function POST(request: Request) {
 
     if (userError || !userData.user) {
       return NextResponse.json(
-        {
-          error:
-            "Session invalide. Merci de vous reconnecter.",
-        },
+        { error: "Session invalide. Merci de vous reconnecter." },
         { status: 401 }
       );
     }
@@ -254,33 +213,24 @@ export async function POST(request: Request) {
       deliveryFee,
       deliveryNote,
       totalToPay,
+      sessionId,
     } = body;
 
     const selectedPaymentMethod: PaymentMethod =
-      paymentMethod === "card"
-        ? "card"
-        : "bank_transfer";
+      paymentMethod === "card" ? "card" : "bank_transfer";
 
     const selectedDeliveryMethod: DeliveryMethod =
-      deliveryMethod === "delivery"
-        ? "delivery"
-        : "pickup";
+      deliveryMethod === "delivery" ? "delivery" : "pickup";
 
     if (!customer) {
       return NextResponse.json(
-        {
-          error:
-            "Informations client manquantes.",
-        },
+        { error: "Informations client manquantes." },
         { status: 400 }
       );
     }
 
     if (!Array.isArray(cart) || cart.length === 0) {
-      return NextResponse.json(
-        { error: "Panier vide." },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Panier vide." }, { status: 400 });
     }
 
     if (
@@ -290,16 +240,12 @@ export async function POST(request: Request) {
       !customer.phone
     ) {
       return NextResponse.json(
-        {
-          error:
-            "Prénom, nom, email et téléphone sont obligatoires.",
-        },
+        { error: "Prénom, nom, email et téléphone sont obligatoires." },
         { status: 400 }
       );
     }
 
-    const metadata =
-      userData.user.user_metadata || {};
+    const metadata = userData.user.user_metadata || {};
 
     const companyName =
       customer.companyName ||
@@ -308,29 +254,16 @@ export async function POST(request: Request) {
       null;
 
     const vatNumber =
-      customer.vatNumber ||
-      customer.vat_number ||
-      metadata.vat_number ||
-      null;
+      customer.vatNumber || customer.vat_number || metadata.vat_number || null;
 
-    const billingCountry =
-      customer.country || "Espagne";
+    const billingCountry = customer.country || "Espagne";
+    const billingCountryCode = getCountryCode(billingCountry);
 
-    const billingCountryCode =
-      getCountryCode(billingCountry);
-
-    const cartTotalExclVat = cart.reduce(
-      (sum: number, item: CartItem) => {
-        const price = parsePrice(item.price);
-
-        const quantity = Number(
-          item.quantity || 1
-        );
-
-        return sum + price * quantity;
-      },
-      0
-    );
+    const cartTotalExclVat = cart.reduce((sum: number, item: CartItem) => {
+      const price = parsePrice(item.price);
+      const quantity = Number(item.quantity || 1);
+      return sum + price * quantity;
+    }, 0);
 
     const vatCalculation = calculateVat({
       cartTotalExclVat,
@@ -340,10 +273,9 @@ export async function POST(request: Request) {
     });
 
     const orderId = crypto.randomUUID();
+
     const safeDeliveryFee =
-      selectedDeliveryMethod === "pickup"
-        ? 0
-        : Number(deliveryFee || 0);
+      selectedDeliveryMethod === "pickup" ? 0 : Number(deliveryFee || 0);
 
     const safeDeliveryNote =
       selectedDeliveryMethod === "pickup"
@@ -367,9 +299,7 @@ export async function POST(request: Request) {
         : null;
 
     const orderStatus =
-      selectedPaymentMethod === "card"
-        ? "pending"
-        : "bank_transfer_pending";
+      selectedPaymentMethod === "card" ? "pending" : "bank_transfer_pending";
 
     const enrichedCustomerComment = [
       customer.comment || "",
@@ -472,6 +402,26 @@ export async function POST(request: Request) {
       );
     }
 
+    if (sessionId) {
+      const { error: stockFinalizeError } = await supabase.rpc(
+        "finalize_reserved_stock",
+        { p_session_id: sessionId }
+      );
+
+      if (stockFinalizeError) {
+        console.error("Erreur finalisation stock :", stockFinalizeError);
+
+        return NextResponse.json(
+          {
+            error:
+              "Commande créée, mais erreur lors de la mise à jour du stock.",
+            details: stockFinalizeError.message,
+          },
+          { status: 500 }
+        );
+      }
+    }
+
     await supabase
       .from("abandoned_carts")
       .delete()
@@ -522,11 +472,7 @@ ${deliveryLabel}
 ${safeDeliveryNote}
 
 Frais livraison :
-${
-  selectedDeliveryMethod === "pickup"
-    ? "Gratuit"
-    : "À confirmer"
-}
+${selectedDeliveryMethod === "pickup" ? "Gratuit" : "À confirmer"}
 
 Total TTC / Total à payer :
 ${formatPrice(finalTotalToPay)}
@@ -594,11 +540,7 @@ ${deliveryLabel}
 ${safeDeliveryNote}
 
 Frais livraison :
-${
-  selectedDeliveryMethod === "pickup"
-    ? "Gratuit"
-    : "À confirmer"
-}
+${selectedDeliveryMethod === "pickup" ? "Gratuit" : "À confirmer"}
 
 Total HT vins :
 ${formatPrice(vatCalculation.totalExclVat)}
