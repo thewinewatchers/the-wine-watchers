@@ -81,10 +81,7 @@ export default function Menu() {
             Accueil
           </Link>
 
-          <Link
-            href="/boutique/bordeaux"
-            className="transition hover:text-[#8B1E2D]"
-          >
+          <Link href="/boutique" className="transition hover:text-[#8B1E2D]">
             Boutique
           </Link>
 
@@ -155,7 +152,7 @@ export default function Menu() {
               Accueil
             </Link>
 
-            <Link href="/boutique/bordeaux" onClick={() => setOpen(false)}>
+            <Link href="/boutique" onClick={() => setOpen(false)}>
               Boutique
             </Link>
 

@@ -117,7 +117,7 @@ export default function Footer() {
               <p>
                 <span className="text-white/40">Email : </span>
                 <a
-                  href="mailto:REMPLACER_PAR_EMAIL"
+                  href="mailto:contact@thewinewatchers.com"
                   className="transition hover:text-[#d8b56d]"
                 >
                   contact@thewinewatchers.com
@@ -127,7 +127,7 @@ export default function Footer() {
               <p>
                 <span className="text-white/40">Téléphone : </span>
                 <a
-                  href="tel:REMPLACER_PAR_TELEPHONE"
+                  href="tel:+34972150878"
                   className="transition hover:text-[#d8b56d]"
                 >
                   +34 972 15 08 78
@@ -138,6 +138,47 @@ export default function Footer() {
                 <span className="text-white/40">Pays : </span>
                 Espagne
               </p>
+            </div>
+          </div>
+        </div>
+
+        {/* MODES DE PAIEMENT */}
+        <div className="mt-10 rounded-2xl border border-white/10 bg-white/5 p-5">
+          <p className="text-xs uppercase tracking-[0.25em] text-[#d8b56d]">
+            Modes de paiement acceptés
+          </p>
+
+          <div className="mt-4 grid gap-4 text-sm text-white/70 md:grid-cols-2">
+            <div>
+              <p className="font-semibold text-white">
+                Virement bancaire par CaixaBank
+              </p>
+              <p className="mt-1 leading-6">
+                Paiement par virement bancaire sécurisé après validation de la
+                commande.
+              </p>
+            </div>
+
+            <div>
+              <p className="font-semibold text-white">
+                Paiements sécurisés SSL via Stripe
+              </p>
+              <p className="mt-1 leading-6">
+                Cartes bancaires acceptées via Stripe, prestataire de paiement
+                sécurisé.
+              </p>
+
+              <div className="mt-3 flex flex-wrap gap-2">
+                <span className="rounded-md border border-white/20 bg-white px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#170606]">
+                  Visa
+                </span>
+                <span className="rounded-md border border-white/20 bg-white px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#170606]">
+                  Mastercard
+                </span>
+                <span className="rounded-md border border-white/20 bg-white px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#170606]">
+                  Amex
+                </span>
+              </div>
             </div>
           </div>
         </div>

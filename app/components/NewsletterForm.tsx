@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
 
 export default function NewsletterForm() {
   const [email, setEmail] = useState("");
@@ -21,20 +20,28 @@ export default function NewsletterForm() {
       return;
     }
 
-    const { error } = await supabase.from("newsletter_subscribers").insert({
-      email: cleanEmail,
-      source: "home",
-    });
+    try {
+      const response = await fetch("/api/newsletter/subscribe", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: cleanEmail,
+          source: "home",
+        }),
+      });
 
-    if (error) {
-      if (error.code === "23505") {
-        setMessage("Cette adresse est déjà inscrite à notre newsletter.");
+      const result = await response.json();
+
+      if (!response.ok) {
+        setMessage(result.error || "Erreur lors de l’inscription. Merci de réessayer.");
       } else {
-        setMessage("Erreur lors de l’inscription. Merci de réessayer.");
+        setEmail("");
+        setMessage("Merci, votre inscription est bien enregistrée. Un email de bienvenue vient de vous être envoyé.");
       }
-    } else {
-      setEmail("");
-      setMessage("Merci, votre inscription est bien enregistrée.");
+    } catch {
+      setMessage("Erreur lors de l’inscription. Merci de réessayer.");
     }
 
     setLoading(false);

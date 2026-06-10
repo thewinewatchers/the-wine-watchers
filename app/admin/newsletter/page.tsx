@@ -16,6 +16,11 @@ export default function AdminNewsletterPage() {
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
+  const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
+  const [sending, setSending] = useState(false);
+  const [sendMessage, setSendMessage] = useState("");
+
   async function loadSubscribers() {
     setLoading(true);
     setErrorMessage("");
@@ -70,6 +75,40 @@ export default function AdminNewsletterPage() {
     URL.revokeObjectURL(url);
   }
 
+  async function sendNewsletter() {
+    setSendMessage("");
+    setSending(true);
+
+    try {
+      const response = await fetch("/api/admin/send-newsletter", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          subject,
+          message,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        setSendMessage(result.error || "Erreur lors de l’envoi.");
+      } else {
+        setSendMessage(
+          `Newsletter envoyée avec succès à ${result.sentCount} abonné(s).`
+        );
+        setSubject("");
+        setMessage("");
+      }
+    } catch {
+      setSendMessage("Erreur lors de l’envoi de la newsletter.");
+    }
+
+    setSending(false);
+  }
+
   return (
     <main className="min-h-screen bg-[#f8f4ee] px-6 py-10 text-[#24110d]">
       <section className="mx-auto max-w-6xl">
@@ -88,7 +127,7 @@ export default function AdminNewsletterPage() {
           <h1 className="font-serif text-4xl text-[#24110d]">Newsletter</h1>
 
           <p className="mt-4 text-gray-600">
-            Gestion des inscriptions à la newsletter The Wine Watchers.
+            Gestion des inscriptions et envoi de newsletters The Wine Watchers.
           </p>
         </div>
 
@@ -97,9 +136,7 @@ export default function AdminNewsletterPage() {
             <p className="text-sm uppercase tracking-[0.2em] text-[#8a6a2f]">
               Abonnés
             </p>
-            <p className="mt-3 text-4xl font-semibold">
-              {subscribers.length}
-            </p>
+            <p className="mt-3 text-4xl font-semibold">{subscribers.length}</p>
           </div>
 
           <div className="rounded-2xl bg-white p-6 shadow-sm md:col-span-2">
@@ -115,6 +152,52 @@ export default function AdminNewsletterPage() {
             >
               Exporter en CSV
             </button>
+          </div>
+        </div>
+
+        <div className="mb-8 rounded-2xl bg-white p-6 shadow-sm">
+          <p className="mb-2 text-sm uppercase tracking-[0.2em] text-[#8a6a2f]">
+            Envoyer une newsletter
+          </p>
+
+          <h2 className="font-serif text-2xl">Nouveau message</h2>
+
+          <div className="mt-6 space-y-4">
+            <input
+              type="text"
+              value={subject}
+              onChange={(event) => setSubject(event.target.value)}
+              placeholder="Sujet de la newsletter"
+              className="w-full rounded-xl border border-[#e1d1bd] px-4 py-3 outline-none focus:border-[#8a1f1f]"
+            />
+
+            <textarea
+              value={message}
+              onChange={(event) => setMessage(event.target.value)}
+              placeholder="Contenu de la newsletter..."
+              rows={8}
+              className="w-full rounded-xl border border-[#e1d1bd] px-4 py-3 outline-none focus:border-[#8a1f1f]"
+            />
+
+            <button
+              type="button"
+              onClick={sendNewsletter}
+              disabled={
+                sending ||
+                subscribers.length === 0 ||
+                subject.trim() === "" ||
+                message.trim() === ""
+              }
+              className="rounded-full bg-black px-8 py-4 text-sm font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-[#8a1f1f] disabled:cursor-not-allowed disabled:bg-gray-400"
+            >
+              {sending ? "Envoi en cours..." : "Envoyer la newsletter"}
+            </button>
+
+            {sendMessage ? (
+              <p className="text-sm font-medium text-[#8a1f1f]">
+                {sendMessage}
+              </p>
+            ) : null}
           </div>
         </div>
 

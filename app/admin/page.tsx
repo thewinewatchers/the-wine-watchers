@@ -14,6 +14,12 @@ const adminLinks = [
       "Consulter les commandes, devis PDF, factures PDF et paiements.",
   },
   {
+    title: "Newsletter",
+    href: "/admin/newsletter",
+    description:
+      "Consulter les inscrits à la newsletter et suivre les inscriptions.",
+  },
+  {
     title: "Tarifs de livraison",
     href: "/admin/livraison",
     description:
@@ -47,7 +53,7 @@ export default function AdminDashboardPage() {
 
         <p className="mt-5 max-w-3xl text-base leading-8 text-neutral-700">
           Tableau de bord administrateur pour gérer le catalogue, les commandes,
-          les livraisons, les images et le suivi commercial.
+          la newsletter, les livraisons, les images et le suivi commercial.
         </p>
 
         <div className="mt-10 grid gap-6 md:grid-cols-2">

@@ -1,4 +1,8 @@
-Objectif maintenant :
-1. Remplacer le faux bouton email mailto
-2. Créer un vrai envoi Resend
-3. Ajouter le bouton Supprimer
+import { NextResponse } from "next/server";
+
+export async function POST() {
+  return NextResponse.json({
+    success: true,
+    message: "Route de relance panier abandonné active.",
+  });
+}
