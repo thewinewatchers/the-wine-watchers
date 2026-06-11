@@ -17,7 +17,7 @@ const appellations: Record<
     description:
       "Découvrez notre sélection de vins de Pauillac : grands crus classés, primeurs, millésimes rares et châteaux emblématiques du Médoc.",
     intro:
-      "Pauillac est l’une des appellations les plus prestigieuses du Médoc. Elle rassemble certains des plus grands noms de Bordeaux, réputés pour leur puissance, leur profondeur et leur immense potentiel de garde. Les vins de Pauillac séduisent les amateurs et collectionneurs par leur structure, leur complexité aromatique et leur capacité à traverser les décennies.",
+      "Pauillac est l’une des appellations les plus prestigieuses du Médoc. Elle rassemble certains des plus grands noms de Bordeaux, réputés pour leur puissance, leur profondeur et leur immense potentiel de garde.",
   },
   margaux: {
     name: "Margaux",
@@ -25,7 +25,7 @@ const appellations: Record<
     description:
       "Sélection de vins de Margaux : grands crus classés, primeurs et millésimes recherchés disponibles chez The Wine Watchers.",
     intro:
-      "Margaux est une appellation emblématique du Médoc, connue pour l’élégance, la finesse et la complexité de ses vins. Les grands vins de Margaux offrent souvent un équilibre remarquable entre délicatesse aromatique, profondeur et longueur en bouche.",
+      "Margaux est une appellation emblématique du Médoc, connue pour l’élégance, la finesse et la complexité de ses vins.",
   },
   pomerol: {
     name: "Pomerol",
@@ -33,7 +33,7 @@ const appellations: Record<
     description:
       "Découvrez notre sélection de vins de Pomerol : Petrus, Le Pin, Vieux Château Certan, La Conseillante et autres grands vins rares.",
     intro:
-      "Pomerol est une appellation mythique de la rive droite bordelaise. Réputée pour ses grands merlots, elle produit des vins profonds, veloutés et rares, parmi les plus recherchés au monde.",
+      "Pomerol est une appellation mythique de la rive droite bordelaise. Réputée pour ses grands merlots, elle produit des vins profonds, veloutés et rares.",
   },
   "saint-emilion": {
     name: "Saint-Émilion",
@@ -41,7 +41,7 @@ const appellations: Record<
     description:
       "Achetez des vins de Saint-Émilion : grands crus classés, millésimes recherchés et références prestigieuses de la rive droite.",
     intro:
-      "Saint-Émilion est l’une des appellations les plus célèbres de Bordeaux. Ses vins allient richesse, élégance et profondeur, avec une grande diversité de styles selon les terroirs et les propriétés.",
+      "Saint-Émilion est l’une des appellations les plus célèbres de Bordeaux. Ses vins allient richesse, élégance et profondeur.",
   },
   "saint-julien": {
     name: "Saint-Julien",
@@ -49,7 +49,7 @@ const appellations: Record<
     description:
       "Sélection de vins de Saint-Julien : grands crus classés, primeurs et millésimes recherchés du Médoc.",
     intro:
-      "Saint-Julien est réputée pour l’équilibre exceptionnel de ses vins. Située au cœur du Médoc, l’appellation offre des crus structurés, élégants et réguliers, très appréciés des amateurs de grands Bordeaux.",
+      "Saint-Julien est réputée pour l’équilibre exceptionnel de ses vins. Située au cœur du Médoc, l’appellation offre des crus structurés, élégants et réguliers.",
   },
   "saint-estephe": {
     name: "Saint-Estèphe",
@@ -57,15 +57,15 @@ const appellations: Record<
     description:
       "Découvrez les vins de Saint-Estèphe : grands crus classés, primeurs et millésimes recherchés disponibles à l’achat.",
     intro:
-      "Saint-Estèphe produit des vins puissants, profonds et structurés. L’appellation est particulièrement appréciée pour ses grands vins de garde, capables de gagner en complexité avec le temps.",
+      "Saint-Estèphe produit des vins puissants, profonds et structurés. L’appellation est particulièrement appréciée pour ses grands vins de garde.",
   },
-    "pessac-leognan": {
+  "pessac-leognan": {
     name: "Pessac-Léognan",
     title: "Vins de Pessac-Léognan – Grands Crus de Graves",
     description:
       "Découvrez notre sélection de vins de Pessac-Léognan : grands crus classés, vins rouges et blancs de Bordeaux, primeurs et millésimes recherchés.",
     intro:
-      "Pessac-Léognan est l’une des grandes appellations de Bordeaux, réputée pour ses vins rouges élégants et ses grands vins blancs secs. Elle réunit des propriétés prestigieuses des Graves, dont certains des crus les plus recherchés par les amateurs et collectionneurs.",
+      "Pessac-Léognan est l’une des grandes appellations de Bordeaux, réputée pour ses vins rouges élégants et ses grands vins blancs secs.",
   },
   sauternes: {
     name: "Sauternes",
@@ -73,7 +73,7 @@ const appellations: Record<
     description:
       "Découvrez notre sélection de vins de Sauternes : grands liquoreux de Bordeaux, millésimes rares et châteaux emblématiques.",
     intro:
-      "Sauternes est l’appellation emblématique des grands vins liquoreux de Bordeaux. Ses vins sont recherchés pour leur richesse, leur fraîcheur, leur complexité aromatique et leur très grand potentiel de garde.",
+      "Sauternes est l’appellation emblématique des grands vins liquoreux de Bordeaux.",
   },
   meursault: {
     name: "Meursault",
@@ -81,7 +81,7 @@ const appellations: Record<
     description:
       "Sélection de vins de Meursault : grands blancs de Bourgogne, domaines réputés et millésimes recherchés.",
     intro:
-      "Meursault est une appellation majeure de la Côte de Beaune, mondialement connue pour ses grands vins blancs. Ses vins associent richesse, ampleur, précision et élégance.",
+      "Meursault est une appellation majeure de la Côte de Beaune, mondialement connue pour ses grands vins blancs.",
   },
   "vosne-romanee": {
     name: "Vosne-Romanée",
@@ -89,15 +89,15 @@ const appellations: Record<
     description:
       "Découvrez notre sélection de vins de Vosne-Romanée, appellation mythique de la Côte de Nuits.",
     intro:
-      "Vosne-Romanée est l’un des villages les plus prestigieux de Bourgogne. Ses vins rouges sont recherchés pour leur raffinement, leur profondeur et leur rareté.",
+      "Vosne-Romanée est l’un des villages les plus prestigieux de Bourgogne.",
   },
-  "gevrey-chambertin": 
+  "gevrey-chambertin": {
     name: "Gevrey-Chambertin",
     title: "Vins de Gevrey-Chambertin – Côte de Nuits",
     description:
       "Sélection de vins de Gevrey-Chambertin : grands crus, premiers crus et domaines prestigieux.",
     intro:
-      "Gevrey-Chambertin est une appellation incontournable de la Côte de Nuits. Ses vins rouges sont réputés pour leur puissance, leur profondeur et leur excellent potentiel de garde.",
+      "Gevrey-Chambertin est une appellation incontournable de la Côte de Nuits.",
   },
   "chambolle-musigny": {
     name: "Chambolle-Musigny",
@@ -105,7 +105,7 @@ const appellations: Record<
     description:
       "Découvrez les vins de Chambolle-Musigny, grands rouges de Bourgogne réputés pour leur finesse.",
     intro:
-      "Chambolle-Musigny incarne la finesse et l’élégance bourguignonnes. Ses vins sont délicats, aromatiques et très recherchés des amateurs de grands pinots noirs.",
+      "Chambolle-Musigny incarne la finesse et l’élégance bourguignonnes.",
   },
 };
 
