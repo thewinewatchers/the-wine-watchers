@@ -59,6 +59,14 @@ const appellations: Record<
     intro:
       "Saint-Estèphe produit des vins puissants, profonds et structurés. L’appellation est particulièrement appréciée pour ses grands vins de garde, capables de gagner en complexité avec le temps.",
   },
+    "pessac-leognan": {
+    name: "Pessac-Léognan",
+    title: "Vins de Pessac-Léognan – Grands Crus de Graves",
+    description:
+      "Découvrez notre sélection de vins de Pessac-Léognan : grands crus classés, vins rouges et blancs de Bordeaux, primeurs et millésimes recherchés.",
+    intro:
+      "Pessac-Léognan est l’une des grandes appellations de Bordeaux, réputée pour ses vins rouges élégants et ses grands vins blancs secs. Elle réunit des propriétés prestigieuses des Graves, dont certains des crus les plus recherchés par les amateurs et collectionneurs.",
+  },
   sauternes: {
     name: "Sauternes",
     title: "Vins de Sauternes – Grands vins liquoreux de Bordeaux",
@@ -83,7 +91,7 @@ const appellations: Record<
     intro:
       "Vosne-Romanée est l’un des villages les plus prestigieux de Bourgogne. Ses vins rouges sont recherchés pour leur raffinement, leur profondeur et leur rareté.",
   },
-  "gevrey-chambertin": {
+  "gevrey-chambertin": 
     name: "Gevrey-Chambertin",
     title: "Vins de Gevrey-Chambertin – Côte de Nuits",
     description:
