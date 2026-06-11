@@ -5,12 +5,10 @@ const nextConfig: NextConfig = {
     "@supabase/supabase-js",
     "resend",
     "stripe",
-    "pdfkit",
-    "@react-email/components",
-    "@react-email/render",
+    "xlsx",
+    "jspdf",
   ],
 
-  outputFileTracingIncludes: {},
   outputFileTracingExcludes: {
     "*": [
       "node_modules/@react-email/**/*",
