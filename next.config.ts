@@ -5,13 +5,6 @@ const nextConfig: NextConfig = {
     "/api/admin/upload-images": [
       "public/images/**/*",
     ],
-    "*": [
-      "public/images/**/*",
-      "node_modules/typescript/**/*",
-      "node_modules/.cache/**/*",
-      "node_modules/@react-email/**/*",
-      "node_modules/react-email/**/*",
-    ],
   },
 };
 
