@@ -44,7 +44,7 @@ export default function Menu() {
 
     if (!cleanSearch) return;
 
-    router.push(`/boutique/bordeaux?search=${encodeURIComponent(cleanSearch)}`);
+   router.push(`/boutique?search=${encodeURIComponent(cleanSearch)}`);
     setSearch("");
     setOpen(false);
   }
