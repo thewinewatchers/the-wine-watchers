@@ -204,9 +204,9 @@ export default function BoutiqueClient({
     ).sort((a, b) => Number(b) - Number(a));
   }, [categoryWines]);
 
-    const filteredWines = useMemo(() => {
-    return categoryWines
-      .filter((wine) => {
+   const filteredWines = useMemo(() => {
+  return (search ? wines.filter(isVisibleWine) : categoryWines)
+    .filter((wine) => {
         if (!isVisibleWine(wine)) return false;
 
         const wineProducer = normalize(wine.producer);
@@ -284,8 +284,9 @@ export default function BoutiqueClient({
 
         return vintageB - vintageA;
       });
-  }, [
+    }, [
     categoryWines,
+    wines,
     selectedProducer,
     selectedAppellation,
     selectedClassification,
