@@ -6,6 +6,51 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
+function normalizeSearch(value: string) {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+function getSearchTarget(search: string) {
+  const normalizedSearch = normalizeSearch(search);
+
+  if (
+    normalizedSearch.includes("romanee") ||
+    normalizedSearch.includes("conti") ||
+    normalizedSearch.includes("drc") ||
+    normalizedSearch.includes("rousseau") ||
+    normalizedSearch.includes("dujac") ||
+    normalizedSearch.includes("leroy") ||
+    normalizedSearch.includes("gevrey") ||
+    normalizedSearch.includes("chambertin") ||
+    normalizedSearch.includes("vosne") ||
+    normalizedSearch.includes("bourgogne")
+  ) {
+    return "bourgogne";
+  }
+
+  if (
+    normalizedSearch.includes("sassicaia") ||
+    normalizedSearch.includes("ornellaia") ||
+    normalizedSearch.includes("masseto") ||
+    normalizedSearch.includes("italie")
+  ) {
+    return "italie";
+  }
+
+  if (
+    normalizedSearch.includes("vega") ||
+    normalizedSearch.includes("pingus") ||
+    normalizedSearch.includes("espagne")
+  ) {
+    return "espagne";
+  }
+
+  return "bordeaux";
+}
+
 export default function Menu() {
   const router = useRouter();
 
@@ -44,7 +89,12 @@ export default function Menu() {
 
     if (!cleanSearch) return;
 
-   router.push(`/boutique?search=${encodeURIComponent(cleanSearch)}`);
+    const targetCategory = getSearchTarget(cleanSearch);
+
+    router.push(
+      `/boutique/${targetCategory}?search=${encodeURIComponent(cleanSearch)}`
+    );
+
     setSearch("");
     setOpen(false);
   }
@@ -70,6 +120,7 @@ export default function Menu() {
         </Link>
 
         <button
+          type="button"
           onClick={() => setOpen(!open)}
           className="rounded border border-neutral-300 px-3 py-2 text-sm md:hidden"
         >
