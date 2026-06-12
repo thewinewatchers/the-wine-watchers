@@ -144,9 +144,10 @@ export default async function AppellationPage({
   const { data: wines, error } = await supabase
     .from("wines")
     .select(
-      "id, name, vintage, price, image, appellation, classification, bottle_size, packaging"
+      "id, name, vintage, price, image, appellation, classification, bottle_size, packaging, hidden_from_site"
     )
     .eq("appellation", appellation.name)
+    .neq("hidden_from_site", true)
     .order("name", { ascending: true });
 
   return (
