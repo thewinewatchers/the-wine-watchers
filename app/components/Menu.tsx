@@ -17,9 +17,14 @@ function getSearchTarget(search: string) {
   const normalizedSearch = normalizeSearch(search);
 
   if (
+    normalizedSearch.includes("la tache") ||
+    normalizedSearch.includes("tache") ||
+    normalizedSearch.includes("richebourg") ||
     normalizedSearch.includes("romanee") ||
     normalizedSearch.includes("conti") ||
     normalizedSearch.includes("drc") ||
+    normalizedSearch.includes("saint vivant") ||
+    normalizedSearch.includes("romanee saint vivant") ||
     normalizedSearch.includes("rousseau") ||
     normalizedSearch.includes("dujac") ||
     normalizedSearch.includes("leroy") ||
