@@ -36,7 +36,11 @@ export async function POST(req: Request) {
 
     if (amount <= 0) {
       return NextResponse.json(
-        { error: "Montant de paiement invalide." },
+        {
+          error: `Montant de paiement invalide. totalToPay reçu : ${String(
+            totalToPay
+          )}`,
+        },
         { status: 400 }
       );
     }
@@ -77,10 +81,17 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ url: session.url });
   } catch (error) {
-    console.error("Erreur Stripe Checkout:", error);
+    console.error("Erreur Stripe Checkout diagnostic:", error);
+
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Erreur Stripe inconnue.";
 
     return NextResponse.json(
-      { error: "Erreur lors de la création du paiement Stripe." },
+      {
+        error: `Erreur Stripe diagnostic : ${message}`,
+      },
       { status: 500 }
     );
   }
