@@ -290,18 +290,53 @@ export default function CheckoutPage() {
           }
         }
 
+        const { data: profileData } = await supabase
+          .from("profiles")
+          .select(
+            "first_name,last_name,phone,company_name,vat_number,billing_address,billing_postal_code,billing_city,billing_country"
+          )
+          .eq("user_id", data.user.id)
+          .single();
+
         setForm((previous) => ({
           ...previous,
           email: data.user?.email || "",
-          companyName: metadata.company_name || "",
-          vatNumber: metadata.vat_number || "",
-          firstName: metadata.first_name || previous.firstName,
-          lastName: metadata.last_name || previous.lastName,
-          phone: metadata.phone || previous.phone,
-          address: metadata.address || previous.address,
-          postalCode: metadata.postal_code || previous.postalCode,
-          city: metadata.city || previous.city,
-          country: metadata.country || previous.country,
+          companyName:
+            profileData?.company_name ||
+            metadata.company_name ||
+            "",
+          vatNumber:
+            profileData?.vat_number ||
+            metadata.vat_number ||
+            "",
+          firstName:
+            profileData?.first_name ||
+            metadata.first_name ||
+            previous.firstName,
+          lastName:
+            profileData?.last_name ||
+            metadata.last_name ||
+            previous.lastName,
+          phone:
+            profileData?.phone ||
+            metadata.phone ||
+            previous.phone,
+          address:
+            profileData?.billing_address ||
+            metadata.address ||
+            previous.address,
+          postalCode:
+            profileData?.billing_postal_code ||
+            metadata.postal_code ||
+            previous.postalCode,
+          city:
+            profileData?.billing_city ||
+            metadata.city ||
+            previous.city,
+          country:
+            profileData?.billing_country ||
+            metadata.country ||
+            previous.country,
         }));
       } catch (error) {
         console.error("Erreur lecture checkout :", error);
