@@ -177,80 +177,88 @@ export default function MonComptePage() {
   }
 
   async function saveProfile() {
-    if (!user) return;
+  if (!user) return;
 
-    setSaving(true);
-    setMessage("");
+  setSaving(true);
+  setMessage("");
 
-    const { error } = await supabase
-      .from("profiles")
-      .upsert(
-        {
-          user_id: user.id,
+  const { error: profileError } = await supabase
+    .from("profiles")
+    .upsert(
+      {
+        user_id: user.id,
 
-          first_name: profile.first_name,
-          last_name: profile.last_name,
-          phone: profile.phone,
+        first_name: profile.first_name,
+        last_name: profile.last_name,
+        phone: profile.phone,
 
-          company_name: profile.company_name,
-          vat_number: profile.vat_number,
+        company_name: profile.company_name,
+        vat_number: profile.vat_number,
 
-          billing_address: profile.billing_address,
-          billing_postal_code: profile.billing_postal_code,
-          billing_city: profile.billing_city,
-          billing_country: profile.billing_country,
+        billing_address: profile.billing_address,
+        billing_postal_code: profile.billing_postal_code,
+        billing_city: profile.billing_city,
+        billing_country: profile.billing_country,
 
-          delivery_address: profile.delivery_address,
-          delivery_postal_code: profile.delivery_postal_code,
-          delivery_city: profile.delivery_city,
-          delivery_country: profile.delivery_country,
+        delivery_address: profile.delivery_address,
+        delivery_postal_code: profile.delivery_postal_code,
+        delivery_city: profile.delivery_city,
+        delivery_country: profile.delivery_country,
 
-          updated_at: new Date().toISOString(),
-        },
-        {
-          onConflict: "user_id",
-        }
-      );
+        updated_at: new Date().toISOString(),
+      },
+      {
+        onConflict: "user_id",
+      }
+    );
 
-    if (!error) {
-      await supabase.auth.updateUser({
-        data: {
-          first_name: profile.first_name,
-          last_name: profile.last_name,
-          phone: profile.phone,
-
-          company_name: profile.company_name,
-          vat_number: profile.vat_number,
-
-          address: profile.billing_address,
-          postal_code: profile.billing_postal_code,
-          city: profile.billing_city,
-          country: profile.billing_country,
-
-          billing_address: profile.billing_address,
-          billing_postal_code: profile.billing_postal_code,
-          billing_city: profile.billing_city,
-          billing_country: profile.billing_country,
-
-          delivery_address: profile.delivery_address,
-          delivery_postal_code: profile.delivery_postal_code,
-          delivery_city: profile.delivery_city,
-          delivery_country: profile.delivery_country,
-        },
-      });
-    }
-
-   if (error) {
-  console.error("Erreur enregistrement profil :", error);
-  setMessage(
-    `Erreur lors de l’enregistrement : ${error.message || "erreur inconnue"}`
-  );
-} else {
-  setMessage("Informations enregistrées avec succès.");
-}
-
+  if (profileError) {
+    console.error("Erreur profiles upsert :", profileError);
+    setMessage(
+      `Erreur profil : ${profileError.message || "erreur inconnue"}`
+    );
     setSaving(false);
+    return;
   }
+
+  const { error: authError } = await supabase.auth.updateUser({
+    data: {
+      first_name: profile.first_name,
+      last_name: profile.last_name,
+      phone: profile.phone,
+
+      company_name: profile.company_name,
+      vat_number: profile.vat_number,
+
+      address: profile.billing_address,
+      postal_code: profile.billing_postal_code,
+      city: profile.billing_city,
+      country: profile.billing_country,
+
+      billing_address: profile.billing_address,
+      billing_postal_code: profile.billing_postal_code,
+      billing_city: profile.billing_city,
+      billing_country: profile.billing_country,
+
+      delivery_address: profile.delivery_address,
+      delivery_postal_code: profile.delivery_postal_code,
+      delivery_city: profile.delivery_city,
+      delivery_country: profile.delivery_country,
+    },
+  });
+
+  if (authError) {
+    console.error("Erreur auth updateUser :", authError);
+    setMessage(
+      `Erreur compte utilisateur : ${authError.message || "erreur inconnue"}`
+    );
+    setSaving(false);
+    return;
+  }
+
+  setMessage("Informations enregistrées avec succès.");
+  setSaving(false);
+}
   if (loading) {
     return (
       <main className="min-h-screen bg-[#f8f5ef] px-6 py-12">
