@@ -19,6 +19,36 @@ function toStripeAmount(value: unknown) {
   return Math.round(amount * 100);
 }
 
+function getStripeDiagnostic(error: unknown) {
+  const stripeError = error as {
+    type?: string;
+    code?: string;
+    statusCode?: number;
+    requestId?: string;
+    message?: string;
+    raw?: {
+      type?: string;
+      code?: string;
+      statusCode?: number;
+      requestId?: string;
+      message?: string;
+    };
+  };
+
+  return {
+    type: stripeError.type || stripeError.raw?.type || "unknown",
+    code: stripeError.code || stripeError.raw?.code || "unknown",
+    statusCode:
+      stripeError.statusCode || stripeError.raw?.statusCode || "unknown",
+    requestId:
+      stripeError.requestId || stripeError.raw?.requestId || "unknown",
+    message:
+      stripeError.message ||
+      stripeError.raw?.message ||
+      "Erreur Stripe inconnue.",
+  };
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -81,16 +111,13 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ url: session.url });
   } catch (error) {
-    console.error("Erreur Stripe Checkout diagnostic:", error);
+    console.error("Erreur Stripe Checkout diagnostic complet:", error);
 
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Erreur Stripe inconnue.";
+    const diagnostic = getStripeDiagnostic(error);
 
     return NextResponse.json(
       {
-        error: `Erreur Stripe diagnostic : ${message}`,
+        error: `Erreur Stripe diagnostic : type=${diagnostic.type} | code=${diagnostic.code} | statusCode=${diagnostic.statusCode} | requestId=${diagnostic.requestId} | message=${diagnostic.message}`,
       },
       { status: 500 }
     );
