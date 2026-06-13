@@ -240,12 +240,14 @@ export default function MonComptePage() {
       });
     }
 
-    if (error) {
-      console.error("Erreur enregistrement profil :", error);
-      setMessage("Erreur lors de l’enregistrement.");
-    } else {
-      setMessage("Informations enregistrées avec succès.");
-    }
+   if (error) {
+  console.error("Erreur enregistrement profil :", error);
+  setMessage(
+    `Erreur lors de l’enregistrement : ${error.message || "erreur inconnue"}`
+  );
+} else {
+  setMessage("Informations enregistrées avec succès.");
+}
 
     setSaving(false);
   }
