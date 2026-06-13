@@ -234,6 +234,7 @@ export default function CheckoutPage() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showCustomerForm, setShowCustomerForm] = useState(false);
 
   const [successOrderId, setSuccessOrderId] = useState<string | null>(null);
   const [successPaymentMethod, setSuccessPaymentMethod] =
@@ -351,6 +352,18 @@ export default function CheckoutPage() {
 
   const totalToPay = vatCalculation.totalInclVat + deliveryFee;
 
+  const hasCompleteProfile =
+    Boolean(form.firstName?.trim()) &&
+    Boolean(form.lastName?.trim()) &&
+    Boolean(form.email?.trim()) &&
+    Boolean(form.phone?.trim()) &&
+    Boolean(form.address?.trim()) &&
+    Boolean(form.postalCode?.trim()) &&
+    Boolean(form.city?.trim()) &&
+    Boolean(form.country?.trim());
+
+  const shouldShowCustomerForm = !hasCompleteProfile || showCustomerForm;
+
   const removeItem = (index: number) => {
     setCart((previousCart) =>
       previousCart.filter((_, itemIndex) => itemIndex !== index)
@@ -413,6 +426,7 @@ export default function CheckoutPage() {
       !form.country
     ) {
       setErrorMessage("Merci de compléter tous les champs obligatoires.");
+      setShowCustomerForm(true);
       return;
     }
 
@@ -515,7 +529,6 @@ export default function CheckoutPage() {
       setIsSubmitting(false);
     }
   };
-
   if (!isLoaded) {
     return (
       <main className="min-h-screen bg-[#f8f3ea] px-4 py-10">
@@ -602,105 +615,173 @@ export default function CheckoutPage() {
               </div>
             )}
 
-            <div className="grid gap-5 md:grid-cols-2">
-              <input
-                name="firstName"
-                value={form.firstName}
-                onChange={handleChange}
-                placeholder="Prénom *"
-                className="rounded-xl border border-neutral-300 px-4 py-3"
-              />
+            {!shouldShowCustomerForm && (
+              <div className="rounded-3xl border border-[#e6dcc8] bg-[#fffaf3] p-6">
+                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                  <div>
+                    <p className="text-sm uppercase tracking-[0.22em] text-[#8a6a2f]">
+                      Coordonnées enregistrées
+                    </p>
 
-              <input
-                name="lastName"
-                value={form.lastName}
-                onChange={handleChange}
-                placeholder="Nom *"
-                className="rounded-xl border border-neutral-300 px-4 py-3"
-              />
+                    <h3 className="mt-3 text-2xl font-serif text-black">
+                      {form.firstName} {form.lastName}
+                    </h3>
 
-              <input
-                name="email"
-                type="email"
-                value={form.email}
-                onChange={handleChange}
-                placeholder="Email *"
-                className="rounded-xl border border-neutral-300 px-4 py-3"
-              />
+                    <div className="mt-4 space-y-1 text-sm leading-6 text-neutral-700">
+                      <p>{form.email}</p>
+                      <p>{form.phone}</p>
 
-              <input
-                name="phone"
-                value={form.phone}
-                onChange={handleChange}
-                placeholder="Téléphone *"
-                className="rounded-xl border border-neutral-300 px-4 py-3"
-              />
+                      {form.companyName && (
+                        <p>
+                          {form.companyName}
+                          {form.vatNumber ? ` — ${form.vatNumber}` : ""}
+                        </p>
+                      )}
 
-              <input
-                name="companyName"
-                value={form.companyName}
-                onChange={handleChange}
-                placeholder="Société"
-                className="rounded-xl border border-neutral-300 px-4 py-3"
-              />
+                      <p>{form.address}</p>
+                      <p>
+                        {form.postalCode} {form.city}
+                      </p>
+                      <p>{form.country}</p>
+                    </div>
+                  </div>
 
-              <input
-                name="vatNumber"
-                value={form.vatNumber}
-                onChange={handleChange}
-                placeholder="N° TVA"
-                className="rounded-xl border border-neutral-300 px-4 py-3"
-              />
+                  <button
+                    type="button"
+                    onClick={() => setShowCustomerForm(true)}
+                    className="rounded-full border border-black px-5 py-3 text-sm uppercase tracking-[0.18em] text-black hover:bg-black hover:text-white"
+                  >
+                    Modifier
+                  </button>
+                </div>
 
-              <input
-                name="address"
-                value={form.address}
-                onChange={handleChange}
-                placeholder="Adresse *"
-                className="rounded-xl border border-neutral-300 px-4 py-3 md:col-span-2"
-              />
+                <p className="mt-5 rounded-2xl bg-white p-4 text-xs leading-6 text-neutral-600">
+                  Ces informations seront utilisées pour la commande et la
+                  facturation. Vous pouvez les modifier si nécessaire avant de
+                  valider la commande.
+                </p>
 
-              <input
-                name="postalCode"
-                value={form.postalCode}
-                onChange={handleChange}
-                placeholder="Code postal *"
-                className="rounded-xl border border-neutral-300 px-4 py-3"
-              />
+                <textarea
+                  name="comment"
+                  value={form.comment}
+                  onChange={handleChange}
+                  rows={3}
+                  placeholder="Commentaire optionnel"
+                  className="mt-5 w-full rounded-xl border border-neutral-300 px-4 py-3"
+                />
+              </div>
+            )}
 
-              <input
-                name="city"
-                value={form.city}
-                onChange={handleChange}
-                placeholder="Ville *"
-                className="rounded-xl border border-neutral-300 px-4 py-3"
-              />
+            {shouldShowCustomerForm && (
+              <>
+                {!hasCompleteProfile && (
+                  <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                    Certaines informations client sont manquantes. Merci de les
+                    compléter une seule fois pour finaliser votre commande.
+                  </div>
+                )}
 
-              <select
-                name="country"
-                value={form.country}
-                onChange={handleChange}
-                className="rounded-xl border border-neutral-300 px-4 py-3 md:col-span-2"
-              >
-                <option value="Espagne">Espagne</option>
-                <option value="France">France</option>
-                <option value="Belgique">Belgique</option>
-                <option value="Luxembourg">Luxembourg</option>
-                <option value="Suisse">Suisse</option>
-                <option value="Italie">Italie</option>
-                <option value="Allemagne">Allemagne</option>
-                <option value="Autre">Autre</option>
-              </select>
+                <div className="grid gap-5 md:grid-cols-2">
+                  <input
+                    name="firstName"
+                    value={form.firstName}
+                    onChange={handleChange}
+                    placeholder="Prénom *"
+                    className="rounded-xl border border-neutral-300 px-4 py-3"
+                  />
 
-              <textarea
-                name="comment"
-                value={form.comment}
-                onChange={handleChange}
-                rows={4}
-                placeholder="Commentaire"
-                className="rounded-xl border border-neutral-300 px-4 py-3 md:col-span-2"
-              />
-            </div>
+                  <input
+                    name="lastName"
+                    value={form.lastName}
+                    onChange={handleChange}
+                    placeholder="Nom *"
+                    className="rounded-xl border border-neutral-300 px-4 py-3"
+                  />
+
+                  <input
+                    name="email"
+                    type="email"
+                    value={form.email}
+                    onChange={handleChange}
+                    placeholder="Email *"
+                    className="rounded-xl border border-neutral-300 px-4 py-3"
+                  />
+
+                  <input
+                    name="phone"
+                    value={form.phone}
+                    onChange={handleChange}
+                    placeholder="Téléphone *"
+                    className="rounded-xl border border-neutral-300 px-4 py-3"
+                  />
+
+                  <input
+                    name="companyName"
+                    value={form.companyName}
+                    onChange={handleChange}
+                    placeholder="Société"
+                    className="rounded-xl border border-neutral-300 px-4 py-3"
+                  />
+
+                  <input
+                    name="vatNumber"
+                    value={form.vatNumber}
+                    onChange={handleChange}
+                    placeholder="N° TVA"
+                    className="rounded-xl border border-neutral-300 px-4 py-3"
+                  />
+
+                  <input
+                    name="address"
+                    value={form.address}
+                    onChange={handleChange}
+                    placeholder="Adresse *"
+                    className="rounded-xl border border-neutral-300 px-4 py-3 md:col-span-2"
+                  />
+
+                  <input
+                    name="postalCode"
+                    value={form.postalCode}
+                    onChange={handleChange}
+                    placeholder="Code postal *"
+                    className="rounded-xl border border-neutral-300 px-4 py-3"
+                  />
+
+                  <input
+                    name="city"
+                    value={form.city}
+                    onChange={handleChange}
+                    placeholder="Ville *"
+                    className="rounded-xl border border-neutral-300 px-4 py-3"
+                  />
+
+                  <select
+                    name="country"
+                    value={form.country}
+                    onChange={handleChange}
+                    className="rounded-xl border border-neutral-300 px-4 py-3 md:col-span-2"
+                  >
+                    <option value="Espagne">Espagne</option>
+                    <option value="France">France</option>
+                    <option value="Belgique">Belgique</option>
+                    <option value="Luxembourg">Luxembourg</option>
+                    <option value="Suisse">Suisse</option>
+                    <option value="Italie">Italie</option>
+                    <option value="Allemagne">Allemagne</option>
+                    <option value="Autre">Autre</option>
+                  </select>
+
+                  <textarea
+                    name="comment"
+                    value={form.comment}
+                    onChange={handleChange}
+                    rows={4}
+                    placeholder="Commentaire"
+                    className="rounded-xl border border-neutral-300 px-4 py-3 md:col-span-2"
+                  />
+                </div>
+              </>
+            )}
 
             <div className="mt-8 rounded-3xl border border-[#e6dcc8] bg-[#fffaf3] p-6">
               <h2 className="text-2xl font-serif">Retrait / livraison</h2>
