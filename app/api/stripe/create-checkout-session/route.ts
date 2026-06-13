@@ -1,13 +1,10 @@
 import { NextResponse } from "next/server";
-import Stripe from "stripe";
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 
 if (!stripeSecretKey) {
   throw new Error("STRIPE_SECRET_KEY manquante.");
 }
-
-const stripe = new Stripe(stripeSecretKey);
 
 function toStripeAmount(value: unknown) {
   const amount = Number(value);
@@ -17,36 +14,6 @@ function toStripeAmount(value: unknown) {
   }
 
   return Math.round(amount * 100);
-}
-
-function getStripeDiagnostic(error: unknown) {
-  const stripeError = error as {
-    type?: string;
-    code?: string;
-    statusCode?: number;
-    requestId?: string;
-    message?: string;
-    raw?: {
-      type?: string;
-      code?: string;
-      statusCode?: number;
-      requestId?: string;
-      message?: string;
-    };
-  };
-
-  return {
-    type: stripeError.type || stripeError.raw?.type || "unknown",
-    code: stripeError.code || stripeError.raw?.code || "unknown",
-    statusCode:
-      stripeError.statusCode || stripeError.raw?.statusCode || "unknown",
-    requestId:
-      stripeError.requestId || stripeError.raw?.requestId || "unknown",
-    message:
-      stripeError.message ||
-      stripeError.raw?.message ||
-      "Erreur Stripe inconnue.",
-  };
 }
 
 export async function POST(req: Request) {
@@ -82,42 +49,76 @@ export async function POST(req: Request) {
       ? items.reduce((sum, item) => sum + Number(item.quantity || 1), 0)
       : 1;
 
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      payment_method_types: ["card"],
-      customer_email: customerEmail || undefined,
+    const params = new URLSearchParams();
 
-      line_items: [
-        {
-          quantity: 1,
-          price_data: {
-            currency: "eur",
-            unit_amount: amount,
-            product_data: {
-              name: "Commande The Wine Watchers",
-              description: `${itemCount} article(s) - Commande ${orderId}`,
-            },
-          },
+    params.append("mode", "payment");
+    params.append("payment_method_types[]", "card");
+
+    if (customerEmail) {
+      params.append("customer_email", String(customerEmail));
+    }
+
+    params.append("line_items[0][quantity]", "1");
+    params.append("line_items[0][price_data][currency]", "eur");
+    params.append(
+      "line_items[0][price_data][unit_amount]",
+      String(amount)
+    );
+    params.append(
+      "line_items[0][price_data][product_data][name]",
+      "Commande The Wine Watchers"
+    );
+    params.append(
+      "line_items[0][price_data][product_data][description]",
+      `${itemCount} article(s) - Commande ${orderId}`
+    );
+
+    params.append("metadata[orderId]", String(orderId));
+
+    params.append(
+      "success_url",
+      `${siteUrl}/paiement/succes?session_id={CHECKOUT_SESSION_ID}`
+    );
+    params.append(
+      "cancel_url",
+      `${siteUrl}/paiement/annule?order_id=${orderId}`
+    );
+
+    const stripeResponse = await fetch(
+      "https://api.stripe.com/v1/checkout/sessions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${stripeSecretKey}`,
+          "Content-Type": "application/x-www-form-urlencoded",
         },
-      ],
+        body: params.toString(),
+      }
+    );
 
-      metadata: {
-        orderId: String(orderId),
-      },
+    const stripeResult = await stripeResponse.json();
 
-      success_url: `${siteUrl}/paiement/succes?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${siteUrl}/paiement/annule?order_id=${orderId}`,
-    });
+    if (!stripeResponse.ok) {
+      return NextResponse.json(
+        {
+          error: `Erreur Stripe API : ${
+            stripeResult?.error?.message || "Erreur inconnue."
+          }`,
+        },
+        { status: stripeResponse.status }
+      );
+    }
 
-    return NextResponse.json({ url: session.url });
+    return NextResponse.json({ url: stripeResult.url });
   } catch (error) {
-    console.error("Erreur Stripe Checkout diagnostic complet:", error);
+    console.error("Erreur Stripe Checkout fetch:", error);
 
-    const diagnostic = getStripeDiagnostic(error);
+    const message =
+      error instanceof Error ? error.message : "Erreur inconnue.";
 
     return NextResponse.json(
       {
-        error: `Erreur Stripe diagnostic : type=${diagnostic.type} | code=${diagnostic.code} | statusCode=${diagnostic.statusCode} | requestId=${diagnostic.requestId} | message=${diagnostic.message}`,
+        error: `Erreur Stripe fetch : ${message}`,
       },
       { status: 500 }
     );
