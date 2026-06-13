@@ -374,6 +374,7 @@ export default function CheckoutPage() {
       [name]: value,
     }));
   };
+
   const handleSubmit = async (
     event: React.FormEvent<HTMLFormElement>
   ) => {
@@ -426,28 +427,28 @@ export default function CheckoutPage() {
     setIsSubmitting(true);
 
     try {
-     const response = await fetch("/api/orders", {
-  method: "POST",
+      const response = await fetch("/api/orders", {
+        method: "POST",
 
-  headers: {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${sessionData.session.access_token}`,
-  },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${sessionData.session.access_token}`,
+        },
 
-  body: JSON.stringify({
-    customer: form,
-    cart,
-    paymentMethod,
-    deliveryMethod,
-    deliveryFee,
-    deliveryNote,
-    vat: vatCalculation,
-    totalToPay,
-    sessionId: localStorage.getItem("wine_watchers_session_id"),
-  }),
-});
+        body: JSON.stringify({
+          customer: form,
+          cart,
+          paymentMethod,
+          deliveryMethod,
+          deliveryFee,
+          deliveryNote,
+          vat: vatCalculation,
+          totalToPay,
+          sessionId: localStorage.getItem("wine_watchers_session_id"),
+        }),
+      });
 
-const result = await response.json();
+      const result = await response.json();
 
       if (!response.ok) {
         setErrorMessage(
@@ -463,18 +464,21 @@ const result = await response.json();
       }
 
       if (paymentMethod === "card") {
-        const stripeResponse = await fetch("/api/stripe/checkout", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            orderId: result.orderId,
-            cart,
-            totalToPay,
-            customerEmail: form.email,
-          }),
-        });
+        const stripeResponse = await fetch(
+          "/api/stripe/create-checkout-session",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              orderId: result.orderId,
+              items: cart,
+              totalToPay,
+              customerEmail: form.email,
+            }),
+          }
+        );
 
         const stripeResult = await stripeResponse.json();
 
