@@ -77,52 +77,57 @@ export default function MonComptePage() {
       .from("profiles")
       .select("*")
       .eq("user_id", userData.user.id)
-      .single();
+      .maybeSingle();
 
     if (profileData) {
       setProfile({
-        first_name:
-          profileData.first_name || metadata.first_name || "",
-
-        last_name:
-          profileData.last_name || metadata.last_name || "",
-
-        phone:
-          profileData.phone || metadata.phone || "",
+        first_name: profileData.first_name || metadata.first_name || "",
+        last_name: profileData.last_name || metadata.last_name || "",
+        phone: profileData.phone || metadata.phone || "",
 
         company_name:
-          profileData.company_name ||
-          metadata.company_name ||
-          "",
+          profileData.company_name || metadata.company_name || "",
 
         vat_number:
-          profileData.vat_number ||
-          metadata.vat_number ||
-          "",
+          profileData.vat_number || metadata.vat_number || "",
 
         billing_address:
-          profileData.billing_address || "",
+          profileData.billing_address ||
+          metadata.billing_address ||
+          metadata.address ||
+          "",
 
         billing_postal_code:
-          profileData.billing_postal_code || "",
+          profileData.billing_postal_code ||
+          metadata.billing_postal_code ||
+          metadata.postal_code ||
+          "",
 
         billing_city:
-          profileData.billing_city || "",
+          profileData.billing_city ||
+          metadata.billing_city ||
+          metadata.city ||
+          "",
 
         billing_country:
-          profileData.billing_country || "",
+          profileData.billing_country ||
+          metadata.billing_country ||
+          metadata.country ||
+          "",
 
         delivery_address:
-          profileData.delivery_address || "",
+          profileData.delivery_address || metadata.delivery_address || "",
 
         delivery_postal_code:
-          profileData.delivery_postal_code || "",
+          profileData.delivery_postal_code ||
+          metadata.delivery_postal_code ||
+          "",
 
         delivery_city:
-          profileData.delivery_city || "",
+          profileData.delivery_city || metadata.delivery_city || "",
 
         delivery_country:
-          profileData.delivery_country || "",
+          profileData.delivery_country || metadata.delivery_country || "",
       });
     } else {
       setProfile((previous) => ({
@@ -132,11 +137,25 @@ export default function MonComptePage() {
         last_name: metadata.last_name || "",
         phone: metadata.phone || "",
 
-        company_name:
-          metadata.company_name || "",
+        company_name: metadata.company_name || "",
+        vat_number: metadata.vat_number || "",
 
-        vat_number:
-          metadata.vat_number || "",
+        billing_address:
+          metadata.billing_address || metadata.address || "",
+
+        billing_postal_code:
+          metadata.billing_postal_code || metadata.postal_code || "",
+
+        billing_city:
+          metadata.billing_city || metadata.city || "",
+
+        billing_country:
+          metadata.billing_country || metadata.country || "",
+
+        delivery_address: metadata.delivery_address || "",
+        delivery_postal_code: metadata.delivery_postal_code || "",
+        delivery_city: metadata.delivery_city || "",
+        delivery_country: metadata.delivery_country || "",
       }));
     }
 
@@ -163,13 +182,35 @@ export default function MonComptePage() {
     setSaving(true);
     setMessage("");
 
-    const { error } = await supabase.from("profiles").upsert({
-      user_id: user.id,
+    const { error } = await supabase
+      .from("profiles")
+      .upsert(
+        {
+          user_id: user.id,
 
-      ...profile,
+          first_name: profile.first_name,
+          last_name: profile.last_name,
+          phone: profile.phone,
 
-      updated_at: new Date().toISOString(),
-    });
+          company_name: profile.company_name,
+          vat_number: profile.vat_number,
+
+          billing_address: profile.billing_address,
+          billing_postal_code: profile.billing_postal_code,
+          billing_city: profile.billing_city,
+          billing_country: profile.billing_country,
+
+          delivery_address: profile.delivery_address,
+          delivery_postal_code: profile.delivery_postal_code,
+          delivery_city: profile.delivery_city,
+          delivery_country: profile.delivery_country,
+
+          updated_at: new Date().toISOString(),
+        },
+        {
+          onConflict: "user_id",
+        }
+      );
 
     if (!error) {
       await supabase.auth.updateUser({
@@ -180,11 +221,27 @@ export default function MonComptePage() {
 
           company_name: profile.company_name,
           vat_number: profile.vat_number,
+
+          address: profile.billing_address,
+          postal_code: profile.billing_postal_code,
+          city: profile.billing_city,
+          country: profile.billing_country,
+
+          billing_address: profile.billing_address,
+          billing_postal_code: profile.billing_postal_code,
+          billing_city: profile.billing_city,
+          billing_country: profile.billing_country,
+
+          delivery_address: profile.delivery_address,
+          delivery_postal_code: profile.delivery_postal_code,
+          delivery_city: profile.delivery_city,
+          delivery_country: profile.delivery_country,
         },
       });
     }
 
     if (error) {
+      console.error("Erreur enregistrement profil :", error);
       setMessage("Erreur lors de l’enregistrement.");
     } else {
       setMessage("Informations enregistrées avec succès.");
@@ -192,13 +249,10 @@ export default function MonComptePage() {
 
     setSaving(false);
   }
-
   if (loading) {
     return (
       <main className="min-h-screen bg-[#f8f5ef] px-6 py-12">
-        <p className="text-center text-neutral-700">
-          Chargement...
-        </p>
+        <p className="text-center text-neutral-700">Chargement...</p>
       </main>
     );
   }
@@ -218,18 +272,14 @@ export default function MonComptePage() {
           <div className="grid gap-4 md:grid-cols-2">
             <input
               value={profile.first_name}
-              onChange={(e) =>
-                updateProfile("first_name", e.target.value)
-              }
+              onChange={(e) => updateProfile("first_name", e.target.value)}
               placeholder="Prénom"
               className={inputClass}
             />
 
             <input
               value={profile.last_name}
-              onChange={(e) =>
-                updateProfile("last_name", e.target.value)
-              }
+              onChange={(e) => updateProfile("last_name", e.target.value)}
               placeholder="Nom"
               className={inputClass}
             />
@@ -242,27 +292,21 @@ export default function MonComptePage() {
 
             <input
               value={profile.phone}
-              onChange={(e) =>
-                updateProfile("phone", e.target.value)
-              }
+              onChange={(e) => updateProfile("phone", e.target.value)}
               placeholder="Téléphone"
               className={inputClass}
             />
 
             <input
               value={profile.company_name}
-              onChange={(e) =>
-                updateProfile("company_name", e.target.value)
-              }
+              onChange={(e) => updateProfile("company_name", e.target.value)}
               placeholder="Société"
               className={inputClass}
             />
 
             <input
               value={profile.vat_number}
-              onChange={(e) =>
-                updateProfile("vat_number", e.target.value)
-              }
+              onChange={(e) => updateProfile("vat_number", e.target.value)}
               placeholder="N° TVA"
               className={inputClass}
             />
@@ -285,10 +329,7 @@ export default function MonComptePage() {
             <input
               value={profile.billing_postal_code}
               onChange={(e) =>
-                updateProfile(
-                  "billing_postal_code",
-                  e.target.value
-                )
+                updateProfile("billing_postal_code", e.target.value)
               }
               placeholder="Code postal"
               className={inputClass}
@@ -306,10 +347,7 @@ export default function MonComptePage() {
             <input
               value={profile.billing_country}
               onChange={(e) =>
-                updateProfile(
-                  "billing_country",
-                  e.target.value
-                )
+                updateProfile("billing_country", e.target.value)
               }
               placeholder="Pays"
               className={inputClass}
@@ -324,10 +362,7 @@ export default function MonComptePage() {
             <input
               value={profile.delivery_address}
               onChange={(e) =>
-                updateProfile(
-                  "delivery_address",
-                  e.target.value
-                )
+                updateProfile("delivery_address", e.target.value)
               }
               placeholder="Adresse"
               className={inputLargeClass}
@@ -336,10 +371,7 @@ export default function MonComptePage() {
             <input
               value={profile.delivery_postal_code}
               onChange={(e) =>
-                updateProfile(
-                  "delivery_postal_code",
-                  e.target.value
-                )
+                updateProfile("delivery_postal_code", e.target.value)
               }
               placeholder="Code postal"
               className={inputClass}
@@ -348,10 +380,7 @@ export default function MonComptePage() {
             <input
               value={profile.delivery_city}
               onChange={(e) =>
-                updateProfile(
-                  "delivery_city",
-                  e.target.value
-                )
+                updateProfile("delivery_city", e.target.value)
               }
               placeholder="Ville"
               className={inputClass}
@@ -360,10 +389,7 @@ export default function MonComptePage() {
             <input
               value={profile.delivery_country}
               onChange={(e) =>
-                updateProfile(
-                  "delivery_country",
-                  e.target.value
-                )
+                updateProfile("delivery_country", e.target.value)
               }
               placeholder="Pays"
               className={inputClass}
@@ -381,9 +407,7 @@ export default function MonComptePage() {
           </button>
 
           {message && (
-            <p className="mt-4 text-sm text-neutral-700">
-              {message}
-            </p>
+            <p className="mt-4 text-sm text-neutral-700">{message}</p>
           )}
         </section>
 
@@ -410,9 +434,7 @@ export default function MonComptePage() {
                   <p className="text-sm text-neutral-600">
                     Date :{" "}
                     {order.created_at
-                      ? new Date(
-                          order.created_at
-                        ).toLocaleDateString("fr-FR")
+                      ? new Date(order.created_at).toLocaleDateString("fr-FR")
                       : "-"}
                   </p>
 
