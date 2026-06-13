@@ -1,15 +1,28 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@supabase/supabase-js";
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
 if (!stripeSecretKey) {
-  throw new Error("STRIPE_SECRET_KEY manquante dans .env.local");
+  throw new Error("STRIPE_SECRET_KEY manquante.");
+}
+
+if (!supabaseUrl) {
+  throw new Error("NEXT_PUBLIC_SUPABASE_URL manquante.");
+}
+
+if (!supabaseServiceKey) {
+  throw new Error("SUPABASE_SERVICE_ROLE_KEY manquante.");
 }
 
 const stripe = new Stripe(stripeSecretKey);
+
+const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
 export async function POST(request: Request) {
   try {
@@ -33,11 +46,7 @@ export async function POST(request: Request) {
     let event: Stripe.Event;
 
     try {
-      event = stripe.webhooks.constructEvent(
-        body,
-        signature,
-        webhookSecret
-      );
+      event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
     } catch (error) {
       console.error("Signature webhook Stripe invalide :", error);
 
@@ -51,8 +60,10 @@ export async function POST(request: Request) {
       const session = event.data.object as Stripe.Checkout.Session;
       const orderId = session.metadata?.orderId;
 
-      if (orderId) {
-        const { error } = await supabase
+      if (!orderId) {
+        console.error("Webhook Stripe reçu sans orderId.");
+      } else {
+        const { error } = await supabaseAdmin
           .from("orders")
           .update({
             status: "paid",
