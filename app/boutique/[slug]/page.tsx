@@ -100,6 +100,7 @@ const popularAppellations: Record<string, { name: string; href: string }[]> = {
     { name: "Saint-Estèphe", href: "/appellation/saint-estephe" },
     { name: "Saint-Émilion", href: "/appellation/saint-emilion" },
     { name: "Pomerol", href: "/appellation/pomerol" },
+{ name: "Pessac-Léognan", href: "/appellation/pessac-leognan" },
     { name: "Sauternes", href: "/appellation/sauternes" },
   ],
   bourgogne: [
