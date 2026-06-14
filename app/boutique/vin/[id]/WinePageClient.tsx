@@ -609,14 +609,17 @@ if (foundWine.hidden_from_site === true) {
               </Link>
             </div>
 
-            <div className="mt-6 flex flex-wrap gap-4 text-sm">
-              <Link
-                href="/boutique/bordeaux"
-                className="text-[#d8b56d] transition hover:text-white"
-              >
-                ← Retour boutique
-              </Link>
-
+           <div className="mt-6 flex flex-wrap gap-4 text-sm">
+  <Link
+    href={
+      wine.category?.toLowerCase() === "bourgogne"
+        ? "/boutique/bourgogne"
+        : "/boutique"
+    }
+    className="text-[#d8b56d] transition hover:text-white"
+  >
+    ← Retour boutique
+  </Link>
               {categorySlug && (
                 <Link
                   href={`/boutique/${categorySlug}`}
