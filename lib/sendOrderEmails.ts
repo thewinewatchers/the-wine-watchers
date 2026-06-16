@@ -77,9 +77,16 @@ export async function sendOrderEmails({
   bankTransferInstructions,
 }: SendOrderEmailsParams): Promise<SendOrderEmailsDiagnostic> {
   const resendApiKey = process.env.RESEND_API_KEY || null;
+
   const emailFrom =
-    process.env.EMAIL_FROM || "The Wine Watchers <onboarding@resend.dev>";
-  const adminEmail = process.env.ADMIN_EMAIL || "millesimesunited@gmail.com";
+    process.env.ORDER_EMAIL_FROM ||
+    process.env.EMAIL_FROM ||
+    "The Wine Watchers <contact@thewinewatchers.com>";
+
+  const adminEmail =
+    process.env.ORDER_ADMIN_EMAIL ||
+    process.env.ADMIN_EMAIL ||
+    "millesimesunited@gmail.com";
 
   const diagnostic: SendOrderEmailsDiagnostic = {
     started: true,
@@ -92,20 +99,29 @@ export async function sendOrderEmails({
   };
 
   try {
+    console.log("[ORDER EMAIL] Début envoi emails commande", {
+      orderId,
+      hasResendApiKey: Boolean(resendApiKey),
+      emailFrom,
+      adminEmail,
+      customerEmail,
+    });
+
     if (!resendApiKey) {
       diagnostic.error = "RESEND_API_KEY manquante";
+      console.error("[ORDER EMAIL] RESEND_API_KEY manquante");
       return diagnostic;
     }
 
     const resend = new Resend(resendApiKey);
 
     const formattedItems = items
-      .map((item) => {
-        return `- ${item.wine_name}
+      .map(
+        (item) => `- ${item.wine_name}
   Quantité : ${item.quantity}
   Prix unitaire HT : ${formatPrice(item.unit_price)}
-  Total ligne HT : ${formatPrice(item.total_price)}`;
-      })
+  Total ligne HT : ${formatPrice(item.total_price)}`
+      )
       .join("\n\n");
 
     const paymentLabel =
@@ -116,11 +132,7 @@ export async function sendOrderEmails({
     const deliveryFeeLabel =
       selectedDeliveryMethod === "pickup" ? "Gratuit" : "À confirmer";
 
-    const clientResult = await resend.emails.send({
-      from: emailFrom,
-      to: customerEmail,
-      subject: `Confirmation de commande - ${orderId}`,
-      text: `Bonjour ${customerFirstName},
+    const clientText = `Bonjour ${customerFirstName},
 
 Nous vous remercions pour votre commande chez The Wine Watchers.
 
@@ -169,17 +181,9 @@ ${bankTransferInstructions}`
 
 Notre équipe reste à votre disposition pour toute question.
 
-The Wine Watchers SL`,
-    });
+The Wine Watchers SL`;
 
-    diagnostic.clientResult = clientResult;
-    diagnostic.clientEmailSent = !("error" in clientResult && clientResult.error);
-
-    const adminResult = await resend.emails.send({
-      from: emailFrom,
-      to: adminEmail,
-      subject: `Nouvelle commande reçue - ${orderId}`,
-      text: `Nouvelle commande reçue sur The Wine Watchers.
+    const adminText = `Nouvelle commande reçue sur The Wine Watchers.
 
 Numéro de commande :
 ${orderId}
@@ -232,15 +236,45 @@ ${paymentLabel}
 
 Vins commandés :
 
-${formattedItems}`,
+${formattedItems}`;
+
+    const clientResult = await resend.emails.send({
+      from: emailFrom,
+      to: [customerEmail],
+      subject: `Confirmation de commande - ${orderId}`,
+      text: clientText,
+    });
+
+    diagnostic.clientResult = clientResult;
+    diagnostic.clientEmailSent = !clientResult.error;
+
+    console.log("[ORDER EMAIL] Résultat email client", clientResult);
+
+    const adminResult = await resend.emails.send({
+      from: emailFrom,
+      to: [adminEmail],
+      subject: `Nouvelle commande reçue - ${orderId}`,
+      text: adminText,
     });
 
     diagnostic.adminResult = adminResult;
-    diagnostic.adminEmailSent = !("error" in adminResult && adminResult.error);
+    diagnostic.adminEmailSent = !adminResult.error;
+
+    console.log("[ORDER EMAIL] Résultat email admin", adminResult);
+
+    if (clientResult.error || adminResult.error) {
+      diagnostic.error = JSON.stringify({
+        clientError: clientResult.error || null,
+        adminError: adminResult.error || null,
+      });
+
+      console.error("[ORDER EMAIL] Erreur Resend", diagnostic.error);
+    }
 
     return diagnostic;
   } catch (error) {
     diagnostic.error = error instanceof Error ? error.message : String(error);
+    console.error("[ORDER EMAIL] Erreur générale", error);
     return diagnostic;
   }
 }
