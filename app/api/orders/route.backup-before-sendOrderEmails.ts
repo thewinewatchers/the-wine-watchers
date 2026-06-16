@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabaseClient";
-import { sendOrderEmails } from "@/lib/sendOrderEmails";
+import { Resend } from "resend";
 
 type CartItem = {
   id?: string | number;
@@ -18,6 +18,8 @@ type CartItem = {
 
 type PaymentMethod = "card" | "bank_transfer";
 type DeliveryMethod = "pickup" | "delivery";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const SELLER_COUNTRY_CODE = "ES";
 
@@ -79,6 +81,13 @@ function parsePrice(value?: string | number) {
 
 function roundMoney(value: number) {
   return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+
+function formatPrice(value: number) {
+  return Number(value || 0).toLocaleString("fr-FR", {
+    style: "currency",
+    currency: "EUR",
+  });
 }
 
 function getCountryCode(country?: string) {
@@ -419,33 +428,145 @@ export async function POST(request: Request) {
       .eq("user_id", userData.user.id)
       .eq("status", "open");
 
+    const formattedItems = orderItems
+      .map((item) => {
+        return `- ${item.wine_name}
+  Quantité : ${item.quantity}
+  Prix unitaire HT : ${formatPrice(item.unit_price)}
+  Total ligne HT : ${formatPrice(item.total_price)}`;
+      })
+      .join("\n\n");
+
     try {
-      await sendOrderEmails({
-        orderId,
-        customerFirstName: customer.firstName,
-        customerLastName: customer.lastName,
-        customerEmail: customer.email,
-        customerPhone: customer.phone,
-        customerAddress: customer.address || null,
-        customerPostalCode: customer.postalCode || null,
-        customerCity: customer.city || null,
-        customerCountry: customer.country || null,
-        customerComment: customer.comment || null,
-        companyName,
-        vatNumber,
-        items: orderItems,
-        totalExclVat: vatCalculation.totalExclVat,
-        vatAmount: vatCalculation.vatAmount,
-        finalTotalToPay,
-        vatNote: vatCalculation.vatNote,
-        deliveryLabel,
-        safeDeliveryNote,
-        selectedDeliveryMethod,
-        selectedPaymentMethod,
-        bankTransferInstructions,
+      await resend.emails.send({
+        from:
+          process.env.EMAIL_FROM ||
+          "The Wine Watchers <onboarding@resend.dev>",
+        to: customer.email,
+        subject: `Confirmation de commande - ${orderId}`,
+        text: `Bonjour ${customer.firstName},
+
+Nous vous remercions pour votre commande chez The Wine Watchers.
+
+Numéro de commande :
+${orderId}
+
+Client :
+${customer.firstName} ${customer.lastName}
+${companyName ? `Société : ${companyName}` : ""}
+${vatNumber ? `N° TVA : ${vatNumber}` : ""}
+
+Vins commandés :
+
+${formattedItems}
+
+Total HT vins :
+${formatPrice(vatCalculation.totalExclVat)}
+
+TVA :
+${formatPrice(vatCalculation.vatAmount)}
+
+Retrait / livraison :
+${deliveryLabel}
+
+${safeDeliveryNote}
+
+Frais livraison :
+${selectedDeliveryMethod === "pickup" ? "Gratuit" : "À confirmer"}
+
+Total TTC / Total à payer :
+${formatPrice(finalTotalToPay)}
+
+Régime TVA :
+${vatCalculation.vatNote}
+
+Mode de paiement :
+${
+  selectedPaymentMethod === "bank_transfer"
+    ? "Virement bancaire"
+    : "Carte bancaire"
+}
+
+${
+  bankTransferInstructions
+    ? `Instructions de virement :
+
+${bankTransferInstructions}`
+    : ""
+}
+
+Notre équipe reste à votre disposition pour toute question.
+
+The Wine Watchers SL`,
+      });
+
+      await resend.emails.send({
+        from:
+          process.env.EMAIL_FROM ||
+          "The Wine Watchers <onboarding@resend.dev>",
+        to: process.env.ADMIN_EMAIL || "millesimesunited@gmail.com",
+        subject: `Nouvelle commande reçue - ${orderId}`,
+        text: `Nouvelle commande reçue sur The Wine Watchers.
+
+Numéro de commande :
+${orderId}
+
+Client :
+${customer.firstName} ${customer.lastName}
+
+Société :
+${companyName || "-"}
+
+N° TVA :
+${vatNumber || "-"}
+
+Email :
+${customer.email}
+
+Téléphone :
+${customer.phone}
+
+Adresse :
+${customer.address || ""}
+${customer.postalCode || ""} ${customer.city || ""}
+${customer.country || ""}
+
+Commentaire :
+${customer.comment || "Aucun commentaire"}
+
+Retrait / livraison :
+${deliveryLabel}
+
+${safeDeliveryNote}
+
+Frais livraison :
+${selectedDeliveryMethod === "pickup" ? "Gratuit" : "À confirmer"}
+
+Total HT vins :
+${formatPrice(vatCalculation.totalExclVat)}
+
+TVA :
+${formatPrice(vatCalculation.vatAmount)}
+
+Total TTC / Total à payer :
+${formatPrice(finalTotalToPay)}
+
+Régime TVA :
+${vatCalculation.vatNote}
+
+Mode de paiement :
+${
+  selectedPaymentMethod === "bank_transfer"
+    ? "Virement bancaire"
+    : "Carte bancaire"
+}
+
+Vins commandés :
+
+${formattedItems}`,
       });
     } catch (emailError) {
-      console.error("Erreur sendOrderEmails commande :", emailError);
+      console.error("Erreur envoi emails Resend :", emailError);
     }
 
     return NextResponse.json({
