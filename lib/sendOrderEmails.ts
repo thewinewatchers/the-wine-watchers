@@ -32,6 +32,19 @@ type SendOrderEmailsParams = {
   bankTransferInstructions?: string | null;
 };
 
+export type SendOrderEmailsDiagnostic = {
+  started: boolean;
+  hasResendApiKey: boolean;
+  emailFrom: string | null;
+  adminEmail: string | null;
+  customerEmail: string | null;
+  clientEmailSent: boolean;
+  adminEmailSent: boolean;
+  clientResult?: unknown;
+  adminResult?: unknown;
+  error?: string;
+};
+
 function formatPrice(value: number) {
   return Number(value || 0).toLocaleString("fr-FR", {
     style: "currency",
@@ -62,49 +75,52 @@ export async function sendOrderEmails({
   selectedDeliveryMethod,
   selectedPaymentMethod,
   bankTransferInstructions,
-}: SendOrderEmailsParams) {
-  console.log("SEND_ORDER_EMAILS_START:", orderId);
-
-  const resendApiKey = process.env.RESEND_API_KEY;
+}: SendOrderEmailsParams): Promise<SendOrderEmailsDiagnostic> {
+  const resendApiKey = process.env.RESEND_API_KEY || null;
   const emailFrom =
     process.env.EMAIL_FROM || "The Wine Watchers <onboarding@resend.dev>";
   const adminEmail = process.env.ADMIN_EMAIL || "millesimesunited@gmail.com";
 
-  console.log("SEND_ORDER_EMAILS_ENV:", {
+  const diagnostic: SendOrderEmailsDiagnostic = {
+    started: true,
     hasResendApiKey: Boolean(resendApiKey),
     emailFrom,
     adminEmail,
-  });
+    customerEmail,
+    clientEmailSent: false,
+    adminEmailSent: false,
+  };
 
-  if (!resendApiKey) {
-    console.error("SEND_ORDER_EMAILS_ERROR: RESEND_API_KEY manquante");
-    return;
-  }
+  try {
+    if (!resendApiKey) {
+      diagnostic.error = "RESEND_API_KEY manquante";
+      return diagnostic;
+    }
 
-  const resend = new Resend(resendApiKey);
+    const resend = new Resend(resendApiKey);
 
-  const formattedItems = items
-    .map((item) => {
-      return `- ${item.wine_name}
+    const formattedItems = items
+      .map((item) => {
+        return `- ${item.wine_name}
   Quantité : ${item.quantity}
   Prix unitaire HT : ${formatPrice(item.unit_price)}
   Total ligne HT : ${formatPrice(item.total_price)}`;
-    })
-    .join("\n\n");
+      })
+      .join("\n\n");
 
-  const paymentLabel =
-    selectedPaymentMethod === "bank_transfer"
-      ? "Virement bancaire"
-      : "Carte bancaire";
+    const paymentLabel =
+      selectedPaymentMethod === "bank_transfer"
+        ? "Virement bancaire"
+        : "Carte bancaire";
 
-  const deliveryFeeLabel =
-    selectedDeliveryMethod === "pickup" ? "Gratuit" : "À confirmer";
+    const deliveryFeeLabel =
+      selectedDeliveryMethod === "pickup" ? "Gratuit" : "À confirmer";
 
-  const clientEmailResult = await resend.emails.send({
-    from: emailFrom,
-    to: customerEmail,
-    subject: `Confirmation de commande - ${orderId}`,
-    text: `Bonjour ${customerFirstName},
+    const clientResult = await resend.emails.send({
+      from: emailFrom,
+      to: customerEmail,
+      subject: `Confirmation de commande - ${orderId}`,
+      text: `Bonjour ${customerFirstName},
 
 Nous vous remercions pour votre commande chez The Wine Watchers.
 
@@ -154,15 +170,16 @@ ${bankTransferInstructions}`
 Notre équipe reste à votre disposition pour toute question.
 
 The Wine Watchers SL`,
-  });
+    });
 
-  console.log("SEND_ORDER_EMAILS_CLIENT_RESULT:", clientEmailResult);
+    diagnostic.clientResult = clientResult;
+    diagnostic.clientEmailSent = !("error" in clientResult && clientResult.error);
 
-  const adminEmailResult = await resend.emails.send({
-    from: emailFrom,
-    to: adminEmail,
-    subject: `Nouvelle commande reçue - ${orderId}`,
-    text: `Nouvelle commande reçue sur The Wine Watchers.
+    const adminResult = await resend.emails.send({
+      from: emailFrom,
+      to: adminEmail,
+      subject: `Nouvelle commande reçue - ${orderId}`,
+      text: `Nouvelle commande reçue sur The Wine Watchers.
 
 Numéro de commande :
 ${orderId}
@@ -216,9 +233,14 @@ ${paymentLabel}
 Vins commandés :
 
 ${formattedItems}`,
-  });
+    });
 
-  console.log("SEND_ORDER_EMAILS_ADMIN_RESULT:", adminEmailResult);
+    diagnostic.adminResult = adminResult;
+    diagnostic.adminEmailSent = !("error" in adminResult && adminResult.error);
 
-  console.log("SEND_ORDER_EMAILS_DONE:", orderId);
+    return diagnostic;
+  } catch (error) {
+    diagnostic.error = error instanceof Error ? error.message : String(error);
+    return diagnostic;
+  }
 }

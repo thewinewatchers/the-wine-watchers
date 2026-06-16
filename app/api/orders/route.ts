@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabaseClient";
-import { sendOrderEmails } from "@/lib/sendOrderEmails";
+import {
+  sendOrderEmails,
+  type SendOrderEmailsDiagnostic,
+} from "@/lib/sendOrderEmails";
 
 type CartItem = {
   id?: string | number;
@@ -173,6 +176,8 @@ function getBankTransferInstructions(orderId: string) {
 }
 
 export async function POST(request: Request) {
+  let emailDiagnostic: SendOrderEmailsDiagnostic | null = null;
+
   try {
     const authHeader = request.headers.get("authorization");
     const token = authHeader?.replace("Bearer ", "");
@@ -419,34 +424,30 @@ export async function POST(request: Request) {
       .eq("user_id", userData.user.id)
       .eq("status", "open");
 
-    try {
-      await sendOrderEmails({
-        orderId,
-        customerFirstName: customer.firstName,
-        customerLastName: customer.lastName,
-        customerEmail: customer.email,
-        customerPhone: customer.phone,
-        customerAddress: customer.address || null,
-        customerPostalCode: customer.postalCode || null,
-        customerCity: customer.city || null,
-        customerCountry: customer.country || null,
-        customerComment: customer.comment || null,
-        companyName,
-        vatNumber,
-        items: orderItems,
-        totalExclVat: vatCalculation.totalExclVat,
-        vatAmount: vatCalculation.vatAmount,
-        finalTotalToPay,
-        vatNote: vatCalculation.vatNote,
-        deliveryLabel,
-        safeDeliveryNote,
-        selectedDeliveryMethod,
-        selectedPaymentMethod,
-        bankTransferInstructions,
-      });
-    } catch (emailError) {
-      console.error("Erreur sendOrderEmails commande :", emailError);
-    }
+    emailDiagnostic = await sendOrderEmails({
+      orderId,
+      customerFirstName: customer.firstName,
+      customerLastName: customer.lastName,
+      customerEmail: customer.email,
+      customerPhone: customer.phone,
+      customerAddress: customer.address || null,
+      customerPostalCode: customer.postalCode || null,
+      customerCity: customer.city || null,
+      customerCountry: customer.country || null,
+      customerComment: customer.comment || null,
+      companyName,
+      vatNumber,
+      items: orderItems,
+      totalExclVat: vatCalculation.totalExclVat,
+      vatAmount: vatCalculation.vatAmount,
+      finalTotalToPay,
+      vatNote: vatCalculation.vatNote,
+      deliveryLabel,
+      safeDeliveryNote,
+      selectedDeliveryMethod,
+      selectedPaymentMethod,
+      bankTransferInstructions,
+    });
 
     return NextResponse.json({
       success: true,
@@ -467,12 +468,17 @@ export async function POST(request: Request) {
 
       paymentMethod: selectedPaymentMethod,
       bankTransferInstructions,
+
+      emailDiagnostic,
     });
   } catch (error) {
     console.error("Erreur API orders :", error);
 
     return NextResponse.json(
-      { error: "Erreur serveur lors de la création de la commande." },
+      {
+        error: "Erreur serveur lors de la création de la commande.",
+        emailDiagnostic,
+      },
       { status: 500 }
     );
   }
