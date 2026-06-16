@@ -1,6 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  outputFileTracingExcludes: {
+    "*": [
+      "./public/images/**/*",
+      "./public/uploads/**/*",
+    ],
+  },
+
   async redirects() {
     return [
       {
