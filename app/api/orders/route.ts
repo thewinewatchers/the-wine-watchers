@@ -156,7 +156,8 @@ function getBankTransferInstructions(orderId: string) {
   const bankCountry = process.env.BANK_COUNTRY || "";
 
   return [
-    "Merci d’effectuer votre virement bancaire en indiquant impérativement le numéro de commande en communication.",
+    "DIAGNOSTIC API ORDERS ACTIF - 17/06",
+"Merci d’effectuer votre virement bancaire en indiquant impérativement le numéro de commande en communication.",
     "",
     `Référence à indiquer : ${orderId}`,
     "",
