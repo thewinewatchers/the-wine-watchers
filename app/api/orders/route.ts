@@ -156,7 +156,7 @@ function getBankTransferInstructions(orderId: string) {
   const bankCountry = process.env.BANK_COUNTRY || "";
 
   return [
-    "DIAGNOSTIC API ORDERS ACTIF - 17/06",
+    `DIAGNOSTIC API ORDERS ACTIF - Supabase: ${process.env.NEXT_PUBLIC_SUPABASE_URL || "URL SUPABASE MANQUANTE"} - Resend: ${process.env.RESEND_API_KEY ? "CLE PRESENTE" : "CLE MANQUANTE"}`,
 "Merci d’effectuer votre virement bancaire en indiquant impérativement le numéro de commande en communication.",
     "",
     `Référence à indiquer : ${orderId}`,
