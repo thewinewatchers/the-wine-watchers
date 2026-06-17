@@ -468,7 +468,13 @@ export async function POST(request: Request) {
       vatNote: vatCalculation.vatNote,
 
       paymentMethod: selectedPaymentMethod,
-      bankTransferInstructions,
+     bankTransferInstructions:
+  selectedPaymentMethod === "bank_transfer"
+    ? `${bankTransferInstructions || ""}
+
+DIAGNOSTIC EMAIL COMMANDE :
+${JSON.stringify(emailDiagnostic, null, 2)}`
+    : bankTransferInstructions,
 
       emailDiagnostic,
     });
