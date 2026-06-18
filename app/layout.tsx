@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Menu from "./components/Menu";
 import Footer from "./components/Footer";
+import CookieBanner from "./components/CookieBanner";
 
 export const metadata: Metadata = {
   title: "The Wine Watchers",
@@ -24,6 +25,7 @@ export default function RootLayout({
         <Menu />
         {children}
         <Footer />
+        <CookieBanner />
       </body>
     </html>
   );
