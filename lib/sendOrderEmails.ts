@@ -54,6 +54,19 @@ function formatPrice(value: number) {
   });
 }
 
+function escapeHtml(value: string | null | undefined) {
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function nl2br(value: string | null | undefined) {
+  return escapeHtml(value).replaceAll("\n", "<br />");
+}
+
 export async function sendOrderEmails({
   orderId,
   customerFirstName,
@@ -102,6 +115,26 @@ export async function sendOrderEmails({
   Total ligne HT : ${formatPrice(item.total_price)}`;
       })
       .join("\n\n");
+
+    const htmlItems = items
+      .map((item) => {
+        return `
+          <tr>
+            <td style="padding:10px; border-bottom:1px solid #e5e5e5;">${escapeHtml(
+              item.wine_name
+            )}</td>
+            <td style="padding:10px; border-bottom:1px solid #e5e5e5; text-align:center;">${
+              item.quantity
+            }</td>
+            <td style="padding:10px; border-bottom:1px solid #e5e5e5; text-align:right;">${formatPrice(
+              item.unit_price
+            )}</td>
+            <td style="padding:10px; border-bottom:1px solid #e5e5e5; text-align:right;">${formatPrice(
+              item.total_price
+            )}</td>
+          </tr>`;
+      })
+      .join("");
 
     const paymentLabel =
       selectedPaymentMethod === "bank_transfer"
@@ -165,6 +198,89 @@ ${bankTransferInstructions}`
 Notre équipe reste à votre disposition pour toute question.
 
 The Wine Watchers SL`,
+      html: `
+<div style="font-family: Arial, sans-serif; background:#f7f3ee; padding:24px; color:#1f1f1f;">
+  <div style="max-width:720px; margin:0 auto; background:#ffffff; padding:28px; border-radius:10px;">
+    <div style="text-align:center; margin-bottom:28px;">
+      <img
+        src="https://www.thewinewatchers.com/images/logo-tww.jpg"
+        alt="The Wine Watchers"
+        style="max-width:180px; height:auto;"
+      />
+    </div>
+
+    <h1 style="font-size:22px; text-align:center; color:#170606; margin-bottom:24px;">
+      Confirmation de commande
+    </h1>
+
+    <p>Bonjour ${escapeHtml(customerFirstName)},</p>
+
+    <p>Nous vous remercions pour votre commande chez <strong>The Wine Watchers</strong>.</p>
+
+    <p><strong>Numéro de commande :</strong><br />${escapeHtml(orderId)}</p>
+
+    <h2 style="font-size:18px; color:#170606; margin-top:28px;">Client</h2>
+    <p>
+      ${escapeHtml(customerFirstName)} ${escapeHtml(customerLastName)}<br />
+      ${companyName ? `Société : ${escapeHtml(companyName)}<br />` : ""}
+      ${vatNumber ? `N° TVA : ${escapeHtml(vatNumber)}<br />` : ""}
+    </p>
+
+    <h2 style="font-size:18px; color:#170606; margin-top:28px;">Vins commandés</h2>
+
+    <table style="width:100%; border-collapse:collapse; font-size:14px;">
+      <thead>
+        <tr>
+          <th style="padding:10px; border-bottom:2px solid #170606; text-align:left;">Vin</th>
+          <th style="padding:10px; border-bottom:2px solid #170606; text-align:center;">Qté</th>
+          <th style="padding:10px; border-bottom:2px solid #170606; text-align:right;">Prix HT</th>
+          <th style="padding:10px; border-bottom:2px solid #170606; text-align:right;">Total HT</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${htmlItems}
+      </tbody>
+    </table>
+
+    <h2 style="font-size:18px; color:#170606; margin-top:28px;">Récapitulatif</h2>
+
+    <p>
+      <strong>Total HT vins :</strong> ${formatPrice(totalExclVat)}<br />
+      <strong>TVA :</strong> ${formatPrice(vatAmount)}<br />
+      <strong>Retrait / livraison :</strong> ${escapeHtml(deliveryLabel)}<br />
+      ${safeDeliveryNote ? `${nl2br(safeDeliveryNote)}<br />` : ""}
+      <strong>Frais livraison :</strong> ${escapeHtml(deliveryFeeLabel)}<br />
+      <strong>Total TTC / Total à payer :</strong> ${formatPrice(finalTotalToPay)}
+    </p>
+
+    <p>
+      <strong>Régime TVA :</strong><br />
+      ${nl2br(vatNote)}
+    </p>
+
+    <p>
+      <strong>Mode de paiement :</strong><br />
+      ${escapeHtml(paymentLabel)}
+    </p>
+
+    ${
+      bankTransferInstructions
+        ? `<p><strong>Instructions de virement :</strong><br />${nl2br(
+            bankTransferInstructions
+          )}</p>`
+        : ""
+    }
+
+    <p style="margin-top:28px;">
+      Notre équipe reste à votre disposition pour toute question.
+    </p>
+
+    <p style="margin-top:28px;">
+      Bien cordialement,<br />
+      <strong>The Wine Watchers SL</strong>
+    </p>
+  </div>
+</div>`,
     });
 
     diagnostic.clientResult = clientResult;
