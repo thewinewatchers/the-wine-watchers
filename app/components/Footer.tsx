@@ -89,6 +89,13 @@ export default function Footer() {
               </Link>
 
               <Link
+                href="/politique-cookies"
+                className="transition hover:text-[#d8b56d]"
+              >
+                Politique de cookies
+              </Link>
+
+              <Link
                 href="/livraison-retours"
                 className="transition hover:text-[#d8b56d]"
               >
