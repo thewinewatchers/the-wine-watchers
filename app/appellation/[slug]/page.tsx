@@ -209,7 +209,12 @@ export default async function AppellationPage({
                 </div>
 
                 <p className="mt-4 font-semibold text-[#3b1f1f]">
-                  {wine.price ? `${wine.price} €` : "Prix sur demande"}
+                  {wine.price
+  ? Number(wine.price).toLocaleString("fr-FR", {
+      style: "currency",
+      currency: "EUR",
+    })
+  : "Prix sur demande"}
                 </p>
               </Link>
             ))}
