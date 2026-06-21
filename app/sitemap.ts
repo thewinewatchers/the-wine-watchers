@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getWines } from "@/lib/wines";
+import { blogPosts } from "@/app/blog/blogPosts";
 
 const siteUrl = "https://www.thewinewatchers.com";
 
@@ -45,6 +46,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     {
       url: `${siteUrl}/boutique/espagne`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    {
+      url: `${siteUrl}/blog`,
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 0.8,
@@ -101,5 +108,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.85,
   }));
 
-  return [...pagesPrincipales, ...pagesAppellations, ...pagesVins];
+  const pagesBlog: MetadataRoute.Sitemap = blogPosts.map((post) => ({
+    url: `${siteUrl}/blog/${post.slug}`,
+    lastModified: new Date(),
+    changeFrequency: "monthly",
+    priority: 0.75,
+  }));
+
+  return [
+    ...pagesPrincipales,
+    ...pagesAppellations,
+    ...pagesVins,
+    ...pagesBlog,
+  ];
 }
