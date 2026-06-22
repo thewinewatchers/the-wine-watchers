@@ -9,6 +9,8 @@ const appellations: Record<
     title: string;
     description: string;
     intro: string;
+    boutiqueHref: string;
+    boutiqueLabel: string;
   }
 > = {
   pauillac: {
@@ -18,6 +20,8 @@ const appellations: Record<
       "Découvrez notre sélection de vins de Pauillac : grands crus classés, primeurs, millésimes rares et châteaux emblématiques du Médoc.",
     intro:
       "Pauillac est l’une des appellations les plus prestigieuses du Médoc. Elle rassemble certains des plus grands noms de Bordeaux, réputés pour leur puissance, leur profondeur et leur immense potentiel de garde.",
+    boutiqueHref: "/boutique/bordeaux",
+    boutiqueLabel: "Retour à la boutique Bordeaux",
   },
   margaux: {
     name: "Margaux",
@@ -26,6 +30,8 @@ const appellations: Record<
       "Sélection de vins de Margaux : grands crus classés, primeurs et millésimes recherchés disponibles chez The Wine Watchers.",
     intro:
       "Margaux est une appellation emblématique du Médoc, connue pour l’élégance, la finesse et la complexité de ses vins.",
+    boutiqueHref: "/boutique/bordeaux",
+    boutiqueLabel: "Retour à la boutique Bordeaux",
   },
   pomerol: {
     name: "Pomerol",
@@ -34,6 +40,8 @@ const appellations: Record<
       "Découvrez notre sélection de vins de Pomerol : Petrus, Le Pin, Vieux Château Certan, La Conseillante et autres grands vins rares.",
     intro:
       "Pomerol est une appellation mythique de la rive droite bordelaise. Réputée pour ses grands merlots, elle produit des vins profonds, veloutés et rares.",
+    boutiqueHref: "/boutique/bordeaux",
+    boutiqueLabel: "Retour à la boutique Bordeaux",
   },
   "saint-emilion": {
     name: "Saint-Émilion",
@@ -42,6 +50,8 @@ const appellations: Record<
       "Achetez des vins de Saint-Émilion : grands crus classés, millésimes recherchés et références prestigieuses de la rive droite.",
     intro:
       "Saint-Émilion est l’une des appellations les plus célèbres de Bordeaux. Ses vins allient richesse, élégance et profondeur.",
+    boutiqueHref: "/boutique/bordeaux",
+    boutiqueLabel: "Retour à la boutique Bordeaux",
   },
   "saint-julien": {
     name: "Saint-Julien",
@@ -50,6 +60,8 @@ const appellations: Record<
       "Sélection de vins de Saint-Julien : grands crus classés, primeurs et millésimes recherchés du Médoc.",
     intro:
       "Saint-Julien est réputée pour l’équilibre exceptionnel de ses vins. Située au cœur du Médoc, l’appellation offre des crus structurés, élégants et réguliers.",
+    boutiqueHref: "/boutique/bordeaux",
+    boutiqueLabel: "Retour à la boutique Bordeaux",
   },
   "saint-estephe": {
     name: "Saint-Estèphe",
@@ -58,6 +70,8 @@ const appellations: Record<
       "Découvrez les vins de Saint-Estèphe : grands crus classés, primeurs et millésimes recherchés disponibles à l’achat.",
     intro:
       "Saint-Estèphe produit des vins puissants, profonds et structurés. L’appellation est particulièrement appréciée pour ses grands vins de garde.",
+    boutiqueHref: "/boutique/bordeaux",
+    boutiqueLabel: "Retour à la boutique Bordeaux",
   },
   "pessac-leognan": {
     name: "Pessac-Léognan",
@@ -66,6 +80,8 @@ const appellations: Record<
       "Découvrez notre sélection de vins de Pessac-Léognan : grands crus classés, vins rouges et blancs de Bordeaux, primeurs et millésimes recherchés.",
     intro:
       "Pessac-Léognan est l’une des grandes appellations de Bordeaux, réputée pour ses vins rouges élégants et ses grands vins blancs secs.",
+    boutiqueHref: "/boutique/bordeaux",
+    boutiqueLabel: "Retour à la boutique Bordeaux",
   },
   sauternes: {
     name: "Sauternes",
@@ -74,6 +90,8 @@ const appellations: Record<
       "Découvrez notre sélection de vins de Sauternes : grands liquoreux de Bordeaux, millésimes rares et châteaux emblématiques.",
     intro:
       "Sauternes est l’appellation emblématique des grands vins liquoreux de Bordeaux.",
+    boutiqueHref: "/boutique/bordeaux",
+    boutiqueLabel: "Retour à la boutique Bordeaux",
   },
   meursault: {
     name: "Meursault",
@@ -82,6 +100,8 @@ const appellations: Record<
       "Sélection de vins de Meursault : grands blancs de Bourgogne, domaines réputés et millésimes recherchés.",
     intro:
       "Meursault est une appellation majeure de la Côte de Beaune, mondialement connue pour ses grands vins blancs.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
   },
   "vosne-romanee": {
     name: "Vosne-Romanée",
@@ -90,6 +110,8 @@ const appellations: Record<
       "Découvrez notre sélection de vins de Vosne-Romanée, appellation mythique de la Côte de Nuits.",
     intro:
       "Vosne-Romanée est l’un des villages les plus prestigieux de Bourgogne.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
   },
   "gevrey-chambertin": {
     name: "Gevrey-Chambertin",
@@ -98,6 +120,8 @@ const appellations: Record<
       "Sélection de vins de Gevrey-Chambertin : grands crus, premiers crus et domaines prestigieux.",
     intro:
       "Gevrey-Chambertin est une appellation incontournable de la Côte de Nuits.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
   },
   "chambolle-musigny": {
     name: "Chambolle-Musigny",
@@ -106,6 +130,8 @@ const appellations: Record<
       "Découvrez les vins de Chambolle-Musigny, grands rouges de Bourgogne réputés pour leur finesse.",
     intro:
       "Chambolle-Musigny incarne la finesse et l’élégance bourguignonnes.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
   },
 };
 
@@ -128,7 +154,6 @@ export async function generateMetadata({
     description: appellation.description,
   };
 }
-
 export default async function AppellationPage({
   params,
 }: {
@@ -153,7 +178,39 @@ export default async function AppellationPage({
   return (
     <main className="min-h-screen bg-[#f8f5f0] px-6 py-12">
       <section className="mx-auto max-w-6xl">
+        <div className="mb-6 flex flex-wrap items-center gap-2 text-sm text-gray-600">
+          <Link href="/" className="transition hover:text-[#8B1E2D]">
+            Accueil
+          </Link>
+          <span>/</span>
+          <Link href="/boutique" className="transition hover:text-[#8B1E2D]">
+            Boutique
+          </Link>
+          <span>/</span>
+          <Link
+            href={appellation.boutiqueHref}
+            className="transition hover:text-[#8B1E2D]"
+          >
+            {appellation.boutiqueHref.includes("bourgogne")
+              ? "Bourgogne"
+              : "Bordeaux"}
+          </Link>
+          <span>/</span>
+          <span className="font-medium text-[#3b1f1f]">
+            {appellation.name}
+          </span>
+        </div>
+
         <div className="mb-10 rounded-2xl bg-white p-8 shadow-sm">
+          <div className="mb-6">
+            <Link
+              href={appellation.boutiqueHref}
+              className="inline-flex rounded-full border border-[#8B1E2D] px-5 py-2 text-sm font-semibold text-[#8B1E2D] transition hover:bg-[#8B1E2D] hover:text-white"
+            >
+              ← {appellation.boutiqueLabel}
+            </Link>
+          </div>
+
           <p className="mb-2 text-sm uppercase tracking-[0.25em] text-gray-500">
             Appellation
           </p>
@@ -210,11 +267,11 @@ export default async function AppellationPage({
 
                 <p className="mt-4 font-semibold text-[#3b1f1f]">
                   {wine.price
-  ? Number(wine.price).toLocaleString("fr-FR", {
-      style: "currency",
-      currency: "EUR",
-    })
-  : "Prix sur demande"}
+                    ? Number(wine.price).toLocaleString("fr-FR", {
+                        style: "currency",
+                        currency: "EUR",
+                      })
+                    : "Prix sur demande"}
                 </p>
               </Link>
             ))}
