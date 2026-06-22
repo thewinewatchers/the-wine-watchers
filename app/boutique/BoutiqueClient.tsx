@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabaseClient";
 
 type Wine = {
   id: string;
+  slug?: string;
   name?: string;
   title?: string;
   chateau?: string;
@@ -86,6 +87,10 @@ function getWineImage(wine: Wine) {
   return wine.image_url || wine.imageUrl || wine.image || "";
 }
 
+function getWineHref(wine: Wine) {
+  return `/boutique/vin/${wine.slug || wine.id}`;
+}
+
 function uniqueSorted(values: Array<string | number | undefined | null>) {
   return Array.from(
     new Set(values.map((value) => String(value ?? "").trim()).filter(Boolean))
@@ -104,10 +109,11 @@ function WineCard({
   const vintage = getWineVintage(wine);
   const price = getWinePrice(wine);
   const location = wine.appellation || wine.region || categoryTitle;
+  const wineHref = getWineHref(wine);
 
   return (
     <article className="group overflow-hidden rounded-[1.7rem] border border-[#dfcfb8] bg-[#fffaf3] shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#d8b56d] hover:shadow-xl">
-      <Link href={`/boutique/vin/${wine.id}`} className="block">
+      <Link href={wineHref} className="block">
         <div className="relative flex h-[245px] items-center justify-center overflow-hidden bg-[#efe3d2] p-6">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(216,181,109,0.24),transparent_38%)]" />
 
@@ -162,7 +168,7 @@ function WineCard({
           )}
         </div>
 
-        <Link href={`/boutique/vin/${wine.id}`}>
+        <Link href={wineHref}>
           <h3 className="min-h-[64px] truncate font-serif text-sm leading-tight text-[#24110d] transition group-hover:text-[#8a1f1f]">
             {name}
           </h3>
@@ -190,7 +196,7 @@ function WineCard({
           </div>
 
           <Link
-            href={`/boutique/vin/${wine.id}`}
+            href={wineHref}
             className="rounded-full bg-[#8a1f1f] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#641313]"
           >
             Détails
@@ -308,127 +314,128 @@ export default function BoutiqueClient({
     ).sort((a, b) => Number(b) - Number(a));
   }, [categoryWines]);
 
- const filteredWines = useMemo(() => {
-  const normalizedSearch = normalize(search);
+  const filteredWines = useMemo(() => {
+    const normalizedSearch = normalize(search);
 
-  return (search ? wines.filter(isVisibleWine) : categoryWines)
-    .filter((wine) => {
-      if (!isVisibleWine(wine)) return false;
+    return (search ? wines.filter(isVisibleWine) : categoryWines)
+      .filter((wine) => {
+        if (!isVisibleWine(wine)) return false;
 
-      const wineProducer = normalize(wine.producer);
-      const wineAppellation = normalize(wine.appellation);
-      const wineRegion = normalize(wine.region);
-      const wineClassification = normalize(wine.classification);
-      const wineVintage = normalize(wine.vintage || wine.millesime);
+        const wineProducer = normalize(wine.producer);
+        const wineAppellation = normalize(wine.appellation);
+        const wineRegion = normalize(wine.region);
+        const wineClassification = normalize(wine.classification);
+        const wineVintage = normalize(wine.vintage || wine.millesime);
 
-      const matchesProducer = selectedProducer
-        ? wineProducer === normalize(selectedProducer)
-        : true;
+        const matchesProducer = selectedProducer
+          ? wineProducer === normalize(selectedProducer)
+          : true;
 
-      const matchesAppellation = selectedAppellation
-        ? wineAppellation === normalize(selectedAppellation) ||
-          wineRegion === normalize(selectedAppellation)
-        : true;
+        const matchesAppellation = selectedAppellation
+          ? wineAppellation === normalize(selectedAppellation) ||
+            wineRegion === normalize(selectedAppellation)
+          : true;
 
-      const matchesClassification = selectedClassification
-        ? wineClassification === normalize(selectedClassification)
-        : true;
+        const matchesClassification = selectedClassification
+          ? wineClassification === normalize(selectedClassification)
+          : true;
 
-      const matchesVintage = selectedVintage
-        ? wineVintage === normalize(selectedVintage)
-        : true;
+        const matchesVintage = selectedVintage
+          ? wineVintage === normalize(selectedVintage)
+          : true;
 
-      const mainSearchText = normalize(
-        [
-          wine.name,
-          wine.title,
-          wine.chateau,
-          wine.producer,
-          wine.appellation,
-          wine.region,
-          wine.vintage,
-          wine.millesime,
-        ]
-          .filter(Boolean)
-          .join(" ")
-      );
-
-      const searchVariants = search
-        ? [
-            normalizedSearch,
-            normalizedSearch.replaceAll("saint", "st"),
-            normalizedSearch.replaceAll("st", "saint"),
-            normalizedSearch.replaceAll("-", " "),
+        const mainSearchText = normalize(
+          [
+            wine.name,
+            wine.title,
+            wine.chateau,
+            wine.producer,
+            wine.appellation,
+            wine.region,
+            wine.vintage,
+            wine.millesime,
           ]
-        : [];
+            .filter(Boolean)
+            .join(" ")
+        );
 
-      const matchesSearch = search
-        ? searchVariants.some((variant) => mainSearchText.includes(variant))
-        : true;
+        const searchVariants = search
+          ? [
+              normalizedSearch,
+              normalizedSearch.replaceAll("saint", "st"),
+              normalizedSearch.replaceAll("st", "saint"),
+              normalizedSearch.replaceAll("-", " "),
+            ]
+          : [];
 
-      return (
-        matchesProducer &&
-        matchesAppellation &&
-        matchesClassification &&
-        matchesVintage &&
-        matchesSearch
-      );
-    })
-    .sort((a, b) => {
-      if (slug === "primeurs-2025") {
-        const appellationA = normalize(a.appellation || a.region || "");
-        const appellationB = normalize(b.appellation || b.region || "");
+        const matchesSearch = search
+          ? searchVariants.some((variant) => mainSearchText.includes(variant))
+          : true;
 
-        if (appellationA !== appellationB) {
-          return appellationA.localeCompare(appellationB, "fr");
-        }
+        return (
+          matchesProducer &&
+          matchesAppellation &&
+          matchesClassification &&
+          matchesVintage &&
+          matchesSearch
+        );
+      })
+      .sort((a, b) => {
+        if (slug === "primeurs-2025") {
+          const appellationA = normalize(a.appellation || a.region || "");
+          const appellationB = normalize(b.appellation || b.region || "");
 
-        const nameA = normalize(a.name || a.title || "");
-        const nameB = normalize(b.name || b.title || "");
+          if (appellationA !== appellationB) {
+            return appellationA.localeCompare(appellationB, "fr");
+          }
 
-        return nameA.localeCompare(nameB, "fr");
-      }
+          const nameA = normalize(a.name || a.title || "");
+          const nameB = normalize(b.name || b.title || "");
 
-      if (slug === "bourgogne") {
-        const producerA = normalize(a.producer || "");
-        const producerB = normalize(b.producer || "");
-
-        if (producerA !== producerB) {
-          return producerA.localeCompare(producerB, "fr");
-        }
-
-        const appellationA = normalize(a.appellation || a.region || "");
-        const appellationB = normalize(b.appellation || b.region || "");
-
-        if (appellationA !== appellationB) {
-          return appellationA.localeCompare(appellationB, "fr");
-        }
-
-        const nameA = normalize(a.name || a.title || "");
-        const nameB = normalize(b.name || b.title || "");
-
-        if (nameA !== nameB) {
           return nameA.localeCompare(nameB, "fr");
         }
 
-        const vintageA = Number(a.vintage || a.millesime || 0);
-        const vintageB = Number(b.vintage || b.millesime || 0);
+        if (slug === "bourgogne") {
+          const producerA = normalize(a.producer || "");
+          const producerB = normalize(b.producer || "");
 
-        return vintageB - vintageA;
-      }
+          if (producerA !== producerB) {
+            return producerA.localeCompare(producerB, "fr");
+          }
 
-      return 0;
-    });
-}, [
-  wines,
-  categoryWines,
-  search,
-  selectedProducer,
-  selectedAppellation,
-  selectedClassification,
-  selectedVintage,
-  slug,
-]);
+          const appellationA = normalize(a.appellation || a.region || "");
+          const appellationB = normalize(b.appellation || b.region || "");
+
+          if (appellationA !== appellationB) {
+            return appellationA.localeCompare(appellationB, "fr");
+          }
+
+          const nameA = normalize(a.name || a.title || "");
+          const nameB = normalize(b.name || b.title || "");
+
+          if (nameA !== nameB) {
+            return nameA.localeCompare(nameB, "fr");
+          }
+
+          const vintageA = Number(a.vintage || a.millesime || 0);
+          const vintageB = Number(b.vintage || b.millesime || 0);
+
+          return vintageB - vintageA;
+        }
+
+        return 0;
+      });
+  }, [
+    wines,
+    categoryWines,
+    search,
+    selectedProducer,
+    selectedAppellation,
+    selectedClassification,
+    selectedVintage,
+    slug,
+  ]);
+
   const totalPages = Math.max(
     1,
     Math.ceil(filteredWines.length / WINES_PER_PAGE)
@@ -440,30 +447,30 @@ export default function BoutiqueClient({
   );
 
   const groupedPaginatedWines = useMemo(() => {
-  if (slug !== "primeurs-2025" && slug !== "bourgogne") return [];
+    if (slug !== "primeurs-2025" && slug !== "bourgogne") return [];
 
-  const groups: { title: string; wines: Wine[] }[] = [];
+    const groups: { title: string; wines: Wine[] }[] = [];
 
-  paginatedWines.forEach((wine) => {
-    const title =
-      slug === "bourgogne"
-        ? wine.producer || "Domaine non précisé"
-        : wine.appellation || wine.region || "Autres";
+    paginatedWines.forEach((wine) => {
+      const title =
+        slug === "bourgogne"
+          ? wine.producer || "Domaine non précisé"
+          : wine.appellation || wine.region || "Autres";
 
-    const existingGroup = groups.find((group) => group.title === title);
+      const existingGroup = groups.find((group) => group.title === title);
 
-    if (existingGroup) {
-      existingGroup.wines.push(wine);
-    } else {
-      groups.push({
-        title,
-        wines: [wine],
-      });
-    }
-  });
+      if (existingGroup) {
+        existingGroup.wines.push(wine);
+      } else {
+        groups.push({
+          title,
+          wines: [wine],
+        });
+      }
+    });
 
-  return groups;
-}, [paginatedWines, slug]);
+    return groups;
+  }, [paginatedWines, slug]);
 
   function resetFilters() {
     setSearch("");
@@ -621,7 +628,7 @@ export default function BoutiqueClient({
             {slug === "primeurs-2025" || slug === "bourgogne" ? (
               <div className="space-y-12">
                 {groupedPaginatedWines.map((group) => (
-                 <section key={group.title}>
+                  <section key={group.title}>
                     <div className="mb-6 rounded-2xl border border-[#d8b56d]/40 bg-[#24110d] px-6 py-4">
                       <h3 className="font-serif text-3xl text-[#d8b56d]">
                         {group.title}

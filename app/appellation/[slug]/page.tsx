@@ -135,6 +135,39 @@ const appellations: Record<
   },
 };
 
+type AppellationWine = {
+  id: string;
+  slug?: string | null;
+  name?: string | null;
+  vintage?: string | number | null;
+  price?: string | number | null;
+  image?: string | null;
+  appellation?: string | null;
+  classification?: string | null;
+  bottle_size?: string | null;
+  packaging?: string | null;
+  hidden_from_site?: boolean | null;
+};
+
+function getWineHref(wine: AppellationWine) {
+  return `/boutique/vin/${wine.slug || wine.id}`;
+}
+
+function formatPrice(price?: string | number | null) {
+  if (!price) return "Prix sur demande";
+
+  const value = Number(price);
+
+  if (Number.isNaN(value)) return String(price);
+
+  return (
+    value.toLocaleString("fr-FR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }) + " € HT"
+  );
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -154,6 +187,7 @@ export async function generateMetadata({
     description: appellation.description,
   };
 }
+
 export default async function AppellationPage({
   params,
 }: {
@@ -169,11 +203,15 @@ export default async function AppellationPage({
   const { data: wines, error } = await supabase
     .from("wines")
     .select(
-      "id, name, vintage, price, image, appellation, classification, bottle_size, packaging, hidden_from_site"
+      "id, slug, name, vintage, price, image, appellation, classification, bottle_size, packaging, hidden_from_site"
     )
     .eq("appellation", appellation.name)
     .neq("hidden_from_site", true)
     .order("name", { ascending: true });
+
+  const visibleWines = ((wines || []) as AppellationWine[]).filter(
+    (wine) => wine.hidden_from_site !== true
+  );
 
   return (
     <main className="min-h-screen bg-[#f8f5f0] px-6 py-12">
@@ -220,7 +258,7 @@ export default async function AppellationPage({
           </h1>
 
           <p className="mb-6 text-lg font-medium text-gray-700">
-            {wines?.length || 0} vin(s) disponible(s)
+            {visibleWines.length} vin(s) disponible(s)
           </p>
 
           <p className="max-w-4xl text-lg leading-relaxed text-gray-700">
@@ -234,22 +272,22 @@ export default async function AppellationPage({
           )}
         </div>
 
-        {!wines || wines.length === 0 ? (
+        {visibleWines.length === 0 ? (
           <div className="rounded-2xl bg-white p-6 text-gray-600 shadow-sm">
             Aucun vin disponible actuellement pour cette appellation.
           </div>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {wines.map((wine) => (
+            {visibleWines.map((wine) => (
               <Link
                 key={wine.id}
-                href={`/boutique/vin/${wine.id}`}
+                href={getWineHref(wine)}
                 className="block rounded-2xl bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
               >
                 {wine.image && (
                   <img
                     src={wine.image}
-                    alt={wine.name}
+                    alt={wine.name || "Vin"}
                     className="mb-4 h-56 w-full object-contain"
                   />
                 )}
@@ -266,12 +304,7 @@ export default async function AppellationPage({
                 </div>
 
                 <p className="mt-4 font-semibold text-[#3b1f1f]">
-                  {wine.price
-                    ? Number(wine.price).toLocaleString("fr-FR", {
-                        style: "currency",
-                        currency: "EUR",
-                      })
-                    : "Prix sur demande"}
+                  {formatPrice(wine.price)}
                 </p>
               </Link>
             ))}
