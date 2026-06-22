@@ -125,12 +125,22 @@ function formatPrice(price?: string | number) {
 function categoryToSlug(category?: string) {
   if (!category) return "";
 
-  return category
+  const normalized = category
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/œ/g, "oe")
-    .replace(/æ/g, "ae")
+    .replace(/æ/g, "ae");
+
+  if (normalized.includes("italie")) return "italie";
+  if (normalized.includes("bourgogne")) return "bourgogne";
+  if (normalized.includes("bordeaux")) return "bordeaux";
+  if (normalized.includes("rhone")) return "rhone";
+  if (normalized.includes("espagne")) return "espagne";
+  if (normalized.includes("usa")) return "usa";
+  if (normalized.includes("primeur")) return "primeurs-2025";
+
+  return normalized
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
@@ -199,11 +209,10 @@ function RelatedWineList({
             href={getWineUrl(item)}
             className="rounded-2xl border border-[#eadcca] bg-[#fffaf3] px-4 py-3 text-sm font-medium text-[#6d5b50] transition hover:border-[#8a6a2f] hover:text-[#8a1f1f]"
           >
-            
             {item.name}
-{item.vintage && !String(item.name || "").includes(String(item.vintage))
-  ? ` ${item.vintage}`
-  : ""}
+            {item.vintage && !String(item.name || "").includes(String(item.vintage))
+              ? ` ${item.vintage}`
+              : ""}
           </Link>
         ))}
       </div>
@@ -271,11 +280,13 @@ export default function WinePage() {
           setWine(null);
           return;
         }
-if (foundWine.hidden_from_site === true) {
-  setErrorMessage("Ce vin est actuellement indisponible.");
-  setWine(null);
-  return;
-}
+
+        if (foundWine.hidden_from_site === true) {
+          setErrorMessage("Ce vin est actuellement indisponible.");
+          setWine(null);
+          return;
+        }
+
         setWine(foundWine);
 
         if (foundWine.producer && foundWine.id) {
@@ -528,8 +539,8 @@ if (foundWine.hidden_from_site === true) {
             </p>
 
             <h1 className="mt-5 font-serif text-xl leading-tight text-white md:text-3xl">
-  {wine.name}
-</h1>
+              {wine.name}
+            </h1>
 
             <div className="mt-5 flex flex-wrap gap-3 text-sm text-white/75">
               {wine.producer && <span>{wine.producer}</span>}
@@ -609,17 +620,18 @@ if (foundWine.hidden_from_site === true) {
               </Link>
             </div>
 
-           <div className="mt-6 flex flex-wrap gap-4 text-sm">
-  <Link
-    href={
-      wine.category?.toLowerCase() === "bourgogne"
-        ? "/boutique/bourgogne"
-        : "/boutique"
-    }
-    className="text-[#d8b56d] transition hover:text-white"
-  >
-    ← Retour boutique
-  </Link>
+            <div className="mt-6 flex flex-wrap gap-4 text-sm">
+              <Link
+                href={
+                  wine.category?.toLowerCase() === "bourgogne"
+                    ? "/boutique/bourgogne"
+                    : "/boutique"
+                }
+                className="text-[#d8b56d] transition hover:text-white"
+              >
+                ← Retour boutique
+              </Link>
+
               {categorySlug && (
                 <Link
                   href={`/boutique/${categorySlug}`}
@@ -759,8 +771,8 @@ if (foundWine.hidden_from_site === true) {
       <section className="mx-auto max-w-7xl px-6 pb-20">
         <div className="rounded-[2.5rem] border border-[#e1d1bd] bg-[#fffaf3] p-8 shadow-sm">
           <p className="text-sm uppercase tracking-[0.28em] text-[#8a6a2f]">
-  Suggestions
-</p>
+            Suggestions
+          </p>
 
           <h2 className="mt-3 font-serif text-3xl text-[#24110d]">
             Voir aussi
