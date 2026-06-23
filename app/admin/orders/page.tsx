@@ -106,7 +106,9 @@ export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [items, setItems] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
     async function loadOrders() {
@@ -146,6 +148,44 @@ export default function AdminOrdersPage() {
 
     loadOrders();
   }, []);
+
+  async function markOrderAsPaid(orderId: string) {
+    setUpdatingOrderId(orderId);
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    const { error } = await supabase
+      .from("orders")
+      .update({
+        status: "paid",
+        payment_status: "paid",
+      })
+      .eq("id", orderId);
+
+    if (error) {
+      console.error("Erreur mise à jour paiement :", error);
+      setErrorMessage(
+        `Impossible de marquer la commande comme payée : ${error.message}`
+      );
+      setUpdatingOrderId(null);
+      return;
+    }
+
+    setOrders((previousOrders) =>
+      previousOrders.map((order) =>
+        order.id === orderId
+          ? {
+              ...order,
+              status: "paid",
+              payment_status: "paid",
+            }
+          : order
+      )
+    );
+
+    setSuccessMessage("Commande marquée comme payée.");
+    setUpdatingOrderId(null);
+  }
 
   const itemsByOrderId = useMemo(() => {
     return items.reduce<Record<string, OrderItem[]>>((acc, item) => {
@@ -190,6 +230,12 @@ export default function AdminOrdersPage() {
           </div>
         </div>
 
+        {successMessage && (
+          <div className="mb-6 rounded-2xl border border-green-200 bg-green-50 p-4 text-sm font-medium text-green-800">
+            {successMessage}
+          </div>
+        )}
+
         {loading ? (
           <div className="rounded-3xl border border-[#e6dcc8] bg-white p-8 shadow-sm">
             Chargement des commandes...
@@ -212,8 +258,8 @@ export default function AdminOrdersPage() {
           <div className="space-y-6">
             {orders.map((order) => {
               const orderItems = itemsByOrderId[order.id] || [];
-              const isBankTransfer =
-                order.payment_method === "bank_transfer";
+              const isBankTransfer = order.payment_method === "bank_transfer";
+              const isPaid = order.payment_status === "paid";
 
               return (
                 <section
@@ -264,6 +310,19 @@ export default function AdminOrdersPage() {
                         <p className="mt-4 text-sm text-neutral-600">
                           {formatDate(order.created_at)}
                         </p>
+
+                        {!isPaid && (
+                          <button
+                            type="button"
+                            onClick={() => markOrderAsPaid(order.id)}
+                            disabled={updatingOrderId === order.id}
+                            className="mt-4 rounded-full bg-[#8a1f1f] px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-[#641313] disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            {updatingOrderId === order.id
+                              ? "Mise à jour..."
+                              : "Marquer comme payé"}
+                          </button>
+                        )}
                       </div>
 
                       <div className="lg:text-right">
@@ -285,7 +344,7 @@ export default function AdminOrdersPage() {
                           rel="noopener noreferrer"
                           className="mt-4 inline-block rounded-full bg-black px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-white hover:bg-[#8a6a2f]"
                         >
-                          Télécharger devis PDF
+                          Télécharger facture PDF
                         </a>
                       </div>
                     </div>
@@ -390,37 +449,21 @@ export default function AdminOrdersPage() {
                                 </h4>
 
                                 <div className="mt-1 space-y-1 text-sm text-neutral-600">
-                                  {item.producer && (
-                                    <p>{item.producer}</p>
-                                  )}
-
-                                  {item.appellation && (
-                                    <p>{item.appellation}</p>
-                                  )}
-
+                                  {item.producer && <p>{item.producer}</p>}
+                                  {item.appellation && <p>{item.appellation}</p>}
                                   {item.vintage && (
-                                    <p>
-                                      Millésime : {item.vintage}
-                                    </p>
+                                    <p>Millésime : {item.vintage}</p>
                                   )}
-
                                   {item.bottle_size && (
-                                    <p>
-                                      Flaconnage : {item.bottle_size}
-                                    </p>
+                                    <p>Flaconnage : {item.bottle_size}</p>
                                   )}
-
                                   {item.packaging && (
-                                    <p>
-                                      Caissage : {item.packaging}
-                                    </p>
+                                    <p>Caissage : {item.packaging}</p>
                                   )}
                                 </div>
 
                                 <div className="mt-3 flex flex-wrap justify-between gap-3 text-sm">
-                                  <span>
-                                    Qté : {item.quantity}
-                                  </span>
+                                  <span>Qté : {item.quantity}</span>
 
                                   <span>
                                     Prix unitaire :{" "}
@@ -428,8 +471,7 @@ export default function AdminOrdersPage() {
                                   </span>
 
                                   <span className="font-semibold text-black">
-                                    Total :{" "}
-                                    {formatPrice(item.total_price)}
+                                    Total : {formatPrice(item.total_price)}
                                   </span>
                                 </div>
                               </div>
