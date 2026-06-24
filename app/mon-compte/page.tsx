@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -31,6 +32,24 @@ type OrderItem = {
   quantity: number;
   unit_price: number | string;
   total_price: number | string;
+};
+
+type WishlistItem = {
+  id: string;
+  wine_id: string;
+  created_at: string;
+  wines?: {
+    id: string;
+    slug?: string | null;
+    name?: string | null;
+    producer?: string | null;
+    appellation?: string | null;
+    vintage?: string | number | null;
+    price?: string | number | null;
+    image?: string | null;
+    bottle_size?: string | null;
+    packaging?: string | null;
+  } | null;
 };
 
 function formatPrice(value?: number | string | null) {
@@ -70,6 +89,11 @@ function getOrderTotalTtc(order: any) {
   return order.total_incl_vat || order.total_amount || 0;
 }
 
+function getWineHref(item: WishlistItem) {
+  const wine = item.wines;
+  return `/boutique/vin/${wine?.slug || wine?.id || item.wine_id}`;
+}
+
 export default function MonComptePage() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<Profile>({
@@ -90,10 +114,15 @@ export default function MonComptePage() {
 
   const [orders, setOrders] = useState<any[]>([]);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
+  const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
   const [openOrderId, setOpenOrderId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [removingWishlistId, setRemovingWishlistId] = useState<string | null>(
+    null
+  );
   const [message, setMessage] = useState("");
+  const [wishlistMessage, setWishlistMessage] = useState("");
 
   const inputClass =
     "rounded border border-neutral-300 bg-white p-3 text-neutral-900 placeholder:text-neutral-500";
@@ -189,6 +218,39 @@ export default function MonComptePage() {
         .order("created_at", { ascending: true });
 
       setOrderItems((itemsData || []) as OrderItem[]);
+    } else {
+      setOrderItems([]);
+    }
+
+    const { data: wishlistData, error: wishlistError } = await supabase
+      .from("wishlist_items")
+      .select(
+        `
+        id,
+        wine_id,
+        created_at,
+        wines (
+          id,
+          slug,
+          name,
+          producer,
+          appellation,
+          vintage,
+          price,
+          image,
+          bottle_size,
+          packaging
+        )
+      `
+      )
+      .eq("user_id", userData.user.id)
+      .order("created_at", { ascending: false });
+
+    if (wishlistError) {
+      console.error("Erreur chargement wishlist :", wishlistError);
+      setWishlistItems([]);
+    } else {
+      setWishlistItems((wishlistData || []) as WishlistItem[]);
     }
 
     setLoading(false);
@@ -200,7 +262,6 @@ export default function MonComptePage() {
       [field]: value,
     }));
   }
-
   async function saveProfile() {
     if (!user) return;
 
@@ -268,6 +329,30 @@ export default function MonComptePage() {
     setSaving(false);
   }
 
+  async function removeFromWishlist(wishlistId: string) {
+    setRemovingWishlistId(wishlistId);
+    setWishlistMessage("");
+
+    const { error } = await supabase
+      .from("wishlist_items")
+      .delete()
+      .eq("id", wishlistId);
+
+    if (error) {
+      console.error("Erreur suppression wishlist :", error);
+      setWishlistMessage("Impossible de retirer ce vin de votre wishlist.");
+      setRemovingWishlistId(null);
+      return;
+    }
+
+    setWishlistItems((previous) =>
+      previous.filter((item) => item.id !== wishlistId)
+    );
+
+    setWishlistMessage("Vin retiré de votre wishlist.");
+    setRemovingWishlistId(null);
+  }
+
   if (loading) {
     return (
       <main className="min-h-screen bg-[#f8f5ef] px-6 py-12">
@@ -328,6 +413,100 @@ export default function MonComptePage() {
           </button>
 
           {message && <p className="mt-4 text-sm text-neutral-700">{message}</p>}
+        </section>
+
+        <section id="wishlist" className="mb-10 rounded-2xl bg-white p-8 shadow">
+          <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="text-sm uppercase tracking-[0.25em] text-[#8B1E2D]">
+                Sélection personnelle
+              </p>
+              <h2 className="mt-2 text-2xl font-serif text-[#2b1b16]">
+                Ma wishlist
+              </h2>
+            </div>
+
+            <p className="text-sm text-neutral-600">
+              {wishlistItems.length} vin{wishlistItems.length > 1 ? "s" : ""} favori{wishlistItems.length > 1 ? "s" : ""}
+            </p>
+          </div>
+
+          {wishlistMessage && (
+            <p className="mb-4 rounded-xl bg-[#f8f5ef] p-3 text-sm text-neutral-700">
+              {wishlistMessage}
+            </p>
+          )}
+
+          {wishlistItems.length === 0 ? (
+            <p className="text-neutral-600">
+              Votre wishlist est vide pour le moment.
+            </p>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2">
+              {wishlistItems.map((item) => {
+                const wine = item.wines;
+
+                return (
+                  <div
+                    key={item.id}
+                    className="rounded-xl border border-neutral-200 bg-[#fffaf8] p-4"
+                  >
+                    <div className="flex gap-4">
+                      {wine?.image ? (
+                        <img
+                          src={wine.image}
+                          alt={wine.name || "Vin"}
+                          className="h-24 w-20 rounded-lg object-contain bg-white"
+                        />
+                      ) : (
+                        <div className="flex h-24 w-20 items-center justify-center rounded-lg bg-neutral-100 text-xs text-neutral-500">
+                          Image
+                        </div>
+                      )}
+
+                      <div className="flex-1">
+                        <h3 className="font-serif text-lg text-[#2b1b16]">
+                          {wine?.name || "Vin"}
+                        </h3>
+
+                        <div className="mt-1 text-sm text-neutral-600">
+                          {wine?.producer && <p>{wine.producer}</p>}
+                          {wine?.appellation && <p>{wine.appellation}</p>}
+                          {wine?.vintage && <p>Millésime : {wine.vintage}</p>}
+                          {wine?.bottle_size && <p>Flaconnage : {wine.bottle_size}</p>}
+                          {wine?.packaging && <p>Caissage : {wine.packaging}</p>}
+                        </div>
+
+                        <p className="mt-2 text-sm font-semibold text-[#8B1E2D]">
+                          {wine?.price ? formatPrice(wine.price) : "Prix sur demande"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 flex flex-wrap gap-3">
+                      <Link
+                        href={getWineHref(item)}
+                        className="rounded-full bg-[#8B1E2D] px-5 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#6f1824]"
+                      >
+                        Voir le vin
+                      </Link>
+
+                      <button
+                        type="button"
+                        onClick={() => removeFromWishlist(item.id)}
+                        disabled={removingWishlistId === item.id}
+                        className="rounded-full border border-[#8B1E2D] px-5 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#8B1E2D] transition hover:bg-[#8B1E2D] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {removingWishlistId === item.id
+                          ? "Suppression..."
+                          : "Retirer"}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </section>
 
         <section className="rounded-2xl bg-white p-8 shadow">

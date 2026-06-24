@@ -230,8 +230,11 @@ export default function WinePage() {
   const [availableStock, setAvailableStock] = useState(0);
   const [loading, setLoading] = useState(true);
   const [addingToCart, setAddingToCart] = useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+  const [isInWishlist, setIsInWishlist] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [cartMessage, setCartMessage] = useState("");
+  const [wishlistMessage, setWishlistMessage] = useState("");
   const [sameProducerWines, setSameProducerWines] = useState<Wine[]>([]);
   const [sameAppellationWines, setSameAppellationWines] = useState<Wine[]>([]);
   const [sameVintageWines, setSameVintageWines] = useState<Wine[]>([]);
@@ -246,6 +249,9 @@ export default function WinePage() {
 
       setLoading(true);
       setErrorMessage("");
+      setCartMessage("");
+      setWishlistMessage("");
+      setIsInWishlist(false);
       setSameProducerWines([]);
       setSameAppellationWines([]);
       setSameVintageWines([]);
@@ -288,6 +294,19 @@ export default function WinePage() {
         }
 
         setWine(foundWine);
+
+        const { data: userData } = await supabase.auth.getUser();
+
+        if (userData.user && foundWine.id) {
+          const { data: wishlistData } = await supabase
+            .from("wishlist_items")
+            .select("id")
+            .eq("user_id", userData.user.id)
+            .eq("wine_id", foundWine.id)
+            .maybeSingle();
+
+          setIsInWishlist(Boolean(wishlistData));
+        }
 
         if (foundWine.producer && foundWine.id) {
           const { data } = await supabase
@@ -372,6 +391,55 @@ export default function WinePage() {
   const stock = availableStock;
   const isAvailable = stock > 0;
 
+  const addToWishlist = async () => {
+    if (!wine?.id || wishlistLoading) return;
+
+    setWishlistLoading(true);
+    setWishlistMessage("");
+
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+
+      if (!userData.user) {
+        setWishlistMessage("Connectez-vous pour ajouter ce vin à votre wishlist.");
+        setWishlistLoading(false);
+        return;
+      }
+
+      if (isInWishlist) {
+        setWishlistMessage("Ce vin est déjà dans votre wishlist.");
+        setWishlistLoading(false);
+        return;
+      }
+
+      const { error } = await supabase.from("wishlist_items").insert({
+        user_id: userData.user.id,
+        wine_id: wine.id,
+      });
+
+      if (error) {
+        if (error.code === "23505") {
+          setIsInWishlist(true);
+          setWishlistMessage("Ce vin est déjà dans votre wishlist.");
+        } else {
+          console.error("Erreur ajout wishlist :", error);
+          setWishlistMessage("Impossible d’ajouter ce vin à la wishlist.");
+        }
+
+        setWishlistLoading(false);
+        return;
+      }
+
+      setIsInWishlist(true);
+      setWishlistMessage("Vin ajouté à votre wishlist.");
+    } catch (error) {
+      console.error("Erreur wishlist :", error);
+      setWishlistMessage("Erreur lors de l’ajout à la wishlist.");
+    } finally {
+      setWishlistLoading(false);
+    }
+  };
+
   const addToCart = async () => {
     if (!wine || !isAvailable || addingToCart) return;
 
@@ -411,7 +479,6 @@ export default function WinePage() {
           : 0;
 
       const newQuantity = currentQuantity + 1;
-
       const response = await fetch("/api/stock-reservations", {
         method: "POST",
         headers: {
@@ -594,6 +661,12 @@ export default function WinePage() {
               </p>
             )}
 
+            {wishlistMessage && (
+              <p className="mt-5 rounded-2xl border border-white/20 bg-white/10 px-5 py-3 text-sm text-[#f5dfaa]">
+                {wishlistMessage}
+              </p>
+            )}
+
             <div className="mt-8 flex flex-wrap gap-4">
               <button
                 type="button"
@@ -610,6 +683,23 @@ export default function WinePage() {
                   : isAvailable
                   ? "Ajouter au panier"
                   : "Épuisé"}
+              </button>
+
+              <button
+                type="button"
+                onClick={addToWishlist}
+                disabled={wishlistLoading || isInWishlist}
+                className={`rounded-full border px-8 py-3.5 text-sm font-semibold uppercase tracking-[0.18em] transition ${
+                  isInWishlist
+                    ? "cursor-not-allowed border-[#d8b56d] bg-[#d8b56d] text-[#24110d]"
+                    : "border-white/30 text-white hover:border-[#d8b56d] hover:text-[#d8b56d]"
+                }`}
+              >
+                {wishlistLoading
+                  ? "Ajout..."
+                  : isInWishlist
+                  ? "Dans ma wishlist"
+                  : "♡ Ajouter à ma wishlist"}
               </button>
 
               <Link
@@ -744,25 +834,48 @@ export default function WinePage() {
                 : "Ce vin est actuellement épuisé."}
             </p>
 
-            <button
-              type="button"
-              onClick={addToCart}
-              disabled={!isAvailable || addingToCart}
-              className={`mt-5 inline-block rounded-full px-8 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition ${
-                isAvailable && !addingToCart
-                  ? "bg-[#8a1f1f] hover:bg-[#641313]"
-                  : "cursor-not-allowed bg-neutral-500"
-              }`}
-            >
-              {addingToCart
-                ? "Réservation..."
-                : isAvailable
-                ? "Ajouter au panier"
-                : "Épuisé"}
-            </button>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={addToCart}
+                disabled={!isAvailable || addingToCart}
+                className={`inline-block rounded-full px-8 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition ${
+                  isAvailable && !addingToCart
+                    ? "bg-[#8a1f1f] hover:bg-[#641313]"
+                    : "cursor-not-allowed bg-neutral-500"
+                }`}
+              >
+                {addingToCart
+                  ? "Réservation..."
+                  : isAvailable
+                  ? "Ajouter au panier"
+                  : "Épuisé"}
+              </button>
+
+              <button
+                type="button"
+                onClick={addToWishlist}
+                disabled={wishlistLoading || isInWishlist}
+                className={`inline-block rounded-full border px-8 py-3 text-sm font-semibold uppercase tracking-[0.16em] transition ${
+                  isInWishlist
+                    ? "cursor-not-allowed border-[#8a1f1f] bg-[#8a1f1f] text-white"
+                    : "border-[#8a1f1f] text-[#8a1f1f] hover:bg-[#8a1f1f] hover:text-white"
+                }`}
+              >
+                {wishlistLoading
+                  ? "Ajout..."
+                  : isInWishlist
+                  ? "Dans ma wishlist"
+                  : "♡ Wishlist"}
+              </button>
+            </div>
 
             {cartMessage && (
               <p className="mt-4 text-sm text-[#8a1f1f]">{cartMessage}</p>
+            )}
+
+            {wishlistMessage && (
+              <p className="mt-4 text-sm text-[#8a1f1f]">{wishlistMessage}</p>
             )}
           </section>
         </div>

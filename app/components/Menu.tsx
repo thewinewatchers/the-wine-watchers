@@ -176,6 +176,15 @@ export default function Menu() {
             Blog
           </Link>
 
+          {showLoggedInLinks && (
+            <Link
+              href="/mon-compte#wishlist"
+              className="transition hover:text-[#8B1E2D]"
+            >
+              Wishlist
+            </Link>
+          )}
+
           <Link
             href="/panier"
             className="rounded-full border border-[#8B1E2D] px-4 py-2 text-[#8B1E2D] transition hover:bg-[#8B1E2D] hover:text-white"
@@ -241,6 +250,15 @@ export default function Menu() {
             <Link href="/blog" onClick={() => setOpen(false)}>
               Blog
             </Link>
+
+            {showLoggedInLinks && (
+              <Link
+                href="/mon-compte#wishlist"
+                onClick={() => setOpen(false)}
+              >
+                Wishlist
+              </Link>
+            )}
 
             <Link
               href="/panier"
