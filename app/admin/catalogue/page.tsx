@@ -16,6 +16,7 @@ type Wine = {
   image: string | null;
   bottle_size: string | null;
   packaging: string | null;
+  weight_kg: number | string | null;
   hidden_from_site?: boolean | null;
   created_at?: string | null;
 };
@@ -32,6 +33,7 @@ type WineForm = {
   price: string;
   bottle_size: string;
   packaging: string;
+  weight_kg: string;
   image: string;
   category: string;
   rating: string;
@@ -65,6 +67,7 @@ const emptyForm: WineForm = {
   price: "",
   bottle_size: "",
   packaging: "",
+  weight_kg: "",
   image: "",
   category: "",
   rating: "",
@@ -95,7 +98,7 @@ function createSlug(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
-function parsePrice(value?: number | string | null) {
+function parseNumber(value?: number | string | null) {
   if (value === null || value === undefined || value === "") return null;
 
   const cleaned = String(value)
@@ -108,6 +111,10 @@ function parsePrice(value?: number | string | null) {
   return Number.isNaN(parsed) ? null : parsed;
 }
 
+function parsePrice(value?: number | string | null) {
+  return parseNumber(value);
+}
+
 function formatPrice(value?: number | string | null) {
   const price = parsePrice(value);
 
@@ -117,6 +124,18 @@ function formatPrice(value?: number | string | null) {
     style: "currency",
     currency: "EUR",
   });
+}
+
+function getAutomaticWeightKg(packaging?: string | null) {
+  const normalized = String(packaging || "")
+    .toLowerCase()
+    .replace(/\s/g, "");
+
+  if (normalized.includes("cbo/3")) return 10;
+  if (normalized.includes("cbo/6")) return 11;
+  if (normalized.includes("cbo/12")) return 20;
+
+  return 11;
 }
 
 export default function AdminCataloguePage() {
@@ -137,7 +156,7 @@ export default function AdminCataloguePage() {
     const { data, error } = await supabase
       .from("wines")
       .select(
-        "id, slug, name, producer, region, appellation, vintage, price, image, bottle_size, packaging, hidden_from_site, created_at"
+        "id, slug, name, producer, region, appellation, vintage, price, image, bottle_size, packaging, weight_kg, hidden_from_site, created_at"
       )
       .order("created_at", { ascending: false });
 
@@ -182,10 +201,11 @@ export default function AdminCataloguePage() {
   ) {
     const { name, value } = event.target;
 
-    setForm((previous) => ({
-      ...previous,
-      [name]: value,
-    }));
+   setForm((previous) => ({
+  ...emptyForm,
+  ...previous,
+  [name]: value ?? "",
+}));
   }
 
   async function handleDeleteWine(wineId: string, wineName?: string | null) {
@@ -311,6 +331,8 @@ export default function AdminCataloguePage() {
 
     const parsedPrice = parsePrice(form.price);
     const parsedRating = parsePrice(form.rating);
+    const parsedWeight =
+      parseNumber(form.weight_kg) ?? getAutomaticWeightKg(form.packaging);
 
     const payload = {
       slug,
@@ -325,6 +347,7 @@ export default function AdminCataloguePage() {
       hidden_from_site: false,
       bottle_size: form.bottle_size.trim() || null,
       packaging: form.packaging.trim() || null,
+      weight_kg: parsedWeight,
       image: form.image.trim() || null,
       category: form.category.trim() || form.region.trim() || null,
       rating: parsedRating,
@@ -375,6 +398,7 @@ export default function AdminCataloguePage() {
     await loadWines();
     setSaving(false);
   }
+
   return (
     <main className="min-h-screen bg-[#f8f3ea] px-6 py-12 text-[#1f1a17]">
       <div className="mx-auto max-w-7xl">
@@ -446,7 +470,8 @@ export default function AdminCataloguePage() {
               <input name="price" value={form.price} onChange={handleChange} placeholder="Prix HT" className="rounded-xl border border-neutral-300 px-4 py-3" />
               <input name="bottle_size" value={form.bottle_size} onChange={handleChange} placeholder="Flaconnage ex: 75cl" className="rounded-xl border border-neutral-300 px-4 py-3" />
               <input name="packaging" value={form.packaging} onChange={handleChange} placeholder="Caissage ex: CBO/6" className="rounded-xl border border-neutral-300 px-4 py-3" />
-              <input name="image" value={form.image} onChange={handleChange} placeholder="Image ex: /images/chateau-margaux-2020.jpg" className="rounded-xl border border-neutral-300 px-4 py-3 md:col-span-2" />
+              <input name="weight_kg" value={form.weight_kg} onChange={handleChange} placeholder="Poids kg ex: 11 (optionnel)" className="rounded-xl border border-neutral-300 px-4 py-3" />
+              <input name="image" value={form.image} onChange={handleChange} placeholder="Image ex: /images/chateau-margaux-2020.jpg" className="rounded-xl border border-neutral-300 px-4 py-3" />
               <input name="category" value={form.category} onChange={handleChange} placeholder="Catégorie ex: Bordeaux, Bourgogne" className="rounded-xl border border-neutral-300 px-4 py-3" />
               <input name="slug" value={form.slug} onChange={handleChange} placeholder="Slug personnalisé optionnel" className="rounded-xl border border-neutral-300 px-4 py-3" />
               <input name="rating" value={form.rating} onChange={handleChange} placeholder="Note ex: 98" className="rounded-xl border border-neutral-300 px-4 py-3" />
@@ -475,6 +500,11 @@ export default function AdminCataloguePage() {
             <div className="mt-6 rounded-2xl bg-[#fffaf3] p-4 text-sm text-neutral-700">
               Slug généré :{" "}
               <strong className="text-black">{previewSlug || "—"}</strong>
+              <br />
+              Poids automatique si vide :{" "}
+              <strong className="text-black">
+                {getAutomaticWeightKg(form.packaging)} kg
+              </strong>
             </div>
 
             <button
@@ -553,6 +583,13 @@ export default function AdminCataloguePage() {
                             {[wine.producer, wine.appellation, wine.vintage]
                               .filter(Boolean)
                               .join(" · ")}
+                          </p>
+
+                          <p className="mt-1 text-sm text-neutral-600">
+                            {[wine.bottle_size, wine.packaging]
+                              .filter(Boolean)
+                              .join(" · ")}
+                            {wine.weight_kg ? ` · ${wine.weight_kg} kg` : ""}
                           </p>
 
                           <p className="mt-1 text-sm font-semibold text-black">
