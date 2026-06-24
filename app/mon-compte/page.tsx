@@ -34,22 +34,24 @@ type OrderItem = {
   total_price: number | string;
 };
 
+type WishlistWine = {
+  id: string;
+  slug?: string | null;
+  name?: string | null;
+  producer?: string | null;
+  appellation?: string | null;
+  vintage?: string | number | null;
+  price?: string | number | null;
+  image?: string | null;
+  bottle_size?: string | null;
+  packaging?: string | null;
+};
+
 type WishlistItem = {
   id: string;
   wine_id: string;
   created_at: string;
-  wines?: {
-    id: string;
-    slug?: string | null;
-    name?: string | null;
-    producer?: string | null;
-    appellation?: string | null;
-    vintage?: string | number | null;
-    price?: string | number | null;
-    image?: string | null;
-    bottle_size?: string | null;
-    packaging?: string | null;
-  } | null;
+  wines?: WishlistWine | null;
 };
 
 function formatPrice(value?: number | string | null) {
@@ -250,7 +252,12 @@ export default function MonComptePage() {
       console.error("Erreur chargement wishlist :", wishlistError);
       setWishlistItems([]);
     } else {
-      setWishlistItems((wishlistData || []) as WishlistItem[]);
+      const normalizedWishlistItems = (wishlistData || []).map((item: any) => ({
+        ...item,
+        wines: Array.isArray(item.wines) ? item.wines[0] || null : item.wines,
+      }));
+
+      setWishlistItems(normalizedWishlistItems as WishlistItem[]);
     }
 
     setLoading(false);
