@@ -128,12 +128,20 @@ function formatPrice(value?: number | string | null) {
 
 function getAutomaticWeightKg(packaging?: string | null) {
   const normalized = String(packaging || "")
-    .toLowerCase()
-    .replace(/\s/g, "");
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, "");
 
-  if (normalized.includes("cbo/3")) return 10;
-  if (normalized.includes("cbo/6")) return 11;
-  if (normalized.includes("cbo/12")) return 20;
+  const match = normalized.match(/CBO\/(\d+)/);
+
+  if (!match) return 11;
+
+  const bottleCount = Number(match[1]);
+
+  if (bottleCount === 1) return 5;
+  if (bottleCount === 3) return 10;
+  if (bottleCount === 6) return 11;
+  if (bottleCount === 12) return 20;
 
   return 11;
 }
@@ -201,11 +209,22 @@ export default function AdminCataloguePage() {
   ) {
     const { name, value } = event.target;
 
-   setForm((previous) => ({
-  ...emptyForm,
-  ...previous,
-  [name]: value ?? "",
-}));
+    setForm((previous) => {
+      if (name === "packaging") {
+        return {
+          ...emptyForm,
+          ...previous,
+          packaging: value,
+          weight_kg: String(getAutomaticWeightKg(value)),
+        };
+      }
+
+      return {
+        ...emptyForm,
+        ...previous,
+        [name]: value ?? "",
+      };
+    });
   }
 
   async function handleDeleteWine(wineId: string, wineName?: string | null) {
@@ -307,7 +326,6 @@ export default function AdminCataloguePage() {
     setUpdatingVisibilityId(null);
     await loadWines();
   }
-
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -384,11 +402,20 @@ export default function AdminCataloguePage() {
       meta_content: form.meta_content.trim() || null,
     };
 
-    const { error } = await supabase.from("wines").insert(payload);
+    const response = await fetch("/api/admin/wines", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
 
-    if (error) {
-      console.error("Erreur insertion vin :", error);
-      setErrorMessage(`Erreur lors de l’enregistrement : ${error.message}`);
+    const result = await response.json();
+
+    if (!response.ok) {
+      setErrorMessage(
+        result?.details || result?.error || "Erreur lors de l’enregistrement."
+      );
       setSaving(false);
       return;
     }
@@ -470,7 +497,7 @@ export default function AdminCataloguePage() {
               <input name="price" value={form.price} onChange={handleChange} placeholder="Prix HT" className="rounded-xl border border-neutral-300 px-4 py-3" />
               <input name="bottle_size" value={form.bottle_size} onChange={handleChange} placeholder="Flaconnage ex: 75cl" className="rounded-xl border border-neutral-300 px-4 py-3" />
               <input name="packaging" value={form.packaging} onChange={handleChange} placeholder="Caissage ex: CBO/6" className="rounded-xl border border-neutral-300 px-4 py-3" />
-              <input name="weight_kg" value={form.weight_kg} onChange={handleChange} placeholder="Poids kg ex: 11 (optionnel)" className="rounded-xl border border-neutral-300 px-4 py-3" />
+              <input name="weight_kg" value={form.weight_kg} onChange={handleChange} placeholder="Poids kg auto / modifiable" className="rounded-xl border border-neutral-300 px-4 py-3" />
               <input name="image" value={form.image} onChange={handleChange} placeholder="Image ex: /images/chateau-margaux-2020.jpg" className="rounded-xl border border-neutral-300 px-4 py-3" />
               <input name="category" value={form.category} onChange={handleChange} placeholder="Catégorie ex: Bordeaux, Bourgogne" className="rounded-xl border border-neutral-300 px-4 py-3" />
               <input name="slug" value={form.slug} onChange={handleChange} placeholder="Slug personnalisé optionnel" className="rounded-xl border border-neutral-300 px-4 py-3" />
@@ -501,7 +528,7 @@ export default function AdminCataloguePage() {
               Slug généré :{" "}
               <strong className="text-black">{previewSlug || "—"}</strong>
               <br />
-              Poids automatique si vide :{" "}
+              Poids automatique :{" "}
               <strong className="text-black">
                 {getAutomaticWeightKg(form.packaging)} kg
               </strong>
