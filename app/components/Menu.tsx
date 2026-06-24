@@ -109,17 +109,17 @@ export default function Menu() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-neutral-200 bg-white/95 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
-        <Link href="/" className="flex items-center gap-3">
+      <div className="mx-auto flex min-h-[86px] max-w-7xl items-center justify-between gap-6 px-5 py-3 sm:px-6">
+        <Link href="/" className="flex shrink-0 items-center gap-3">
           <Image
             src="/images/logo-tww.jpg"
             alt="The Wine Watchers"
             width={120}
             height={120}
             priority
-            className="h-12 w-auto object-contain"
+            className="h-14 w-auto object-contain"
           />
-          <span className="hidden font-serif text-xl tracking-wide text-neutral-900 sm:inline">
+          <span className="hidden font-serif text-xl leading-tight tracking-wide text-neutral-900 sm:inline">
             The Wine Watchers
           </span>
         </Link>
@@ -127,12 +127,12 @@ export default function Menu() {
         <button
           type="button"
           onClick={() => setOpen(!open)}
-          className="rounded border border-neutral-300 px-3 py-2 text-sm md:hidden"
+          className="rounded border border-neutral-300 px-4 py-2 text-sm uppercase tracking-wide text-neutral-700 xl:hidden"
         >
           Menu
         </button>
 
-        <nav className="hidden items-center gap-5 text-sm uppercase tracking-wide text-neutral-700 md:flex">
+        <nav className="hidden items-center justify-end gap-4 whitespace-nowrap text-sm uppercase tracking-wide text-neutral-700 xl:flex">
           <Link href="/" className="transition hover:text-[#8B1E2D]">
             Accueil
           </Link>
@@ -208,14 +208,14 @@ export default function Menu() {
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Recherche..."
-              className="w-48 rounded-full border border-[#8B1E2D] bg-white px-4 py-2 text-sm normal-case tracking-normal text-black outline-none placeholder:text-neutral-600 focus:border-black"
+              className="w-40 rounded-full border border-[#8B1E2D] bg-white px-4 py-2 text-sm normal-case tracking-normal text-black outline-none placeholder:text-neutral-600 focus:border-black"
             />
           </form>
         </nav>
       </div>
 
       {open && (
-        <nav className="border-t border-neutral-200 bg-white px-6 py-4 text-sm uppercase tracking-wide text-neutral-700 md:hidden">
+        <nav className="border-t border-neutral-200 bg-white px-6 py-4 text-sm uppercase tracking-wide text-neutral-700 xl:hidden">
           <div className="flex flex-col gap-4">
             <Link href="/" onClick={() => setOpen(false)}>
               Accueil
