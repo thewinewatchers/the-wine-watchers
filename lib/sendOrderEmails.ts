@@ -47,6 +47,9 @@ export type SendOrderEmailsDiagnostic = {
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+const EMAIL_FROM = "The Wine Watchers <contact@thewinewatchers.com>";
+const ADMIN_EMAIL = "contact@thewinewatchers.com";
+
 function formatPrice(value: number) {
   return Number(value || 0).toLocaleString("fr-FR", {
     style: "currency",
@@ -65,6 +68,38 @@ function escapeHtml(value: string | null | undefined) {
 
 function nl2br(value: string | null | undefined) {
   return escapeHtml(value).replaceAll("\n", "<br />");
+}
+
+function getDeliveryFeeLabel({
+  selectedDeliveryMethod,
+  safeDeliveryNote,
+}: {
+  selectedDeliveryMethod: "pickup" | "delivery";
+  safeDeliveryNote: string;
+}) {
+  if (selectedDeliveryMethod === "pickup") {
+    return "Gratuit";
+  }
+
+  if (
+    safeDeliveryNote.toLowerCase().includes("libération des vins") ||
+    safeDeliveryNote.toLowerCase().includes("aucun frais de livraison")
+  ) {
+    return "0,00 € HT";
+  }
+
+  const match = safeDeliveryNote.match(/Frais de livraison HT\s*:\s*([^\n.]+)/i);
+
+  if (match?.[1]) {
+    return `${match[1].trim()} HT`;
+  }
+
+  return "Nous contacter";
+}
+
+function logResendResult(label: string, result: unknown) {
+  console.log(`===== RESEND ${label} RESULT =====`);
+  console.log(JSON.stringify(result, null, 2));
 }
 
 export async function sendOrderEmails({
@@ -91,10 +126,8 @@ export async function sendOrderEmails({
   selectedPaymentMethod,
   bankTransferInstructions,
 }: SendOrderEmailsParams): Promise<SendOrderEmailsDiagnostic> {
-  const emailFrom =
-    process.env.EMAIL_FROM || "The Wine Watchers <onboarding@resend.dev>";
-
-  const adminEmail = process.env.ADMIN_EMAIL || "millesimesunited@gmail.com";
+  const emailFrom = EMAIL_FROM;
+  const adminEmail = ADMIN_EMAIL;
 
   const diagnostic: SendOrderEmailsDiagnostic = {
     started: true,
@@ -106,7 +139,32 @@ export async function sendOrderEmails({
     adminEmailSent: false,
   };
 
+  console.log("===== SEND ORDER EMAILS START =====");
+  console.log(
+    JSON.stringify(
+      {
+        orderId,
+        hasResendApiKey: diagnostic.hasResendApiKey,
+        emailFrom,
+        adminEmail,
+        customerEmail,
+      },
+      null,
+      2
+    )
+  );
+
   try {
+    const winesTotalExclVat = items.reduce(
+      (sum, item) => sum + Number(item.total_price || 0),
+      0
+    );
+
+    const deliveryFeeLabel = getDeliveryFeeLabel({
+      selectedDeliveryMethod,
+      safeDeliveryNote,
+    });
+
     const formattedItems = items
       .map((item) => {
         return `- ${item.wine_name}
@@ -141,9 +199,6 @@ export async function sendOrderEmails({
         ? "Virement bancaire"
         : "Carte bancaire";
 
-    const deliveryFeeLabel =
-      selectedDeliveryMethod === "pickup" ? "Gratuit" : "À confirmer";
-
     const clientResult = await resend.emails.send({
       from: emailFrom,
       to: customerEmail,
@@ -165,10 +220,7 @@ Vins commandés :
 ${formattedItems}
 
 Total HT vins :
-${formatPrice(totalExclVat)}
-
-TVA :
-${formatPrice(vatAmount)}
+${formatPrice(winesTotalExclVat)}
 
 Retrait / livraison :
 ${deliveryLabel}
@@ -177,6 +229,12 @@ ${safeDeliveryNote}
 
 Frais livraison :
 ${deliveryFeeLabel}
+
+Total HT commande :
+${formatPrice(totalExclVat)}
+
+TVA :
+${formatPrice(vatAmount)}
 
 Total TTC / Total à payer :
 ${formatPrice(finalTotalToPay)}
@@ -218,7 +276,6 @@ The Wine Watchers SL`,
     <p>Nous vous remercions pour votre commande chez <strong>The Wine Watchers</strong>.</p>
 
     <p><strong>Numéro de commande :</strong><br />${escapeHtml(orderId)}</p>
-
     <h2 style="font-size:18px; color:#170606; margin-top:28px;">Client</h2>
     <p>
       ${escapeHtml(customerFirstName)} ${escapeHtml(customerLastName)}<br />
@@ -231,10 +288,10 @@ The Wine Watchers SL`,
     <table style="width:100%; border-collapse:collapse; font-size:14px;">
       <thead>
         <tr>
-          <th style="padding:10px; border-bottom:2px solid #170606; text-align:left;">Vin</th>
-          <th style="padding:10px; border-bottom:2px solid #170606; text-align:center;">Qté</th>
-          <th style="padding:10px; border-bottom:2px solid #170606; text-align:right;">Prix HT</th>
-          <th style="padding:10px; border-bottom:2px solid #170606; text-align:right;">Total HT</th>
+          <th style="padding:10px;border-bottom:2px solid #170606;text-align:left;">Vin</th>
+          <th style="padding:10px;border-bottom:2px solid #170606;text-align:center;">Qté</th>
+          <th style="padding:10px;border-bottom:2px solid #170606;text-align:right;">Prix HT</th>
+          <th style="padding:10px;border-bottom:2px solid #170606;text-align:right;">Total HT</th>
         </tr>
       </thead>
       <tbody>
@@ -242,20 +299,16 @@ The Wine Watchers SL`,
       </tbody>
     </table>
 
-    <h2 style="font-size:18px; color:#170606; margin-top:28px;">Récapitulatif</h2>
+    <h2 style="font-size:18px;color:#170606;margin-top:28px;">Récapitulatif</h2>
 
     <p>
-      <strong>Total HT vins :</strong> ${formatPrice(totalExclVat)}<br />
-      <strong>TVA :</strong> ${formatPrice(vatAmount)}<br />
+      <strong>Total HT vins :</strong> ${formatPrice(winesTotalExclVat)}<br />
       <strong>Retrait / livraison :</strong> ${escapeHtml(deliveryLabel)}<br />
       ${safeDeliveryNote ? `${nl2br(safeDeliveryNote)}<br />` : ""}
       <strong>Frais livraison :</strong> ${escapeHtml(deliveryFeeLabel)}<br />
-      <strong>Total TTC / Total à payer :</strong> ${formatPrice(finalTotalToPay)}
-    </p>
-
-    <p>
-      <strong>Régime TVA :</strong><br />
-      ${nl2br(vatNote)}
+      <strong>Total HT commande :</strong> ${formatPrice(totalExclVat)}<br />
+      <strong>TVA :</strong> ${formatPrice(vatAmount)}<br />
+      <strong>Total TTC :</strong> ${formatPrice(finalTotalToPay)}
     </p>
 
     <p>
@@ -271,20 +324,14 @@ The Wine Watchers SL`,
         : ""
     }
 
-    <p style="margin-top:28px;">
-      Notre équipe reste à votre disposition pour toute question.
-    </p>
-
-    <p style="margin-top:28px;">
-      Bien cordialement,<br />
-      <strong>The Wine Watchers SL</strong>
-    </p>
   </div>
 </div>`,
     });
 
+    logResendResult("CLIENT", clientResult);
+
     diagnostic.clientResult = clientResult;
-    diagnostic.clientEmailSent = !clientResult.error;
+    diagnostic.clientEmailSent = !(clientResult as any)?.error;
 
     const adminResult = await resend.emails.send({
       from: emailFrom,
@@ -292,17 +339,10 @@ The Wine Watchers SL`,
       subject: `Nouvelle commande reçue - ${orderId}`,
       text: `Nouvelle commande reçue sur The Wine Watchers.
 
-Numéro de commande :
-${orderId}
+Commande : ${orderId}
 
 Client :
 ${customerFirstName} ${customerLastName}
-
-Société :
-${companyName || "-"}
-
-N° TVA :
-${vatNumber || "-"}
 
 Email :
 ${customerEmail}
@@ -310,15 +350,9 @@ ${customerEmail}
 Téléphone :
 ${customerPhone}
 
-Adresse :
-${customerAddress || ""}
-${customerPostalCode || ""} ${customerCity || ""}
-${customerCountry || ""}
+${formattedItems}
 
-Commentaire :
-${customerComment || "Aucun commentaire"}
-
-Retrait / livraison :
+Livraison :
 ${deliveryLabel}
 
 ${safeDeliveryNote}
@@ -326,40 +360,47 @@ ${safeDeliveryNote}
 Frais livraison :
 ${deliveryFeeLabel}
 
-Total HT vins :
+Total HT commande :
 ${formatPrice(totalExclVat)}
 
 TVA :
 ${formatPrice(vatAmount)}
 
-Total TTC / Total à payer :
+Total TTC :
 ${formatPrice(finalTotalToPay)}
-
-Régime TVA :
-${vatNote}
-
-Mode de paiement :
-${paymentLabel}
-
-Vins commandés :
-
-${formattedItems}`,
+`,
     });
 
-    diagnostic.adminResult = adminResult;
-    diagnostic.adminEmailSent = !adminResult.error;
+    logResendResult("ADMIN", adminResult);
 
-    if (clientResult.error || adminResult.error) {
-      diagnostic.error = JSON.stringify({
-        clientError: clientResult.error || null,
-        adminError: adminResult.error || null,
-      });
+    diagnostic.adminResult = adminResult;
+    diagnostic.adminEmailSent = !(adminResult as any)?.error;
+
+    if ((clientResult as any)?.error || (adminResult as any)?.error) {
+      diagnostic.error = JSON.stringify(
+        {
+          client: (clientResult as any)?.error,
+          admin: (adminResult as any)?.error,
+        },
+        null,
+        2
+      );
+
+      console.error("===== RESEND ERROR =====");
+      console.error(diagnostic.error);
     }
+
+    console.log("===== SEND ORDER EMAILS END =====");
+    console.log(JSON.stringify(diagnostic, null, 2));
 
     return diagnostic;
   } catch (error) {
-    diagnostic.error = error instanceof Error ? error.message : String(error);
-    console.error("Erreur envoi emails commande Resend :", error);
+    console.error("===== SEND ORDER EMAILS EXCEPTION =====");
+    console.error(error);
+
+    diagnostic.error =
+      error instanceof Error ? error.message : String(error);
+
     return diagnostic;
   }
 }

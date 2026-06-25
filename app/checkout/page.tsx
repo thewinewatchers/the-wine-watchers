@@ -15,6 +15,7 @@ type CartItem = {
   image?: string;
   bottle_size?: string;
   packaging?: string;
+  category?: string;
 };
 
 type CustomerForm = {
@@ -33,6 +34,24 @@ type CustomerForm = {
 
 type PaymentMethod = "card" | "bank_transfer";
 type DeliveryMethod = "pickup" | "delivery";
+
+type ShippingCalculation = {
+  available: boolean;
+  requiresQuote: boolean;
+  primeurOnly?: boolean;
+  hasPrimeurItems?: boolean;
+  shippableItemsCount?: number;
+  primeurItemsCount?: number;
+  countryCode: string;
+  countryName: string;
+  totalWeightKg: number;
+  shippingPriceExclVat: number;
+  carrier: string | null;
+  rateId: string | null;
+  minWeightKg?: number | null;
+  maxWeightKg?: number | null;
+  message: string;
+};
 
 const CART_KEY = "cart";
 
@@ -142,7 +161,26 @@ function getCountryCode(country?: string) {
 
   if (trimmed.length === 2) return trimmed.toUpperCase();
 
-  return COUNTRY_NAME_TO_CODE[trimmed] || "ES";
+  return COUNTRY_NAME_TO_CODE[trimmed] || "OTHER";
+}
+
+function isPrimeurItem(item: CartItem) {
+  const text = [
+    item.category,
+    item.slug,
+    item.name,
+    item.producer,
+    item.appellation,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  return (
+    text.includes("primeur") ||
+    text.includes("primeurs") ||
+    text.includes("primeurs-2025")
+  );
 }
 
 function calculateVat({
@@ -228,7 +266,6 @@ function BankInstructionsBlock({
     </div>
   );
 }
-
 export default function CheckoutPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -248,6 +285,11 @@ export default function CheckoutPage() {
 
   const [deliveryMethod, setDeliveryMethod] =
     useState<DeliveryMethod>("pickup");
+
+  const [shippingCalculation, setShippingCalculation] =
+    useState<ShippingCalculation | null>(null);
+  const [isCalculatingShipping, setIsCalculatingShipping] = useState(false);
+  const [shippingError, setShippingError] = useState("");
 
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [isAdult, setIsAdult] = useState(false);
@@ -302,13 +344,8 @@ export default function CheckoutPage() {
           ...previous,
           email: data.user?.email || "",
           companyName:
-            profileData?.company_name ||
-            metadata.company_name ||
-            "",
-          vatNumber:
-            profileData?.vat_number ||
-            metadata.vat_number ||
-            "",
+            profileData?.company_name || metadata.company_name || "",
+          vatNumber: profileData?.vat_number || metadata.vat_number || "",
           firstName:
             profileData?.first_name ||
             metadata.first_name ||
@@ -317,10 +354,7 @@ export default function CheckoutPage() {
             profileData?.last_name ||
             metadata.last_name ||
             previous.lastName,
-          phone:
-            profileData?.phone ||
-            metadata.phone ||
-            previous.phone,
+          phone: profileData?.phone || metadata.phone || previous.phone,
           address:
             profileData?.billing_address ||
             metadata.address ||
@@ -330,9 +364,7 @@ export default function CheckoutPage() {
             metadata.postal_code ||
             previous.postalCode,
           city:
-            profileData?.billing_city ||
-            metadata.city ||
-            previous.city,
+            profileData?.billing_city || metadata.city || previous.city,
           country:
             profileData?.billing_country ||
             metadata.country ||
@@ -354,6 +386,54 @@ export default function CheckoutPage() {
     }
   }, [cart, isLoaded]);
 
+  const hasPrimeurItems = useMemo(() => {
+    return cart.some((item) => isPrimeurItem(item));
+  }, [cart]);
+
+  useEffect(() => {
+    async function calculateShipping() {
+      setShippingError("");
+      setShippingCalculation(null);
+
+      if (!isLoaded || deliveryMethod !== "delivery" || cart.length === 0) {
+        return;
+      }
+
+      setIsCalculatingShipping(true);
+
+      try {
+        const response = await fetch("/api/shipping/calculate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            cart,
+            country: form.country,
+          }),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          setShippingError(
+            result?.error || "Erreur lors du calcul des frais de livraison."
+          );
+          return;
+        }
+
+        setShippingCalculation(result);
+      } catch (error) {
+        console.error("Erreur calcul livraison :", error);
+        setShippingError("Erreur serveur lors du calcul de la livraison.");
+      } finally {
+        setIsCalculatingShipping(false);
+      }
+    }
+
+    calculateShipping();
+  }, [cart, deliveryMethod, form.country, isLoaded]);
+
   const total = useMemo(() => {
     return cart.reduce((sum, item) => {
       const price = parsePrice(item.price);
@@ -369,23 +449,46 @@ export default function CheckoutPage() {
     }, 0);
   }, [cart]);
 
-  const deliveryFee = 0;
+  const isPrimeurOnly =
+    deliveryMethod === "delivery" && Boolean(shippingCalculation?.primeurOnly);
+
+  const hasMixedPrimeurCart =
+    deliveryMethod === "delivery" &&
+    Boolean(shippingCalculation?.hasPrimeurItems) &&
+    !shippingCalculation?.primeurOnly;
+
+  const deliveryFee =
+    deliveryMethod === "delivery" && shippingCalculation?.available
+      ? Number(shippingCalculation.shippingPriceExclVat || 0)
+      : 0;
+
+  const deliveryLabel =
+    deliveryMethod === "pickup"
+      ? "Retrait entrepôt"
+      : isPrimeurOnly
+      ? "Livraison à la libération des vins"
+      : "Livraison HT — Assurance transport comprise";
 
   const deliveryNote =
     deliveryMethod === "pickup"
       ? "Retrait gratuit à l’entrepôt."
-      : "Les frais de livraison seront confirmés selon la destination, le poids et les conditions de transport.";
+      : shippingError
+      ? shippingError
+      : isCalculatingShipping
+      ? "Calcul des frais de livraison en cours..."
+      : shippingCalculation?.message ||
+        "Les frais de livraison seront calculés selon la destination et le poids du panier.";
 
   const vatCalculation = useMemo(() => {
     return calculateVat({
-      totalExclVat: total,
+      totalExclVat: total + deliveryFee,
       countryCode: getCountryCode(form.country),
       companyName: form.companyName,
       vatNumber: form.vatNumber,
     });
-  }, [total, form.country, form.companyName, form.vatNumber]);
+  }, [total, deliveryFee, form.country, form.companyName, form.vatNumber]);
 
-  const totalToPay = vatCalculation.totalInclVat + deliveryFee;
+  const totalToPay = vatCalculation.totalInclVat;
 
   const hasCompleteProfile =
     Boolean(form.firstName?.trim()) &&
@@ -398,6 +501,13 @@ export default function CheckoutPage() {
     Boolean(form.country?.trim());
 
   const shouldShowCustomerForm = !hasCompleteProfile || showCustomerForm;
+
+  const cannotSubmitDelivery =
+    deliveryMethod === "delivery" &&
+    (isCalculatingShipping ||
+      Boolean(shippingError) ||
+      !shippingCalculation ||
+      !shippingCalculation.available);
 
   const removeItem = (index: number) => {
     setCart((previousCart) =>
@@ -423,9 +533,7 @@ export default function CheckoutPage() {
     }));
   };
 
-  const handleSubmit = async (
-    event: React.FormEvent<HTMLFormElement>
-  ) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     setErrorMessage("");
@@ -465,6 +573,13 @@ export default function CheckoutPage() {
       return;
     }
 
+    if (cannotSubmitDelivery) {
+      setErrorMessage(
+        "Les frais de livraison doivent être calculés avant de valider la commande."
+      );
+      return;
+    }
+
     if (!acceptedTerms || !isAdult) {
       setErrorMessage(
         "Vous devez accepter les conditions et confirmer être majeur."
@@ -489,10 +604,6 @@ export default function CheckoutPage() {
           cart,
           paymentMethod,
           deliveryMethod,
-          deliveryFee,
-          deliveryNote,
-          vat: vatCalculation,
-          totalToPay,
           sessionId: localStorage.getItem("wine_watchers_session_id"),
         }),
       });
@@ -523,7 +634,8 @@ export default function CheckoutPage() {
             body: JSON.stringify({
               orderId: result.orderId,
               items: cart,
-              totalToPay,
+              totalToPay:
+                result.totalInclVat || result.totalAmount || totalToPay,
               customerEmail: form.email,
             }),
           }
@@ -564,6 +676,7 @@ export default function CheckoutPage() {
       setIsSubmitting(false);
     }
   };
+
   if (!isLoaded) {
     return (
       <main className="min-h-screen bg-[#f8f3ea] px-4 py-10">
@@ -606,7 +719,6 @@ export default function CheckoutPage() {
       </main>
     );
   }
-
   return (
     <main className="min-h-screen bg-[#f8f3ea] px-4 py-10 text-[#1f1a17]">
       <div className="mx-auto max-w-6xl">
@@ -855,12 +967,92 @@ export default function CheckoutPage() {
                   <span>
                     <span className="block font-medium">Livraison</span>
                     <span className="mt-1 block text-sm text-neutral-600">
-                      Les frais de livraison seront confirmés selon la
-                      destination, le poids et les conditions de transport.
+                      Calcul automatique selon le pays de facturation et le
+                      poids des vins livrables maintenant. Assurance transport
+                      comprise.
                     </span>
                   </span>
                 </label>
               </div>
+
+              {deliveryMethod === "delivery" && (
+                <div className="mt-5 rounded-2xl bg-white p-4 text-sm leading-6 text-neutral-700">
+                  {isCalculatingShipping && (
+                    <p>Calcul des frais de livraison en cours...</p>
+                  )}
+
+                  {!isCalculatingShipping && shippingError && (
+                    <p className="text-red-700">{shippingError}</p>
+                  )}
+
+                  {!isCalculatingShipping &&
+                    shippingCalculation?.available && (
+                      <>
+                        {isPrimeurOnly ? (
+                          <>
+                            <p>
+                              <strong>
+                                Livraison à la libération des vins.
+                              </strong>
+                            </p>
+                            <p className="text-neutral-600">
+                              Aucun frais de livraison n’est facturé maintenant
+                              pour les vins en primeur.
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <p>
+                              Pays :{" "}
+                              <strong>
+                                {shippingCalculation.countryName}
+                              </strong>
+                            </p>
+                            <p>
+                              Poids livrable maintenant :{" "}
+                              <strong>
+                                {shippingCalculation.totalWeightKg} kg
+                              </strong>
+                            </p>
+                            <p>
+                              Livraison HT — assurance transport comprise :{" "}
+                              <strong>
+                                {formatPrice(
+                                  shippingCalculation.shippingPriceExclVat
+                                )}
+                              </strong>
+                            </p>
+                            {shippingCalculation.minWeightKg !== null &&
+                              shippingCalculation.minWeightKg !== undefined &&
+                              shippingCalculation.maxWeightKg !== null &&
+                              shippingCalculation.maxWeightKg !== undefined && (
+                                <p className="text-xs text-neutral-500">
+                                  Tranche :{" "}
+                                  {shippingCalculation.minWeightKg} kg à{" "}
+                                  {shippingCalculation.maxWeightKg} kg.
+                                </p>
+                              )}
+
+                            {hasMixedPrimeurCart && (
+                              <p className="mt-3 rounded-xl bg-[#fffaf3] p-3 text-xs text-neutral-600">
+                                Les frais ci-dessus concernent uniquement les
+                                vins livrables maintenant. Les vins en primeur
+                                seront livrés à leur libération.
+                              </p>
+                            )}
+                          </>
+                        )}
+                      </>
+                    )}
+
+                  {!isCalculatingShipping &&
+                    shippingCalculation?.requiresQuote && (
+                      <p className="text-amber-800">
+                        {shippingCalculation.message}
+                      </p>
+                    )}
+                </div>
+              )}
             </div>
 
             <div className="mt-8 rounded-3xl border border-[#e6dcc8] bg-[#fffaf3] p-6">
@@ -869,7 +1061,22 @@ export default function CheckoutPage() {
               <div className="mt-5 space-y-3 text-sm">
                 <div className="flex justify-between">
                   <span>Total HT vins</span>
-                  <strong>{formatPrice(vatCalculation.totalExclVat)}</strong>
+                  <strong>{formatPrice(total)}</strong>
+                </div>
+
+                <div className="flex justify-between">
+                  <span>{deliveryLabel}</span>
+                  <strong>
+                    {deliveryMethod === "pickup"
+                      ? "Gratuit"
+                      : isCalculatingShipping
+                      ? "Calcul..."
+                      : isPrimeurOnly
+                      ? "0,00 € HT"
+                      : shippingCalculation?.available
+                      ? formatPrice(deliveryFee)
+                      : "Nous contacter"}
+                  </strong>
                 </div>
 
                 <div className="flex justify-between">
@@ -880,17 +1087,6 @@ export default function CheckoutPage() {
                       : ""}
                   </span>
                   <strong>{formatPrice(vatCalculation.vatAmount)}</strong>
-                </div>
-
-                <div className="flex justify-between">
-                  <span>
-                    {deliveryMethod === "pickup"
-                      ? "Retrait entrepôt"
-                      : "Livraison"}
-                  </span>
-                  <strong>
-                    {deliveryMethod === "pickup" ? "Gratuit" : "À confirmer"}
-                  </strong>
                 </div>
 
                 <div className="flex justify-between border-t border-[#e6dcc8] pt-3 text-base">
@@ -955,9 +1151,7 @@ export default function CheckoutPage() {
                 <input
                   type="checkbox"
                   checked={acceptedTerms}
-                  onChange={(event) =>
-                    setAcceptedTerms(event.target.checked)
-                  }
+                  onChange={(event) => setAcceptedTerms(event.target.checked)}
                 />
                 <span>J’accepte les Conditions Générales.</span>
               </label>
@@ -974,7 +1168,9 @@ export default function CheckoutPage() {
 
             <button
               type="submit"
-              disabled={isSubmitting || cart.length === 0}
+              disabled={
+                isSubmitting || cart.length === 0 || cannotSubmitDelivery
+              }
               className="mt-8 w-full rounded-full bg-black px-6 py-4 text-sm uppercase tracking-[0.25em] text-white hover:bg-[#8a6a2f] disabled:cursor-not-allowed disabled:bg-neutral-400"
             >
               {isSubmitting
@@ -1027,6 +1223,9 @@ export default function CheckoutPage() {
                             <span> · {item.bottle_size}</span>
                           )}
                           {item.packaging && <span> · {item.packaging}</span>}
+                          {isPrimeurItem(item) && (
+                            <span> · Primeur</span>
+                          )}
                         </div>
 
                         <div className="mt-3 flex items-center justify-between text-sm">
@@ -1058,7 +1257,22 @@ export default function CheckoutPage() {
 
                 <div className="mt-4 flex justify-between text-sm">
                   <span>Total HT vins</span>
-                  <strong>{formatPrice(vatCalculation.totalExclVat)}</strong>
+                  <strong>{formatPrice(total)}</strong>
+                </div>
+
+                <div className="mt-3 flex justify-between text-sm">
+                  <span>{deliveryLabel}</span>
+                  <strong>
+                    {deliveryMethod === "pickup"
+                      ? "Gratuit"
+                      : isCalculatingShipping
+                      ? "Calcul..."
+                      : isPrimeurOnly
+                      ? "0,00 € HT"
+                      : shippingCalculation?.available
+                      ? formatPrice(deliveryFee)
+                      : "Nous contacter"}
+                  </strong>
                 </div>
 
                 <div className="mt-3 flex justify-between text-sm">
@@ -1069,17 +1283,6 @@ export default function CheckoutPage() {
                       : ""}
                   </span>
                   <strong>{formatPrice(vatCalculation.vatAmount)}</strong>
-                </div>
-
-                <div className="mt-3 flex justify-between text-sm">
-                  <span>
-                    {deliveryMethod === "pickup"
-                      ? "Retrait entrepôt"
-                      : "Livraison"}
-                  </span>
-                  <strong>
-                    {deliveryMethod === "pickup" ? "Gratuit" : "À confirmer"}
-                  </strong>
                 </div>
 
                 <div className="mt-4 flex items-center justify-between border-t border-neutral-300 pt-4 text-lg font-semibold">

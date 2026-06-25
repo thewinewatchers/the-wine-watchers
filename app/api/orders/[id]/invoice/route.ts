@@ -26,6 +26,27 @@ function todayInvoicePrefix() {
   return `F-${now.getFullYear()}`;
 }
 
+function getDeliveryFeeLabel(order: any) {
+  if (order.payment_method === "pickup") return "Gratuit";
+
+  const shippingPrice = Number(order.shipping_price_excl_vat || 0);
+
+  if (shippingPrice > 0) {
+    return `${formatPrice(shippingPrice)} HT`;
+  }
+
+  const note = String(order.shipping_note || "");
+
+  if (
+    note.toLowerCase().includes("libération des vins") ||
+    note.toLowerCase().includes("aucun frais de livraison")
+  ) {
+    return "0,00 EUR HT";
+  }
+
+  return "Nous contacter";
+}
+
 async function getOrCreateInvoice(order: any) {
   const { data: existingInvoice } = await supabase
     .from("invoices")
@@ -110,6 +131,12 @@ function addLogo(doc: jsPDF) {
   }
 }
 
+function addWrappedText(doc: jsPDF, text: string, x: number, y: number, maxWidth: number) {
+  const lines = doc.splitTextToSize(text, maxWidth);
+  doc.text(lines, x, y);
+  return y + lines.length * 4.5;
+}
+
 export async function GET(
   request: Request,
   context: {
@@ -172,6 +199,20 @@ export async function GET(
     }
 
     const invoice = await getOrCreateInvoice(order);
+
+    const winesTotalExclVat = (items || []).reduce((sum: number, item: any) => {
+      return sum + Number(item.total_price || 0);
+    }, 0);
+
+    const shippingPriceExclVat = Number(order.shipping_price_excl_vat || 0);
+    const deliveryFeeLabel = getDeliveryFeeLabel(order);
+
+    const deliveryLabel =
+      shippingPriceExclVat > 0
+        ? "Livraison HT — assurance transport comprise"
+        : String(order.shipping_note || "").toLowerCase().includes("libération")
+        ? "Livraison à la libération des vins"
+        : "Retrait / livraison";
 
     const doc = new jsPDF({
       unit: "mm",
@@ -264,6 +305,7 @@ export async function GET(
       doc.text(cityLine, 15, y);
       y += 8;
     }
+
     y += 4;
 
     doc.setFont("helvetica", "bold");
@@ -327,18 +369,28 @@ export async function GET(
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
 
-    doc.text("Total HT", 125, y);
+    doc.text("Total HT vins", 118, y);
+    doc.text(formatPrice(winesTotalExclVat), 170, y);
+
+    y += 6;
+
+    doc.text(deliveryLabel, 118, y);
+    doc.text(deliveryFeeLabel, 170, y);
+
+    y += 6;
+
+    doc.text("Total HT commande", 118, y);
     doc.text(formatPrice(invoice.total_excl_vat), 170, y);
 
     y += 6;
 
-    doc.text("TVA", 125, y);
+    doc.text("TVA", 118, y);
     doc.text(formatPrice(invoice.vat_amount), 170, y);
 
     y += 6;
 
     doc.setFont("helvetica", "bold");
-    doc.text("Total TTC", 125, y);
+    doc.text("Total TTC", 118, y);
     doc.text(formatPrice(invoice.total_incl_vat), 170, y);
 
     y += 12;
@@ -346,7 +398,22 @@ export async function GET(
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
 
+    if (order.shipping_note) {
+      const shippingLines = doc.splitTextToSize(
+        `Livraison / retrait : ${order.shipping_note}`,
+        pageWidth - 30
+      );
+
+      doc.text(shippingLines, 15, y);
+      y += shippingLines.length * 4.5 + 3;
+    }
+
     if (order.vat_note) {
+      if (y > 250) {
+        doc.addPage();
+        y = 18;
+      }
+
       const vatLines = doc.splitTextToSize(
         `Régime TVA : ${order.vat_note}`,
         pageWidth - 30
@@ -356,23 +423,12 @@ export async function GET(
       y += vatLines.length * 4.5 + 3;
     }
 
-    const shortDeliveryNote =
-      order.customer_comment &&
-      String(order.customer_comment).includes("Mode retrait / livraison")
-        ? "Livraison / retrait : voir conditions confirmées lors de la commande."
-        : "";
-
-    if (shortDeliveryNote) {
-      const deliveryLines = doc.splitTextToSize(
-        shortDeliveryNote,
-        pageWidth - 30
-      );
-
-      doc.text(deliveryLines, 15, y);
-      y += deliveryLines.length * 4.5 + 3;
-    }
-
     if (order.payment_method === "bank_transfer") {
+      if (y > 250) {
+        doc.addPage();
+        y = 18;
+      }
+
       const paymentLines = doc.splitTextToSize(
         "Mode de paiement : virement bancaire.",
         pageWidth - 30

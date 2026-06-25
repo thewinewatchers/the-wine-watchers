@@ -17,10 +17,31 @@ type CartItem = {
   image?: string;
   bottle_size?: string;
   packaging?: string;
+  category?: string;
 };
 
 type PaymentMethod = "card" | "bank_transfer";
 type DeliveryMethod = "pickup" | "delivery";
+
+type WineWeightRow = {
+  id: string;
+  slug: string | null;
+  weight_kg: number | string | null;
+  category: string | null;
+  name: string | null;
+  producer: string | null;
+  appellation: string | null;
+};
+
+type ShippingRate = {
+  id: string;
+  country_code: string;
+  country_name: string | null;
+  min_weight_kg: number | string;
+  max_weight_kg: number | string;
+  price_excl_vat: number | string;
+  carrier: string | null;
+};
 
 const SELLER_COUNTRY_CODE = "ES";
 
@@ -66,7 +87,7 @@ const COUNTRY_NAME_TO_CODE: Record<string, string> = {
   Autre: "OTHER",
 };
 
-function parsePrice(value?: string | number) {
+function parsePrice(value?: string | number | null) {
   if (value === undefined || value === null) return 0;
   if (typeof value === "number") return value;
 
@@ -84,6 +105,17 @@ function roundMoney(value: number) {
   return Math.round((value + Number.EPSILON) * 100) / 100;
 }
 
+function roundWeight(value: number) {
+  return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+
+function formatMoney(value: number) {
+  return value.toLocaleString("fr-FR", {
+    style: "currency",
+    currency: "EUR",
+  });
+}
+
 function getCountryCode(country?: string) {
   if (!country) return SELLER_COUNTRY_CODE;
 
@@ -93,16 +125,36 @@ function getCountryCode(country?: string) {
     return trimmed.toUpperCase();
   }
 
-  return COUNTRY_NAME_TO_CODE[trimmed] || SELLER_COUNTRY_CODE;
+  return COUNTRY_NAME_TO_CODE[trimmed] || "OTHER";
+}
+
+function isPrimeurText(values: Array<string | null | undefined>) {
+  const text = values.filter(Boolean).join(" ").toLowerCase();
+
+  return (
+    text.includes("primeur") ||
+    text.includes("primeurs") ||
+    text.includes("primeurs-2025")
+  );
+}
+
+function isPrimeurCartItem(item: CartItem) {
+  return isPrimeurText([
+    item.category,
+    item.slug,
+    item.name,
+    item.producer,
+    item.appellation,
+  ]);
 }
 
 function calculateVat({
-  cartTotalExclVat,
+  totalExclVat,
   countryCode,
   companyName,
   vatNumber,
 }: {
-  cartTotalExclVat: number;
+  totalExclVat: number;
   countryCode: string;
   companyName?: string | null;
   vatNumber?: string | null;
@@ -124,23 +176,23 @@ function calculateVat({
       vatCountry: countryCode,
       vatRate: 0,
       vatAmount: 0,
-      totalExclVat: roundMoney(cartTotalExclVat),
-      totalInclVat: roundMoney(cartTotalExclVat),
+      totalExclVat: roundMoney(totalExclVat),
+      totalInclVat: roundMoney(totalExclVat),
       reverseCharge: true,
       vatNote:
         "TVA intracommunautaire non facturée — autoliquidation par le client professionnel.",
     };
   }
 
-  const vatAmount = roundMoney(cartTotalExclVat * (vatRate / 100));
-  const totalInclVat = roundMoney(cartTotalExclVat + vatAmount);
+  const vatAmount = roundMoney(totalExclVat * (vatRate / 100));
+  const totalInclVat = roundMoney(totalExclVat + vatAmount);
 
   return {
     customerType: isProfessional ? "professional" : "individual",
     vatCountry: countryCode,
     vatRate,
     vatAmount,
-    totalExclVat: roundMoney(cartTotalExclVat),
+    totalExclVat: roundMoney(totalExclVat),
     totalInclVat,
     reverseCharge: false,
     vatNote: `TVA ${vatRate}% ajoutée au prix HT.`,
@@ -175,7 +227,132 @@ function getBankTransferInstructions(orderId: string) {
     .join("\n");
 }
 
+async function getCartShippingInfo(cart: CartItem[]) {
+  const ids = cart
+    .map((item) => (item.id ? String(item.id) : null))
+    .filter((value): value is string => Boolean(value));
+
+  const slugs = cart
+    .map((item) => item.slug || null)
+    .filter((value): value is string => Boolean(value));
+
+  const winesById = new Map<string, WineWeightRow>();
+  const winesBySlug = new Map<string, WineWeightRow>();
+
+  if (ids.length > 0) {
+    const { data, error } = await supabase
+      .from("wines")
+      .select("id,slug,weight_kg,category,name,producer,appellation")
+      .in("id", ids);
+
+    if (error) {
+      console.error("Erreur lecture poids vins par id :", error);
+      throw new Error("Impossible de calculer le poids du panier.");
+    }
+
+    (data as WineWeightRow[] | null)?.forEach((wine) => {
+      winesById.set(String(wine.id), wine);
+
+      if (wine.slug) {
+        winesBySlug.set(wine.slug, wine);
+      }
+    });
+  }
+
+  if (slugs.length > 0) {
+    const { data, error } = await supabase
+      .from("wines")
+      .select("id,slug,weight_kg,category,name,producer,appellation")
+      .in("slug", slugs);
+
+    if (error) {
+      console.error("Erreur lecture poids vins par slug :", error);
+      throw new Error("Impossible de calculer le poids du panier.");
+    }
+
+    (data as WineWeightRow[] | null)?.forEach((wine) => {
+      winesById.set(String(wine.id), wine);
+
+      if (wine.slug) {
+        winesBySlug.set(wine.slug, wine);
+      }
+    });
+  }
+
+  let shippableWeightKg = 0;
+  let shippableItemsCount = 0;
+  let primeurItemsCount = 0;
+
+  cart.forEach((item) => {
+    const quantity = Number(item.quantity || 1);
+    const id = item.id ? String(item.id) : null;
+    const slug = item.slug || null;
+
+    const wine =
+      (id ? winesById.get(id) : undefined) ??
+      (slug ? winesBySlug.get(slug) : undefined) ??
+      null;
+
+    const isPrimeur = wine
+      ? isPrimeurText([
+          wine.category,
+          wine.slug,
+          wine.name,
+          wine.producer,
+          wine.appellation,
+        ])
+      : isPrimeurCartItem(item);
+
+    if (isPrimeur) {
+      primeurItemsCount += quantity;
+      return;
+    }
+
+    const weight = wine ? parsePrice(wine.weight_kg) : 0;
+
+    shippableWeightKg += weight * quantity;
+    shippableItemsCount += quantity;
+  });
+
+  return {
+    shippableWeightKg: roundWeight(shippableWeightKg),
+    shippableItemsCount,
+    primeurItemsCount,
+    primeurOnly: shippableItemsCount === 0 && primeurItemsCount > 0,
+    hasPrimeurItems: primeurItemsCount > 0,
+  };
+}
+
+async function getShippingRate({
+  countryCode,
+  totalWeightKg,
+}: {
+  countryCode: string;
+  totalWeightKg: number;
+}) {
+  const { data, error } = await supabase
+    .from("shipping_rates")
+    .select(
+      "id,country_code,country_name,min_weight_kg,max_weight_kg,price_excl_vat,carrier"
+    )
+    .eq("active", true)
+    .eq("country_code", countryCode)
+    .lte("min_weight_kg", totalWeightKg)
+    .gte("max_weight_kg", totalWeightKg)
+    .order("price_excl_vat", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Erreur lecture shipping_rates :", error);
+    throw new Error("Impossible de calculer les frais de livraison.");
+  }
+
+  return data as ShippingRate | null;
+}
+
 export async function POST(request: Request) {
+console.log("===== API ORDERS TWW =====");
   let emailDiagnostic: SendOrderEmailsDiagnostic | null = null;
 
   try {
@@ -201,16 +378,7 @@ export async function POST(request: Request) {
 
     const body = await request.json();
 
-    const {
-      customer,
-      cart,
-      paymentMethod,
-      deliveryMethod,
-      deliveryFee,
-      deliveryNote,
-      totalToPay,
-      sessionId,
-    } = body;
+    const { customer, cart, paymentMethod, deliveryMethod, sessionId } = body;
 
     const selectedPaymentMethod: PaymentMethod =
       paymentMethod === "card" ? "card" : "bank_transfer";
@@ -255,39 +423,106 @@ export async function POST(request: Request) {
     const billingCountry = customer.country || "Espagne";
     const billingCountryCode = getCountryCode(billingCountry);
 
-    const cartTotalExclVat = cart.reduce((sum: number, item: CartItem) => {
-      const price = parsePrice(item.price);
-      const quantity = Number(item.quantity || 1);
-      return sum + price * quantity;
-    }, 0);
+    const cartTotalExclVat = roundMoney(
+      cart.reduce((sum: number, item: CartItem) => {
+        const price = parsePrice(item.price);
+        const quantity = Number(item.quantity || 1);
+
+        return sum + price * quantity;
+      }, 0)
+    );
+
+    const shippingInfo =
+      selectedDeliveryMethod === "delivery"
+        ? await getCartShippingInfo(cart)
+        : {
+            shippableWeightKg: 0,
+            shippableItemsCount: 0,
+            primeurItemsCount: 0,
+            primeurOnly: false,
+            hasPrimeurItems: false,
+          };
+
+    let shippingRate: ShippingRate | null = null;
+    let safeDeliveryFee = 0;
+    let deliveryLabel = "Retrait gratuit à l’entrepôt";
+    let safeDeliveryNote = "Pas de livraison — retrait gratuit à l’entrepôt.";
+
+    if (selectedDeliveryMethod === "delivery") {
+      if (shippingInfo.primeurOnly) {
+        deliveryLabel = "Livraison à la libération des vins";
+
+        safeDeliveryNote =
+          "Livraison à la libération des vins. Aucun frais de livraison n’est facturé maintenant pour les vins en primeur.";
+      } else {
+        if (billingCountryCode === "OTHER") {
+          return NextResponse.json(
+            {
+              error:
+                "Pour cette destination, merci de nous contacter afin d’établir un devis de transport.",
+            },
+            { status: 400 }
+          );
+        }
+
+        if (shippingInfo.shippableWeightKg <= 0) {
+          return NextResponse.json(
+            {
+              error:
+                "Impossible de calculer les frais de livraison : poids du panier livrable manquant.",
+            },
+            { status: 400 }
+          );
+        }
+
+        shippingRate = await getShippingRate({
+          countryCode: billingCountryCode,
+          totalWeightKg: shippingInfo.shippableWeightKg,
+        });
+
+        if (!shippingRate) {
+          return NextResponse.json(
+            {
+              error:
+                "Aucun tarif de livraison actif ne correspond au pays et au poids du panier livrable.",
+            },
+            { status: 400 }
+          );
+        }
+
+        safeDeliveryFee = roundMoney(parsePrice(shippingRate.price_excl_vat));
+
+        deliveryLabel = `Livraison ${
+          shippingRate.country_name || billingCountry
+        } — assurance transport comprise`;
+
+        safeDeliveryNote = [
+          `Poids livrable maintenant : ${shippingInfo.shippableWeightKg} kg.`,
+          `Tranche tarifaire : ${parsePrice(
+            shippingRate.min_weight_kg
+          )} kg à ${parsePrice(shippingRate.max_weight_kg)} kg.`,
+          `Frais de livraison HT : ${formatMoney(safeDeliveryFee)}.`,
+          "Assurance transport comprise.",
+          shippingInfo.hasPrimeurItems
+            ? "Les vins en primeur seront livrés à leur libération."
+            : "",
+        ]
+          .filter(Boolean)
+          .join("\n");
+      }
+    }
+
+    const taxableTotalExclVat = roundMoney(cartTotalExclVat + safeDeliveryFee);
 
     const vatCalculation = calculateVat({
-      cartTotalExclVat,
+      totalExclVat: taxableTotalExclVat,
       countryCode: billingCountryCode,
       companyName,
       vatNumber,
     });
 
     const orderId = crypto.randomUUID();
-
-    const safeDeliveryFee =
-      selectedDeliveryMethod === "pickup" ? 0 : Number(deliveryFee || 0);
-
-    const safeDeliveryNote =
-      selectedDeliveryMethod === "pickup"
-        ? "Pas de livraison — retrait gratuit à l’entrepôt."
-        : deliveryNote ||
-          "Les frais de livraison seront confirmés selon la destination, le poids et les conditions de transport.";
-
-    const deliveryLabel =
-      selectedDeliveryMethod === "pickup"
-        ? "Retrait gratuit à l’entrepôt"
-        : "Livraison à confirmer";
-
-    const finalTotalToPay =
-      Number(totalToPay || 0) > 0
-        ? roundMoney(Number(totalToPay))
-        : roundMoney(vatCalculation.totalInclVat + safeDeliveryFee);
+    const finalTotalToPay = roundMoney(vatCalculation.totalInclVat);
 
     const bankTransferInstructions =
       selectedPaymentMethod === "bank_transfer"
@@ -326,6 +561,13 @@ export async function POST(request: Request) {
       customer_city: customer.city || null,
       customer_country: customer.country || null,
       customer_comment: enrichedCustomerComment || null,
+
+      shipping_weight_kg: shippingInfo.shippableWeightKg,
+      shipping_country_code: billingCountryCode,
+      shipping_rate_id: shippingRate?.id || null,
+      shipping_price_excl_vat: safeDeliveryFee,
+      shipping_carrier: shippingRate?.carrier || null,
+      shipping_note: safeDeliveryNote,
 
       total_amount: finalTotalToPay,
       total_excl_vat: vatCalculation.totalExclVat,
@@ -378,7 +620,7 @@ export async function POST(request: Request) {
 
         quantity,
         unit_price: unitPrice,
-        total_price: unitPrice * quantity,
+        total_price: roundMoney(unitPrice * quantity),
       };
     });
 
@@ -448,7 +690,10 @@ export async function POST(request: Request) {
       selectedPaymentMethod,
       bankTransferInstructions,
     });
-
+console.log(
+  "DIAGNOSTIC EMAIL COMMANDE :",
+  JSON.stringify(emailDiagnostic, null, 2)
+);
     return NextResponse.json({
       success: true,
       orderId,
@@ -457,6 +702,15 @@ export async function POST(request: Request) {
       deliveryLabel,
       deliveryFee: safeDeliveryFee,
       deliveryNote: safeDeliveryNote,
+
+      shippingWeightKg: shippingInfo.shippableWeightKg,
+      shippingCountryCode: billingCountryCode,
+      shippingRateId: shippingRate?.id || null,
+      shippingCarrier: shippingRate?.carrier || null,
+      shippableItemsCount: shippingInfo.shippableItemsCount,
+      primeurItemsCount: shippingInfo.primeurItemsCount,
+      primeurOnly: shippingInfo.primeurOnly,
+      hasPrimeurItems: shippingInfo.hasPrimeurItems,
 
       totalAmount: finalTotalToPay,
       totalExclVat: vatCalculation.totalExclVat,
@@ -467,7 +721,7 @@ export async function POST(request: Request) {
       vatNote: vatCalculation.vatNote,
 
       paymentMethod: selectedPaymentMethod,
-    bankTransferInstructions,
+      bankTransferInstructions,
 
       emailDiagnostic,
     });
