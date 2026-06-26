@@ -15,6 +15,7 @@ type WineForm = {
   color: string;
   vintage: string;
   price: string;
+  compare_at_price: string;
   stock: string;
   bottle_size: string;
   packaging: string;
@@ -50,6 +51,7 @@ const emptyForm: WineForm = {
   color: "",
   vintage: "",
   price: "",
+  compare_at_price: "",
   stock: "",
   bottle_size: "",
   packaging: "",
@@ -213,6 +215,7 @@ export default function AdminEditWinePage() {
         color: data.color || "",
         vintage: data.vintage || "",
         price: parsePrice(data.price),
+        compare_at_price: parsePrice(data.compare_at_price),
         stock: String(data.stock ?? ""),
         bottle_size: data.bottle_size || "",
         packaging: data.packaging || "",
@@ -300,6 +303,7 @@ export default function AdminEditWinePage() {
       color: cleanText(form.color),
       vintage: cleanText(form.vintage),
       price: parseNumber(form.price),
+      compare_at_price: parseNumber(form.compare_at_price),
       stock: parsedStock,
       bottle_size: cleanText(form.bottle_size),
       packaging: cleanText(form.packaging),
@@ -350,6 +354,7 @@ export default function AdminEditWinePage() {
     setForm((previous) => ({
       ...previous,
       stock: String(result?.wine?.stock ?? parsedStock),
+      compare_at_price: parsePrice(result?.wine?.compare_at_price ?? form.compare_at_price),
     }));
 
     setSuccessMessage(
@@ -445,6 +450,7 @@ export default function AdminEditWinePage() {
             <input name="color" value={form.color} onChange={handleChange} placeholder="Couleur" className="rounded-xl border border-neutral-300 px-4 py-3" />
             <input name="vintage" value={form.vintage} onChange={handleChange} placeholder="Millésime" className="rounded-xl border border-neutral-300 px-4 py-3" />
             <input name="price" value={form.price} onChange={handleChange} placeholder="Prix HT" className="rounded-xl border border-neutral-300 px-4 py-3" />
+            <input name="compare_at_price" value={form.compare_at_price} onChange={handleChange} placeholder="Prix avant remise HT optionnel" className="rounded-xl border border-[#d6b36a] bg-[#fffaf3] px-4 py-3" />
             <input name="stock" value={form.stock} onChange={handleChange} placeholder="Stock disponible (caisses)" className="rounded-xl border-2 border-green-500 bg-green-50 px-4 py-3 font-semibold" />
             <input name="bottle_size" value={form.bottle_size} onChange={handleChange} placeholder="Flaconnage ex: 75cl" className="rounded-xl border border-neutral-300 px-4 py-3" />
             <input name="packaging" value={form.packaging} onChange={handleChange} placeholder="Caissage ex: CBO/6" className="rounded-xl border border-neutral-300 px-4 py-3" />

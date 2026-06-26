@@ -13,6 +13,7 @@ type Wine = {
   appellation: string | null;
   vintage: string | null;
   price: number | string | null;
+  compare_at_price: number | string | null;
   image: string | null;
   bottle_size: string | null;
   packaging: string | null;
@@ -31,6 +32,7 @@ type WineForm = {
   color: string;
   vintage: string;
   price: string;
+  compare_at_price: string;
   bottle_size: string;
   packaging: string;
   weight_kg: string;
@@ -65,6 +67,7 @@ const emptyForm: WineForm = {
   color: "",
   vintage: "",
   price: "",
+  compare_at_price: "",
   bottle_size: "",
   packaging: "",
   weight_kg: "",
@@ -126,6 +129,31 @@ function formatPrice(value?: number | string | null) {
   });
 }
 
+function getDiscountInfo(
+  priceValue?: number | string | null,
+  compareAtPriceValue?: number | string | null
+) {
+  const price = parsePrice(priceValue);
+  const compareAtPrice = parsePrice(compareAtPriceValue);
+
+  if (
+    price === null ||
+    compareAtPrice === null ||
+    compareAtPrice <= price ||
+    compareAtPrice <= 0
+  ) {
+    return null;
+  }
+
+  const saving = compareAtPrice - price;
+  const percent = Math.round((saving / compareAtPrice) * 100);
+
+  return {
+    saving,
+    percent,
+  };
+}
+
 function getAutomaticWeightKg(packaging?: string | null) {
   const normalized = String(packaging || "")
     .trim()
@@ -164,7 +192,7 @@ export default function AdminCataloguePage() {
     const { data, error } = await supabase
       .from("wines")
       .select(
-        "id, slug, name, producer, region, appellation, vintage, price, image, bottle_size, packaging, weight_kg, hidden_from_site, created_at"
+        "id, slug, name, producer, region, appellation, vintage, price, compare_at_price, image, bottle_size, packaging, weight_kg, hidden_from_site, created_at"
       )
       .order("created_at", { ascending: false });
 
@@ -326,6 +354,7 @@ export default function AdminCataloguePage() {
     setUpdatingVisibilityId(null);
     await loadWines();
   }
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -348,6 +377,7 @@ export default function AdminCataloguePage() {
     }
 
     const parsedPrice = parsePrice(form.price);
+    const parsedCompareAtPrice = parsePrice(form.compare_at_price);
     const parsedRating = parsePrice(form.rating);
     const parsedWeight =
       parseNumber(form.weight_kg) ?? getAutomaticWeightKg(form.packaging);
@@ -362,6 +392,7 @@ export default function AdminCataloguePage() {
       color: form.color.trim() || null,
       vintage: form.vintage.trim() || null,
       price: parsedPrice,
+      compare_at_price: parsedCompareAtPrice,
       hidden_from_site: false,
       bottle_size: form.bottle_size.trim() || null,
       packaging: form.packaging.trim() || null,
@@ -425,7 +456,6 @@ export default function AdminCataloguePage() {
     await loadWines();
     setSaving(false);
   }
-
   return (
     <main className="min-h-screen bg-[#f8f3ea] px-6 py-12 text-[#1f1a17]">
       <div className="mx-auto max-w-7xl">
@@ -495,6 +525,7 @@ export default function AdminCataloguePage() {
               <input name="color" value={form.color} onChange={handleChange} placeholder="Couleur" className="rounded-xl border border-neutral-300 px-4 py-3" />
               <input name="vintage" value={form.vintage} onChange={handleChange} placeholder="Millésime" className="rounded-xl border border-neutral-300 px-4 py-3" />
               <input name="price" value={form.price} onChange={handleChange} placeholder="Prix HT" className="rounded-xl border border-neutral-300 px-4 py-3" />
+              <input name="compare_at_price" value={form.compare_at_price} onChange={handleChange} placeholder="Prix avant remise HT optionnel" className="rounded-xl border border-[#d6b36a] bg-[#fffaf3] px-4 py-3" />
               <input name="bottle_size" value={form.bottle_size} onChange={handleChange} placeholder="Flaconnage ex: 75cl" className="rounded-xl border border-neutral-300 px-4 py-3" />
               <input name="packaging" value={form.packaging} onChange={handleChange} placeholder="Caissage ex: CBO/6" className="rounded-xl border border-neutral-300 px-4 py-3" />
               <input name="weight_kg" value={form.weight_kg} onChange={handleChange} placeholder="Poids kg auto / modifiable" className="rounded-xl border border-neutral-300 px-4 py-3" />
@@ -568,6 +599,10 @@ export default function AdminCataloguePage() {
               <div className="mt-5 max-h-[900px] space-y-4 overflow-y-auto pr-2">
                 {filteredAdminWines.map((wine) => {
                   const isHidden = Boolean(wine.hidden_from_site);
+                  const discountInfo = getDiscountInfo(
+                    wine.price,
+                    wine.compare_at_price
+                  );
 
                   return (
                     <div
@@ -619,9 +654,31 @@ export default function AdminCataloguePage() {
                             {wine.weight_kg ? ` · ${wine.weight_kg} kg` : ""}
                           </p>
 
-                          <p className="mt-1 text-sm font-semibold text-black">
-                            {formatPrice(wine.price)}
-                          </p>
+                          {discountInfo ? (
+                            <div className="mt-2 rounded-xl bg-[#fffaf3] p-3 text-sm">
+                              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8a6a2f]">
+                                🏷️ Offre exceptionnelle
+                              </p>
+
+                              <p className="mt-1 text-neutral-500 line-through">
+                                {formatPrice(wine.compare_at_price)} HT
+                              </p>
+
+                              <p className="text-base font-semibold text-black">
+                                {formatPrice(wine.price)} HT
+                              </p>
+
+                              <p className="mt-1 text-xs text-neutral-700">
+                                Vous économisez{" "}
+                                <strong>{formatPrice(discountInfo.saving)} HT</strong>{" "}
+                                (-{discountInfo.percent} %)
+                              </p>
+                            </div>
+                          ) : (
+                            <p className="mt-1 text-sm font-semibold text-black">
+                              {formatPrice(wine.price)} HT
+                            </p>
+                          )}
 
                           <div className="mt-3 flex flex-wrap gap-2">
                             <Link

@@ -12,6 +12,7 @@ type Wine = {
   region?: string;
   vintage?: string | number;
   price?: string | number;
+  compare_at_price?: string | number;
   stock?: string | number;
   bottle_size?: string;
   packaging?: string;
@@ -122,6 +123,24 @@ function formatPrice(price?: string | number) {
   );
 }
 
+function getDiscountInfo(
+  priceValue?: string | number,
+  compareAtPriceValue?: string | number
+) {
+  const price = parsePrice(priceValue);
+  const compareAtPrice = parsePrice(compareAtPriceValue);
+
+  if (price <= 0 || compareAtPrice <= price) return null;
+
+  const saving = compareAtPrice - price;
+  const percent = Math.round((saving / compareAtPrice) * 100);
+
+  return {
+    saving,
+    percent,
+  };
+}
+
 function categoryToSlug(category?: string) {
   if (!category) return "";
 
@@ -210,7 +229,8 @@ function RelatedWineList({
             className="rounded-2xl border border-[#eadcca] bg-[#fffaf3] px-4 py-3 text-sm font-medium text-[#6d5b50] transition hover:border-[#8a6a2f] hover:text-[#8a1f1f]"
           >
             {item.name}
-            {item.vintage && !String(item.name || "").includes(String(item.vintage))
+            {item.vintage &&
+            !String(item.name || "").includes(String(item.vintage))
               ? ` ${item.vintage}`
               : ""}
           </Link>
@@ -390,6 +410,7 @@ export default function WinePage() {
   const vintage = wine?.vintage ? String(wine.vintage) : undefined;
   const stock = availableStock;
   const isAvailable = stock > 0;
+  const discountInfo = getDiscountInfo(wine?.price, wine?.compare_at_price);
 
   const addToWishlist = async () => {
     if (!wine?.id || wishlistLoading) return;
@@ -638,7 +659,26 @@ export default function WinePage() {
                 <p className="text-xs uppercase tracking-[0.22em] text-[#d8b56d]">
                   Prix HT
                 </p>
-                <p className="mt-2 text-white">{formatPrice(wine.price)}</p>
+
+                {discountInfo ? (
+                  <div className="mt-2">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#d8b56d]">
+                      🏷️ Offre exceptionnelle
+                    </p>
+                    <p className="mt-2 text-sm text-white/50 line-through">
+                      {formatPrice(wine.compare_at_price)}
+                    </p>
+                    <p className="text-lg font-semibold text-white">
+                      {formatPrice(wine.price)}
+                    </p>
+                    <p className="mt-1 text-xs text-[#f5dfaa]">
+                      Vous économisez {formatPrice(discountInfo.saving)} (-
+                      {discountInfo.percent} %)
+                    </p>
+                  </div>
+                ) : (
+                  <p className="mt-2 text-white">{formatPrice(wine.price)}</p>
+                )}
               </div>
 
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
