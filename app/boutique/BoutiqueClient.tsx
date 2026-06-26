@@ -15,6 +15,7 @@ type Wine = {
   millesime?: string | number;
   price?: string | number;
   prix?: string | number;
+  compare_at_price?: string | number;
   quantity?: string | number;
   stock?: string | number;
   category?: string;
@@ -68,12 +69,24 @@ function getWinePrice(wine: Wine) {
   return wine.price || wine.prix || "";
 }
 
+function parsePrice(price?: string | number) {
+  if (price === undefined || price === null || price === "") return 0;
+  if (typeof price === "number") return price;
+
+  const cleaned = price
+    .toString()
+    .replace(/[€\s]/g, "")
+    .replace(/\./g, "")
+    .replace(",", ".");
+
+  const value = Number(cleaned);
+  return Number.isNaN(value) ? 0 : value;
+}
+
 function formatPrice(price: string | number | undefined) {
-  if (!price) return "";
+  const value = parsePrice(price);
 
-  const value = Number(price);
-
-  if (Number.isNaN(value)) return String(price);
+  if (value <= 0) return "";
 
   return (
     value.toLocaleString("fr-FR", {
@@ -81,6 +94,24 @@ function formatPrice(price: string | number | undefined) {
       maximumFractionDigits: 2,
     }) + " € HT"
   );
+}
+
+function getDiscountInfo(
+  priceValue?: string | number,
+  compareAtPriceValue?: string | number
+) {
+  const price = parsePrice(priceValue);
+  const compareAtPrice = parsePrice(compareAtPriceValue);
+
+  if (price <= 0 || compareAtPrice <= price) return null;
+
+  const saving = compareAtPrice - price;
+  const percent = Math.round((saving / compareAtPrice) * 100);
+
+  return {
+    saving,
+    percent,
+  };
 }
 
 function getWineImage(wine: Wine) {
@@ -108,6 +139,7 @@ function WineCard({
   const name = getWineName(wine);
   const vintage = getWineVintage(wine);
   const price = getWinePrice(wine);
+  const discountInfo = getDiscountInfo(price, wine.compare_at_price);
   const location = wine.appellation || wine.region || categoryTitle;
   const wineHref = getWineHref(wine);
 
@@ -116,6 +148,12 @@ function WineCard({
       <Link href={wineHref} className="block">
         <div className="relative flex h-[245px] items-center justify-center overflow-hidden bg-[#efe3d2] p-6">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(216,181,109,0.24),transparent_38%)]" />
+
+          {discountInfo && (
+            <div className="absolute left-4 top-4 z-10 rounded-full bg-[#8a1f1f] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-white shadow-sm">
+              -{discountInfo.percent} %
+            </div>
+          )}
 
           {wine.rating && (
             <div className="absolute right-4 top-4 z-10 rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-semibold text-[#8a1f1f] shadow-sm">
@@ -187,9 +225,30 @@ function WineCard({
             </p>
 
             {price ? (
-              <p className="mt-1 font-serif text-2xl text-[#8a1f1f]">
-                {formatPrice(price)}
-              </p>
+              discountInfo ? (
+                <div className="mt-1">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#8a6a2f]">
+                    🏷️ Offre exceptionnelle
+                  </p>
+
+                  <p className="mt-1 text-sm text-[#9b8c7d] line-through">
+                    {formatPrice(wine.compare_at_price)}
+                  </p>
+
+                  <p className="font-serif text-2xl text-[#8a1f1f]">
+                    {formatPrice(price)}
+                  </p>
+
+                  <p className="mt-1 text-[11px] text-[#6d5b50]">
+                    Vous économisez {formatPrice(discountInfo.saving)} (-
+                    {discountInfo.percent} %)
+                  </p>
+                </div>
+              ) : (
+                <p className="mt-1 font-serif text-2xl text-[#8a1f1f]">
+                  {formatPrice(price)}
+                </p>
+              )
             ) : (
               <p className="mt-2 text-sm text-[#6d5b50]">Sur demande</p>
             )}
