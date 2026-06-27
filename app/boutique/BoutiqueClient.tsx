@@ -538,24 +538,15 @@ export default function BoutiqueClient({
     slug,
   ]);
 
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredWines.length / WINES_PER_PAGE)
-  );
+  const shouldGroupWines =
+    slug === "primeurs-2025" || slug === "bourgogne" || slug === "bordeaux";
 
-  const paginatedWines = filteredWines.slice(
-    (currentPage - 1) * WINES_PER_PAGE,
-    currentPage * WINES_PER_PAGE
-  );
-
-  const groupedPaginatedWines = useMemo(() => {
-    if (slug !== "primeurs-2025" && slug !== "bourgogne" && slug !== "bordeaux") {
-      return [];
-    }
+  const groupedFilteredWines = useMemo(() => {
+    if (!shouldGroupWines) return [];
 
     const groups: { title: string; wines: Wine[] }[] = [];
 
-    paginatedWines.forEach((wine) => {
+    filteredWines.forEach((wine) => {
       const title =
         slug === "bourgogne"
           ? wine.producer || "Domaine non précisé"
@@ -588,7 +579,52 @@ export default function BoutiqueClient({
     }
 
     return groups;
-  }, [paginatedWines, slug]);
+  }, [filteredWines, shouldGroupWines, slug]);
+
+  const groupedPages = useMemo(() => {
+    if (!shouldGroupWines) return [];
+
+    const pages: { title: string; wines: Wine[] }[][] = [];
+    let currentPageGroups: { title: string; wines: Wine[] }[] = [];
+    let currentPageWineCount = 0;
+
+    groupedFilteredWines.forEach((group) => {
+      const groupWineCount = group.wines.length;
+
+      if (
+        currentPageGroups.length > 0 &&
+        currentPageWineCount + groupWineCount > WINES_PER_PAGE
+      ) {
+        pages.push(currentPageGroups);
+        currentPageGroups = [];
+        currentPageWineCount = 0;
+      }
+
+      currentPageGroups.push(group);
+      currentPageWineCount += groupWineCount;
+    });
+
+    if (currentPageGroups.length > 0) {
+      pages.push(currentPageGroups);
+    }
+
+    return pages;
+  }, [groupedFilteredWines, shouldGroupWines]);
+
+  const totalPages = shouldGroupWines
+    ? Math.max(1, groupedPages.length)
+    : Math.max(1, Math.ceil(filteredWines.length / WINES_PER_PAGE));
+
+  const paginatedWines = shouldGroupWines
+    ? []
+    : filteredWines.slice(
+        (currentPage - 1) * WINES_PER_PAGE,
+        currentPage * WINES_PER_PAGE
+      );
+
+  const groupedPaginatedWines = shouldGroupWines
+    ? groupedPages[currentPage - 1] || []
+    : [];
 
   function resetFilters() {
     setSearch("");
@@ -741,11 +777,13 @@ export default function BoutiqueClient({
           </div>
         )}
 
-        {!loading && !errorMessage && paginatedWines.length > 0 && (
+        {!loading &&
+          !errorMessage &&
+          (shouldGroupWines
+            ? groupedPaginatedWines.length > 0
+            : paginatedWines.length > 0) && (
           <>
-            {slug === "primeurs-2025" ||
-            slug === "bourgogne" ||
-            slug === "bordeaux" ? (
+            {shouldGroupWines ? (
               <div className="space-y-12">
                 {groupedPaginatedWines.map((group) => (
                   <section key={group.title}>
