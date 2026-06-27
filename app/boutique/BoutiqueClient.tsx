@@ -43,6 +43,18 @@ type BoutiqueClientProps = {
 
 const WINES_PER_PAGE = 24;
 
+const BORDEAUX_APPELLATION_ORDER = [
+  "Margaux",
+  "Pauillac",
+  "Pessac-Léognan",
+  "Pomerol",
+  "Saint-Émilion",
+  "Saint-Estèphe",
+  "Saint-Julien",
+  "Sauternes",
+  "Autres",
+];
+
 function normalize(value?: string | number | null) {
   return String(value ?? "")
     .toLowerCase()
@@ -128,6 +140,23 @@ function uniqueSorted(values: Array<string | number | undefined | null>) {
   ).sort((a, b) => a.localeCompare(b, "fr"));
 }
 
+function getBordeauxAppellationTitle(wine: Wine) {
+  const normalizedAppellation = normalize(wine.appellation || wine.region || "");
+
+  const matchedAppellation = BORDEAUX_APPELLATION_ORDER.find(
+    (appellation) => normalize(appellation) === normalizedAppellation
+  );
+
+  return matchedAppellation || "Autres";
+}
+
+function getBordeauxAppellationRank(wine: Wine) {
+  const title = getBordeauxAppellationTitle(wine);
+  const index = BORDEAUX_APPELLATION_ORDER.indexOf(title);
+
+  return index >= 0 ? index : BORDEAUX_APPELLATION_ORDER.length - 1;
+}
+
 function WineCard({
   wine,
   categoryTitle,
@@ -207,7 +236,7 @@ function WineCard({
         </div>
 
         <Link href={wineHref}>
-          <h3 className="min-h-[64px] truncate font-serif text-sm leading-tight text-[#24110d] transition group-hover:text-[#8a1f1f]">
+          <h3 className="min-h-[64px] font-serif text-sm leading-tight text-[#24110d] transition group-hover:text-[#8a1f1f]">
             {name}
           </h3>
         </Link>
@@ -239,9 +268,9 @@ function WineCard({
                     {formatPrice(price)}
                   </p>
 
-                  <p className="mt-1 text-[11px] text-[#6d5b50]">
+                  <p className="mt-1 whitespace-nowrap text-[11px] text-[#6d5b50]">
                     Vous économisez {formatPrice(discountInfo.saving)} (-
-                    {discountInfo.percent} %)
+                    {discountInfo.percent}%)
                   </p>
                 </div>
               ) : (
@@ -440,6 +469,20 @@ export default function BoutiqueClient({
         );
       })
       .sort((a, b) => {
+        if (slug === "bordeaux") {
+          const rankA = getBordeauxAppellationRank(a);
+          const rankB = getBordeauxAppellationRank(b);
+
+          if (rankA !== rankB) {
+            return rankA - rankB;
+          }
+
+          const nameA = normalize(getWineName(a));
+          const nameB = normalize(getWineName(b));
+
+          return nameA.localeCompare(nameB, "fr");
+        }
+
         if (slug === "primeurs-2025") {
           const appellationA = normalize(a.appellation || a.region || "");
           const appellationB = normalize(b.appellation || b.region || "");
@@ -506,7 +549,9 @@ export default function BoutiqueClient({
   );
 
   const groupedPaginatedWines = useMemo(() => {
-    if (slug !== "primeurs-2025" && slug !== "bourgogne") return [];
+    if (slug !== "primeurs-2025" && slug !== "bourgogne" && slug !== "bordeaux") {
+      return [];
+    }
 
     const groups: { title: string; wines: Wine[] }[] = [];
 
@@ -514,6 +559,8 @@ export default function BoutiqueClient({
       const title =
         slug === "bourgogne"
           ? wine.producer || "Domaine non précisé"
+          : slug === "bordeaux"
+          ? getBordeauxAppellationTitle(wine)
           : wine.appellation || wine.region || "Autres";
 
       const existingGroup = groups.find((group) => group.title === title);
@@ -527,6 +574,18 @@ export default function BoutiqueClient({
         });
       }
     });
+
+    if (slug === "bordeaux") {
+      return groups.sort((a, b) => {
+        const indexA = BORDEAUX_APPELLATION_ORDER.indexOf(a.title);
+        const indexB = BORDEAUX_APPELLATION_ORDER.indexOf(b.title);
+
+        return (
+          (indexA >= 0 ? indexA : BORDEAUX_APPELLATION_ORDER.length - 1) -
+          (indexB >= 0 ? indexB : BORDEAUX_APPELLATION_ORDER.length - 1)
+        );
+      });
+    }
 
     return groups;
   }, [paginatedWines, slug]);
@@ -684,7 +743,9 @@ export default function BoutiqueClient({
 
         {!loading && !errorMessage && paginatedWines.length > 0 && (
           <>
-            {slug === "primeurs-2025" || slug === "bourgogne" ? (
+            {slug === "primeurs-2025" ||
+            slug === "bourgogne" ||
+            slug === "bordeaux" ? (
               <div className="space-y-12">
                 {groupedPaginatedWines.map((group) => (
                   <section key={group.title}>
