@@ -4,113 +4,73 @@ import { blogPosts } from "@/app/blog/blogPosts";
 
 const siteUrl = "https://www.thewinewatchers.com";
 
+const now = new Date();
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const wines = await getWines();
 
   const pagesPrincipales: MetadataRoute.Sitemap = [
-    {
-      url: siteUrl,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 1,
-    },
-    {
-      url: `${siteUrl}/boutique`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
-    {
-      url: `${siteUrl}/boutique/bordeaux`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
-    {
-      url: `${siteUrl}/boutique/primeurs-2025`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
-    {
-      url: `${siteUrl}/boutique/bourgogne`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
-    {
-      url: `${siteUrl}/boutique/italie`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-    {
-      url: `${siteUrl}/boutique/espagne`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-    {
-      url: `${siteUrl}/blog`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-    {
-      url: `${siteUrl}/a-propos`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.7,
-    },
-    {
-      url: `${siteUrl}/livraison`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.6,
-    },
-    {
-      url: `${siteUrl}/contact`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.6,
-    },
-    {
-      url: `${siteUrl}/mentions-legales`,
-      lastModified: new Date(),
-      changeFrequency: "yearly",
-      priority: 0.4,
-    },
-  ];
+    "",
+    "/boutique",
+    "/boutique/bordeaux",
+    "/boutique/bourgogne",
+    "/boutique/rhone",
+    "/boutique/italie",
+    "/boutique/espagne",
+    "/boutique/primeurs-2025",
+    "/blog",
+    "/a-propos",
+    "/livraison",
+    "/contact",
+    "/mentions-legales",
+    "/politique-confidentialite",
+    "/politique-cookies",
+    "/cgv",
+  ].map((path) => ({
+    url: `${siteUrl}${path}`,
+    lastModified: now,
+    changeFrequency: "weekly",
+    priority: path === "" ? 1 : 0.8,
+  }));
 
-  const pagesAppellations: MetadataRoute.Sitemap = [
+  const appellations = [
     "pauillac",
     "margaux",
-    "pomerol",
-    "saint-emilion",
     "saint-julien",
     "saint-estephe",
+    "pomerol",
+    "saint-emilion",
+    "pessac-leognan",
     "sauternes",
-    "meursault",
-    "vosne-romanee",
     "gevrey-chambertin",
+    "vosne-romanee",
     "chambolle-musigny",
-  ].map((slug) => ({
+    "meursault",
+    "puligny-montrachet",
+    "cote-de-nuits",
+    "cote-de-beaune",
+    "chablis",
+  ];
+
+  const pagesAppellations: MetadataRoute.Sitemap = appellations.map((slug) => ({
     url: `${siteUrl}/appellation/${slug}`,
-    lastModified: new Date(),
+    lastModified: now,
     changeFrequency: "weekly",
     priority: 0.85,
   }));
 
-  const pagesVins: MetadataRoute.Sitemap = wines.map((wine) => ({
-    url: `${siteUrl}/boutique/vin/${wine.slug}`,
-    lastModified: new Date(),
-    changeFrequency: "monthly",
-    priority: 0.85,
-  }));
+  const pagesVins: MetadataRoute.Sitemap = wines
+    .filter((wine) => Boolean(wine?.slug))
+    .map((wine) => ({
+      url: `${siteUrl}/boutique/vin/${wine.slug}`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.85,
+    }));
 
   const pagesBlog: MetadataRoute.Sitemap = blogPosts.map((post) => ({
     url: `${siteUrl}/blog/${post.slug}`,
-    lastModified: new Date(),
+    lastModified: now,
     changeFrequency: "monthly",
     priority: 0.75,
   }));
