@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import WinePageClient from "./WinePageClient";
 
 type Props = {
@@ -28,12 +29,14 @@ function getImageUrl(image?: string) {
 
 async function getWine(id: string) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 
-if (!supabaseUrl || !supabaseKey) return null;
+  if (!supabaseUrl || !supabaseKey) return null;
+
   async function fetchWine(column: "id" | "slug") {
     const url =
       `${supabaseUrl}/rest/v1/wines?${column}=eq.${encodeURIComponent(id)}` +
+      `&hidden_from_site=neq.true` +
       `&select=*&limit=1`;
 
     const response = await fetch(url, {
@@ -61,6 +64,10 @@ export async function generateMetadata({ params }: Props) {
     return {
       title: "Vin introuvable – The Wine Watchers",
       description: "Fiche vin introuvable sur The Wine Watchers.",
+      robots: {
+        index: false,
+        follow: false,
+      },
     };
   }
 
@@ -88,48 +95,49 @@ export default async function WinePage({ params }: Props) {
   const { id } = await params;
   const wine = await getWine(id);
 
-  const price = parsePrice(wine?.price);
-  const imageUrl = getImageUrl(wine?.image);
+  if (!wine) {
+    notFound();
+  }
 
-  const productJsonLd = wine
-    ? {
-        "@context": "https://schema.org",
-        "@type": "Product",
-        name: wine.name,
-        image: [imageUrl],
-        description:
-          wine.seo_description ||
-          wine.description ||
-          `${wine.name} disponible chez The Wine Watchers.`,
-        brand: {
-          "@type": "Brand",
-          name: wine.producer || "The Wine Watchers",
-        },
-        category: wine.category || "Vin",
-        offers: {
-          "@type": "Offer",
-          url: `${SITE_URL}/boutique/vin/${wine.id}`,
-          priceCurrency: "EUR",
-          price: price > 0 ? price.toFixed(2) : undefined,
-          availability:
-            Number(wine.stock || 0) > 0
-              ? "https://schema.org/InStock"
-              : "https://schema.org/OutOfStock",
-          itemCondition: "https://schema.org/NewCondition",
-        },
-      }
-    : null;
+  const price = parsePrice(wine.price);
+  const imageUrl = getImageUrl(wine.image);
+  const canonicalUrl = `${SITE_URL}/boutique/vin/${wine.slug || wine.id}`;
+
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: wine.name,
+    image: [imageUrl],
+    description:
+      wine.seo_description ||
+      wine.description ||
+      `${wine.name} disponible chez The Wine Watchers.`,
+    brand: {
+      "@type": "Brand",
+      name: wine.producer || "The Wine Watchers",
+    },
+    category: wine.category || "Vin",
+    offers: {
+      "@type": "Offer",
+      url: canonicalUrl,
+      priceCurrency: "EUR",
+      price: price > 0 ? price.toFixed(2) : undefined,
+      availability:
+        Number(wine.stock || 0) > 0
+          ? "https://schema.org/InStock"
+          : "https://schema.org/OutOfStock",
+      itemCondition: "https://schema.org/NewCondition",
+    },
+  };
 
   return (
     <>
-      {productJsonLd && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(productJsonLd),
-          }}
-        />
-      )}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(productJsonLd),
+        }}
+      />
 
       <WinePageClient />
     </>
