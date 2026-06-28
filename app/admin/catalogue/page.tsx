@@ -97,8 +97,68 @@ function createSlug(value: string) {
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
+    .replace(/œ/g, "oe")
+    .replace(/æ/g, "ae")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+}
+
+function removeTechnicalWordsFromSlug(slug: string) {
+  return slug
+    .split("-")
+    .filter((part) =>
+      !["bouteille", "caisse", "copie", "copy", "primeur", "primeurs"].includes(part)
+    )
+    .join("-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function removeYearsFromName(value: string) {
+  return value
+    .replace(/\b(19|20)\d{2}\b/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function createWineSlug(name: string, vintage: string, customSlug?: string) {
+  const cleanedVintage = String(vintage || "").trim();
+
+  if (customSlug?.trim()) {
+    const custom = removeTechnicalWordsFromSlug(createSlug(customSlug));
+
+    if (!cleanedVintage) return custom;
+
+    const vintageSlug = createSlug(cleanedVintage);
+    const withoutDuplicateVintage = custom
+      .replace(new RegExp(`-${vintageSlug}-${vintageSlug}$`), `-${vintageSlug}`)
+      .replace(new RegExp(`^${vintageSlug}-${vintageSlug}$`), vintageSlug);
+
+    return withoutDuplicateVintage;
+  }
+
+  const baseName = removeYearsFromName(name);
+  const baseSlug = removeTechnicalWordsFromSlug(createSlug(baseName));
+  const vintageSlug = createSlug(cleanedVintage);
+
+  if (!baseSlug) return vintageSlug;
+  if (!vintageSlug) return baseSlug;
+
+  return `${baseSlug}-${vintageSlug}`;
+}
+
+function getSlugWarning(form: WineForm) {
+  const warnings: string[] = [];
+
+  if (form.vintage.trim() && new RegExp(`\\b${form.vintage.trim()}\\b`).test(form.name)) {
+    warnings.push("Le millésime était présent dans le nom : il n’est pas répété dans le slug.");
+  }
+
+  if (/\b(bouteille|caisse|copie|copy|primeur|primeurs)\b/i.test(form.name)) {
+    warnings.push("Les mots techniques bouteille, caisse, copie ou primeur sont exclus du slug.");
+  }
+
+  return warnings.join(" ");
 }
 
 function parseNumber(value?: number | string | null) {
@@ -226,9 +286,10 @@ export default function AdminCataloguePage() {
   }, [wines, searchWine]);
 
   const previewSlug = useMemo(() => {
-    if (form.slug.trim()) return createSlug(form.slug);
-    return createSlug(`${form.name}-${form.vintage}`);
+    return createWineSlug(form.name, form.vintage, form.slug);
   }, [form.slug, form.name, form.vintage]);
+
+  const slugWarning = useMemo(() => getSlugWarning(form), [form]);
 
   function handleChange(
     event: React.ChangeEvent<
@@ -558,6 +619,11 @@ export default function AdminCataloguePage() {
             <div className="mt-6 rounded-2xl bg-[#fffaf3] p-4 text-sm text-neutral-700">
               Slug généré :{" "}
               <strong className="text-black">{previewSlug || "—"}</strong>
+              {slugWarning && (
+                <p className="mt-2 rounded-xl border border-[#d6b36a]/40 bg-white px-3 py-2 text-xs text-[#8a6a2f]">
+                  {slugWarning}
+                </p>
+              )}
               <br />
               Poids automatique :{" "}
               <strong className="text-black">
@@ -682,7 +748,7 @@ export default function AdminCataloguePage() {
 
                           <div className="mt-3 flex flex-wrap gap-2">
                             <Link
-                              href={`/boutique/vin/${wine.id}`}
+                              href={`/boutique/vin/${wine.slug || wine.id}`}
                               target="_blank"
                               className="rounded-full bg-black px-3 py-2 text-xs uppercase tracking-[0.14em] text-white hover:bg-[#8a6a2f]"
                             >

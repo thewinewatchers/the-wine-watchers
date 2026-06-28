@@ -14,40 +14,48 @@ function createSlug(value: string) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
+
+function createBaseWineSlug(name: string, vintage?: string | number | null) {
+  const cleanName = String(name || "vin").trim();
+  const cleanVintage = vintage ? String(vintage).trim() : "";
+
+  if (!cleanVintage) return createSlug(cleanName);
+
+  const normalizedName = createSlug(cleanName);
+  const normalizedVintage = createSlug(cleanVintage);
+
+  if (
+    normalizedName === normalizedVintage ||
+    normalizedName.endsWith(`-${normalizedVintage}`)
+  ) {
+    return normalizedName;
+  }
+
+  return createSlug(`${cleanName}-${cleanVintage}`);
+}
+
 async function createUniqueDuplicateSlug(
   name: string,
   vintage?: string | number | null
 ) {
-  const cleanName = name || "vin";
-  const cleanVintage = vintage ? String(vintage).trim() : "";
-
-  const nameAlreadyContainsVintage =
-    cleanVintage && cleanName.includes(cleanVintage);
-
-  const baseSlug = nameAlreadyContainsVintage
-    ? createSlug(cleanName)
-    : createSlug(`${cleanName}-${cleanVintage}`);
-
-  const copyBaseSlug = `${baseSlug}-copie`;
+  const baseSlug = createBaseWineSlug(name, vintage);
 
   const { data } = await supabaseAdmin
     .from("wines")
     .select("slug")
-    .or(`slug.eq.${copyBaseSlug},slug.like.${copyBaseSlug}-%`);
+    .or(`slug.eq.${baseSlug},slug.like.${baseSlug}-%`);
 
   const existingSlugs = new Set((data || []).map((item) => item.slug));
 
-  if (!existingSlugs.has(copyBaseSlug)) {
-    return copyBaseSlug;
-  }
-
   let counter = 2;
+  let candidate = `${baseSlug}-${counter}`;
 
-  while (existingSlugs.has(`${copyBaseSlug}-${counter}`)) {
+  while (existingSlugs.has(candidate)) {
     counter++;
+    candidate = `${baseSlug}-${counter}`;
   }
 
-  return `${copyBaseSlug}-${counter}`;
+  return candidate;
 }
 
 export async function PATCH(
@@ -108,9 +116,11 @@ export async function POST(
     color: original.color || null,
     vintage: original.vintage || null,
     price: original.price || null,
+    compare_at_price: original.compare_at_price || null,
     stock: original.stock || 0,
     bottle_size: original.bottle_size || null,
     packaging: original.packaging || null,
+    weight_kg: original.weight_kg || null,
     image: original.image || null,
     category: original.category || null,
     rating: original.rating || null,
