@@ -106,8 +106,16 @@ function createSlug(value: string) {
 function removeTechnicalWordsFromSlug(slug: string) {
   return slug
     .split("-")
-    .filter((part) =>
-      !["bouteille", "caisse", "copie", "copy", "primeur", "primeurs"].includes(part)
+    .filter(
+      (part) =>
+        ![
+          "bouteille",
+          "caisse",
+          "copie",
+          "copy",
+          "primeur",
+          "primeurs",
+        ].includes(part)
     )
     .join("-")
     .replace(/-+/g, "-")
@@ -150,12 +158,19 @@ function createWineSlug(name: string, vintage: string, customSlug?: string) {
 function getSlugWarning(form: WineForm) {
   const warnings: string[] = [];
 
-  if (form.vintage.trim() && new RegExp(`\\b${form.vintage.trim()}\\b`).test(form.name)) {
-    warnings.push("Le millésime était présent dans le nom : il n’est pas répété dans le slug.");
+  if (
+    form.vintage.trim() &&
+    new RegExp(`\\b${form.vintage.trim()}\\b`).test(form.name)
+  ) {
+    warnings.push(
+      "Le millésime était présent dans le nom : il n’est pas répété dans le slug."
+    );
   }
 
   if (/\b(bouteille|caisse|copie|copy|primeur|primeurs)\b/i.test(form.name)) {
-    warnings.push("Les mots techniques bouteille, caisse, copie ou primeur sont exclus du slug.");
+    warnings.push(
+      "Les mots techniques bouteille, caisse, copie ou primeur sont exclus du slug."
+    );
   }
 
   return warnings.join(" ");
@@ -240,7 +255,10 @@ export default function AdminCataloguePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
-  const [updatingVisibilityId, setUpdatingVisibilityId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [updatingVisibilityId, setUpdatingVisibilityId] = useState<string | null>(
+    null
+  );
   const [searchWine, setSearchWine] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -325,18 +343,28 @@ export default function AdminCataloguePage() {
 
     if (!confirmed) return;
 
+    setDeletingId(wineId);
     setErrorMessage("");
     setSuccessMessage("");
 
-    const { error } = await supabase.from("wines").delete().eq("id", wineId);
+    const response = await fetch(`/api/admin/wines/${wineId}`, {
+      method: "DELETE",
+    });
 
-    if (error) {
-      console.error("Erreur suppression vin :", error);
-      setErrorMessage(`Erreur lors de la suppression : ${error.message}`);
+    const result = await response.json();
+
+    if (!response.ok) {
+      setErrorMessage(
+        result?.details ||
+          result?.error ||
+          "Erreur lors de la suppression du vin."
+      );
+      setDeletingId(null);
       return;
     }
 
     setSuccessMessage("Vin supprimé du catalogue.");
+    setDeletingId(null);
     await loadWines();
   }
 
@@ -407,15 +435,12 @@ export default function AdminCataloguePage() {
     }
 
     setSuccessMessage(
-      newHiddenValue
-        ? "Vin masqué du site."
-        : "Vin affiché sur le site."
+      newHiddenValue ? "Vin masqué du site." : "Vin affiché sur le site."
     );
 
     setUpdatingVisibilityId(null);
     await loadWines();
   }
-
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -517,6 +542,7 @@ export default function AdminCataloguePage() {
     await loadWines();
     setSaving(false);
   }
+
   return (
     <main className="min-h-screen bg-[#f8f3ea] px-6 py-12 text-[#1f1a17]">
       <div className="mx-auto max-w-7xl">
@@ -736,7 +762,9 @@ export default function AdminCataloguePage() {
 
                               <p className="mt-1 text-xs text-neutral-700">
                                 Vous économisez{" "}
-                                <strong>{formatPrice(discountInfo.saving)} HT</strong>{" "}
+                                <strong>
+                                  {formatPrice(discountInfo.saving)} HT
+                                </strong>{" "}
                                 (-{discountInfo.percent} %)
                               </p>
                             </div>
@@ -797,9 +825,12 @@ export default function AdminCataloguePage() {
                               onClick={() =>
                                 handleDeleteWine(wine.id, wine.name)
                               }
-                              className="rounded-full border border-red-300 px-3 py-2 text-xs uppercase tracking-[0.14em] text-red-700 hover:bg-red-50"
+                              disabled={deletingId === wine.id}
+                              className="rounded-full border border-red-300 px-3 py-2 text-xs uppercase tracking-[0.14em] text-red-700 hover:bg-red-50 disabled:opacity-50"
                             >
-                              Supprimer
+                              {deletingId === wine.id
+                                ? "Suppression..."
+                                : "Supprimer"}
                             </button>
                           </div>
                         </div>

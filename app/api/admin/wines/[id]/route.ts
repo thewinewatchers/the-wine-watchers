@@ -82,6 +82,50 @@ export async function PATCH(
   return NextResponse.json({ success: true, wine: data });
 }
 
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+
+  const { data: existingWine, error: loadError } = await supabaseAdmin
+    .from("wines")
+    .select("id, name")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (loadError) {
+    return NextResponse.json(
+      { error: "Erreur recherche vin.", details: loadError.message },
+      { status: 500 }
+    );
+  }
+
+  if (!existingWine) {
+    return NextResponse.json(
+      { error: "Vin introuvable ou déjà supprimé." },
+      { status: 404 }
+    );
+  }
+
+  const { error: deleteError } = await supabaseAdmin
+    .from("wines")
+    .delete()
+    .eq("id", id);
+
+  if (deleteError) {
+    return NextResponse.json(
+      { error: "Erreur suppression vin.", details: deleteError.message },
+      { status: 500 }
+    );
+  }
+
+  return NextResponse.json({
+    success: true,
+    deletedWineId: id,
+  });
+}
+
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
