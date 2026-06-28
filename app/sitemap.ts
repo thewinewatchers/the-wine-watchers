@@ -6,8 +6,13 @@ const siteUrl = "https://www.thewinewatchers.com";
 
 const now = new Date();
 
+type SitemapWine = {
+  slug?: string | null;
+  hidden_from_site?: boolean | null;
+};
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const wines = await getWines();
+  const wines = (await getWines()) as SitemapWine[];
 
   const pagesPrincipales: MetadataRoute.Sitemap = [
     "",
@@ -60,7 +65,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   const pagesVins: MetadataRoute.Sitemap = wines
-    .filter((wine) => Boolean(wine?.slug))
+    .filter((wine) => Boolean(wine.slug))
+    .filter((wine) => wine.hidden_from_site !== true)
     .map((wine) => ({
       url: `${siteUrl}/boutique/vin/${wine.slug}`,
       lastModified: now,
