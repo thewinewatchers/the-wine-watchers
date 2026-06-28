@@ -44,6 +44,7 @@ type SupabaseWine = {
   image: string | null;
   category: string | null;
   rating: string | null;
+  hidden_from_site: boolean | null;
 
   seo_title: string | null;
   seo_description: string | null;
@@ -109,6 +110,7 @@ export async function getWines(): Promise<Wine[]> {
   const { data, error } = await supabase
     .from("wines")
     .select("*")
+    .neq("hidden_from_site", true)
     .order("name", { ascending: true });
 
   if (error || !data) {
@@ -128,6 +130,7 @@ export async function getWineBySlug(slug: string): Promise<Wine | undefined> {
     .from("wines")
     .select("*")
     .eq("slug", slug)
+    .neq("hidden_from_site", true)
     .maybeSingle();
 
   if (error) {
