@@ -7,6 +7,14 @@ type Props = {
 
 const SITE_URL = "https://www.thewinewatchers.com";
 
+function normalizeLegacySlug(slug: string) {
+  return slug
+    .replace(/-(2010|2015|2018|2019|2020|2021|2022|2023|2024|2025)-\1(-2)?$/, "-$1")
+    .replace(/-(2025)-primeur-2025$/, "-$1")
+    .replace(/-copie$/, "")
+    .replace(/-2$/, "");
+}
+
 function parsePrice(price?: string | number) {
   if (price === undefined || price === null || price === "") return 0;
   if (typeof price === "number") return price;
@@ -105,6 +113,17 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function WinePage({ params }: Props) {
   const { id } = await params;
+
+  const normalizedId = normalizeLegacySlug(id);
+
+  if (normalizedId !== id) {
+    const normalizedWine = await getWine(normalizedId);
+
+    if (normalizedWine) {
+      redirect(`/boutique/vin/${normalizedWine.slug || normalizedWine.id}`);
+    }
+  }
+
   const wine = await getWine(id);
 
   if (!wine) {
