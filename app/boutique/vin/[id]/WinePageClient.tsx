@@ -631,7 +631,14 @@ export default function WinePage() {
             </h1>
 
             <div className="mt-5 flex flex-wrap gap-3 text-sm text-white/75">
-              {wine.producer && <span>{wine.producer}</span>}
+              {wine.producer && (
+                <Link
+                  href={`/producteur/${producerToSlug(wine.producer)}`}
+                  className="underline underline-offset-4 transition hover:text-[#d8b56d]"
+                >
+                  {wine.producer}
+                </Link>
+              )}
               {wine.appellation && <span>• {wine.appellation}</span>}
               {vintage && <span>• {vintage}</span>}
             </div>
