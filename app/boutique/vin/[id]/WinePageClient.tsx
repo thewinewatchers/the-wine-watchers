@@ -164,6 +164,19 @@ function categoryToSlug(category?: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+function producerToSlug(producer?: string) {
+  if (!producer) return "";
+
+  return producer
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/œ/g, "oe")
+    .replace(/æ/g, "ae")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 function getWineUrl(wine: Wine) {
   return `/boutique/vin/${wine.slug || wine.id}`;
 }
