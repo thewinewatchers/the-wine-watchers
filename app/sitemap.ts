@@ -8,11 +8,27 @@ const now = new Date();
 
 type SitemapWine = {
   slug?: string | null;
+  producer?: string | null;
   hidden_from_site?: boolean | null;
 };
 
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/œ/g, "oe")
+    .replace(/æ/g, "ae")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const wines = (await getWines()) as SitemapWine[];
+
+  const visibleWines = wines.filter(
+    (wine) => Boolean(wine.slug) && wine.hidden_from_site !== true
+  );
 
   const pagesPrincipales: MetadataRoute.Sitemap = [
     "",
@@ -28,9 +44,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/livraison",
     "/contact",
     "/mentions-legales",
-    "/politique-confidentialite",
+    "/politique-de-confidentialite",
     "/politique-cookies",
-    "/cgv",
+    "/conditions-generales-de-vente",
   ].map((path) => ({
     url: `${siteUrl}${path}`,
     lastModified: now,
@@ -64,15 +80,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.85,
   }));
 
-  const pagesVins: MetadataRoute.Sitemap = wines
-    .filter((wine) => Boolean(wine.slug))
-    .filter((wine) => wine.hidden_from_site !== true)
-    .map((wine) => ({
-      url: `${siteUrl}/boutique/vin/${wine.slug}`,
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.85,
-    }));
+  const pagesVins: MetadataRoute.Sitemap = visibleWines.map((wine) => ({
+    url: `${siteUrl}/boutique/vin/${wine.slug}`,
+    lastModified: now,
+    changeFrequency: "monthly",
+    priority: 0.85,
+  }));
+
+  const producers = Array.from(
+    new Set(
+      visibleWines
+        .map((wine) => wine.producer)
+        .filter((producer): producer is string => Boolean(producer))
+        .map((producer) => slugify(producer))
+    )
+  );
+
+  const pagesProducteurs: MetadataRoute.Sitemap = producers.map((slug) => ({
+    url: `${siteUrl}/producteur/${slug}`,
+    lastModified: now,
+    changeFrequency: "weekly",
+    priority: 0.8,
+  }));
 
   const pagesBlog: MetadataRoute.Sitemap = blogPosts.map((post) => ({
     url: `${siteUrl}/blog/${post.slug}`,
@@ -84,6 +113,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     ...pagesPrincipales,
     ...pagesAppellations,
+    ...pagesProducteurs,
     ...pagesVins,
     ...pagesBlog,
   ];
