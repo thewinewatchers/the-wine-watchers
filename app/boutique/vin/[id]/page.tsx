@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import WinePageClient from "./WinePageClient";
 
 type Props = {
@@ -71,6 +71,9 @@ export async function generateMetadata({ params }: Props) {
     };
   }
 
+  const slug = wine.slug || wine.id;
+  const canonicalUrl = `${SITE_URL}/boutique/vin/${slug}`;
+
   const title =
     wine.seo_title || `${wine.name || "Grand vin"} – The Wine Watchers`;
 
@@ -80,11 +83,20 @@ export async function generateMetadata({ params }: Props) {
     `${wine.name || "Grand vin"} disponible chez The Wine Watchers.`;
 
   return {
+    metadataBase: new URL(SITE_URL),
     title,
     description,
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
     openGraph: {
       title,
       description,
+      url: canonicalUrl,
       images: [getImageUrl(wine.image)],
       type: "website",
     },
@@ -99,9 +111,15 @@ export default async function WinePage({ params }: Props) {
     notFound();
   }
 
+  const slug = wine.slug || wine.id;
+
+  if (id !== slug) {
+    redirect(`/boutique/vin/${slug}`);
+  }
+
   const price = parsePrice(wine.price);
   const imageUrl = getImageUrl(wine.image);
-  const canonicalUrl = `${SITE_URL}/boutique/vin/${wine.slug || wine.id}`;
+  const canonicalUrl = `${SITE_URL}/boutique/vin/${slug}`;
 
   const productJsonLd = {
     "@context": "https://schema.org",
