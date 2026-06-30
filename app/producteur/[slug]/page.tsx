@@ -31,9 +31,7 @@ function slugify(value: string) {
 
 function formatPrice(price?: string | number | null) {
   if (!price) return "Prix sur demande";
-
   const value = Number(price);
-
   if (Number.isNaN(value) || value <= 0) return "Prix sur demande";
 
   return (
@@ -158,17 +156,18 @@ export default async function ProducteurPage({
         {appellations.length > 0 && (
           <div className="mb-10 rounded-[2rem] border border-[#e1d1bd] bg-white p-8 shadow-sm">
             <p className="text-sm uppercase tracking-[0.28em] text-[#8a6a2f]">
-              Appellations
+              Appellations liées
             </p>
 
             <div className="mt-5 flex flex-wrap gap-3">
               {appellations.map((appellation) => (
-                <span
+                <Link
                   key={appellation}
-                  className="rounded-full border border-[#d8b56d]/50 bg-[#fffaf3] px-5 py-2 text-sm text-[#6d5b50]"
+                  href={`/appellation/${slugify(appellation)}`}
+                  className="rounded-full border border-[#d8b56d]/50 bg-[#fffaf3] px-5 py-2 text-sm text-[#6d5b50] transition hover:border-[#8a1f1f] hover:text-[#8a1f1f]"
                 >
                   {appellation}
-                </span>
+                </Link>
               ))}
             </div>
           </div>
