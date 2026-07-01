@@ -1,15 +1,11 @@
 import type { MetadataRoute } from "next";
-import { getWines } from "@/lib/wines";
 import { blogPosts } from "@/app/blog/blogPosts";
 
 const siteUrl = "https://www.thewinewatchers.com";
 
-const now = new Date();
-
 type SitemapWine = {
-  slug?: string | null;
-  producer?: string | null;
-  hidden_from_site?: boolean | null;
+  slug: string | null;
+  producer: string | null;
 };
 
 function slugify(value: string) {
@@ -23,12 +19,35 @@ function slugify(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const wines = (await getWines()) as SitemapWine[];
+async function getSitemapWines(): Promise<SitemapWine[]> {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 
-  const visibleWines = wines.filter(
-    (wine) => Boolean(wine.slug) && wine.hidden_from_site !== true
+  if (!supabaseUrl || !supabaseKey) {
+    return [];
+  }
+
+  const response = await fetch(
+    `${supabaseUrl}/rest/v1/wines?hidden_from_site=neq.true&slug=not.is.null&select=slug,producer&order=name.asc`,
+    {
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+      },
+      next: { revalidate: 3600 },
+    }
   );
+
+  if (!response.ok) {
+    return [];
+  }
+
+  return response.json();
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const now = new Date();
+  const wines = await getSitemapWines();
 
   const pagesPrincipales: MetadataRoute.Sitemap = [
     "",
@@ -80,7 +99,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.85,
   }));
 
-  const pagesVins: MetadataRoute.Sitemap = visibleWines.map((wine) => ({
+  const pagesVins: MetadataRoute.Sitemap = wines.map((wine) => ({
     url: `${siteUrl}/boutique/vin/${wine.slug}`,
     lastModified: now,
     changeFrequency: "monthly",
@@ -89,7 +108,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const producers = Array.from(
     new Set(
-      visibleWines
+      wines
         .map((wine) => wine.producer)
         .filter((producer): producer is string => Boolean(producer))
         .map((producer) => slugify(producer))
