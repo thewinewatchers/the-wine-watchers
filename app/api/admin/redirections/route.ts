@@ -6,14 +6,33 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-function cleanPath(path: string) {
-  const cleaned = path.trim();
+const SITE_URLS = [
+  "https://www.thewinewatchers.com",
+  "https://thewinewatchers.com",
+  "http://www.thewinewatchers.com",
+  "http://thewinewatchers.com",
+];
 
-  if (!cleaned.startsWith("/")) {
-    return `/${cleaned}`;
+function cleanPath(value: string) {
+  let cleaned = String(value || "").trim();
+
+  for (const siteUrl of SITE_URLS) {
+    if (cleaned.startsWith(siteUrl)) {
+      cleaned = cleaned.replace(siteUrl, "");
+    }
+
+    if (cleaned.startsWith(`/${siteUrl}`)) {
+      cleaned = cleaned.replace(`/${siteUrl}`, "");
+    }
   }
 
-  return cleaned;
+  cleaned = cleaned.split("?")[0].split("#")[0].trim();
+
+  if (!cleaned.startsWith("/")) {
+    cleaned = `/${cleaned}`;
+  }
+
+  return cleaned.replace(/\/+/g, "/");
 }
 
 export async function GET() {
@@ -35,7 +54,7 @@ export async function POST(request: Request) {
   const source_path = cleanPath(body.source_path || "");
   const destination_path = cleanPath(body.destination_path || "");
 
-  if (!source_path || !destination_path) {
+  if (!source_path || !destination_path || source_path === "/" || destination_path === "/") {
     return NextResponse.json(
       { error: "Ancienne URL et nouvelle URL obligatoires." },
       { status: 400 }
@@ -44,7 +63,17 @@ export async function POST(request: Request) {
 
   if (source_path === destination_path) {
     return NextResponse.json(
-      { error: "L’ancienne URL et la nouvelle URL ne peuvent pas être identiques." },
+      {
+        error:
+          "L’ancienne URL et la nouvelle URL ne peuvent pas être identiques.",
+      },
+      { status: 400 }
+    );
+  }
+
+  if (source_path.includes("https:/") || destination_path.includes("https:/")) {
+    return NextResponse.json(
+      { error: "Format d’URL invalide après nettoyage." },
       { status: 400 }
     );
   }
@@ -64,7 +93,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({
+    success: true,
+    redirect: {
+      source_path,
+      destination_path,
+    },
+  });
 }
 
 export async function DELETE(request: Request) {

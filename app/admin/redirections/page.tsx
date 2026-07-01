@@ -21,20 +21,13 @@ function normalizePath(value: string) {
   let cleaned = value.trim();
 
   for (const siteUrl of SITE_URLS) {
-    if (cleaned.startsWith(siteUrl)) {
-      cleaned = cleaned.replace(siteUrl, "");
-    }
-
-    if (cleaned.startsWith(`/${siteUrl}`)) {
-      cleaned = cleaned.replace(`/${siteUrl}`, "");
-    }
+    if (cleaned.startsWith(siteUrl)) cleaned = cleaned.replace(siteUrl, "");
+    if (cleaned.startsWith(`/${siteUrl}`)) cleaned = cleaned.replace(`/${siteUrl}`, "");
   }
 
   cleaned = cleaned.split("?")[0].split("#")[0].trim();
 
-  if (!cleaned.startsWith("/")) {
-    cleaned = `/${cleaned}`;
-  }
+  if (!cleaned.startsWith("/")) cleaned = `/${cleaned}`;
 
   return cleaned.replace(/\/+/g, "/");
 }
@@ -44,7 +37,9 @@ export default function AdminRedirectionsPage() {
   const [sourcePath, setSourcePath] = useState("");
   const [destinationPath, setDestinationPath] = useState("");
   const [message, setMessage] = useState("");
+  const [testMessage, setTestMessage] = useState("");
   const [saving, setSaving] = useState(false);
+  const [testing, setTesting] = useState(false);
 
   async function loadRedirects() {
     const res = await fetch("/api/admin/redirections");
@@ -59,9 +54,49 @@ export default function AdminRedirectionsPage() {
     loadRedirects();
   }, []);
 
+  async function testRedirect(source: string, destination: string) {
+    setTesting(true);
+    setTestMessage("");
+
+    const normalizedSource = normalizePath(source);
+    const normalizedDestination = normalizePath(destination);
+
+    const existingRedirect = items.find(
+      (item) => item.source_path === normalizedSource && item.active
+    );
+
+    if (!existingRedirect) {
+      setTestMessage(`❌ Redirection absente ou inactive : ${normalizedSource}`);
+      setTesting(false);
+      return;
+    }
+
+    try {
+      const destinationRes = await fetch(normalizedDestination, {
+        method: "GET",
+        redirect: "follow",
+      });
+
+      if (destinationRes.status === 404) {
+        setTestMessage(`❌ Destination en 404 : ${normalizedDestination}`);
+        setTesting(false);
+        return;
+      }
+
+      setTestMessage(
+        `✅ Redirection trouvée et destination valide : ${normalizedSource} → ${normalizedDestination}`
+      );
+    } catch {
+      setTestMessage("❌ Test impossible. Vérifiez l’URL ou la connexion.");
+    }
+
+    setTesting(false);
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setMessage("");
+    setTestMessage("");
     setSaving(true);
 
     const normalizedSource = normalizePath(sourcePath);
@@ -91,10 +126,11 @@ export default function AdminRedirectionsPage() {
     setMessage(
       `Redirection enregistrée : ${normalizedSource} → ${normalizedDestination}`
     );
+
     setSourcePath("");
     setDestinationPath("");
     setSaving(false);
-    loadRedirects();
+    await loadRedirects();
   }
 
   async function deleteRedirect(id: string) {
@@ -130,7 +166,7 @@ export default function AdminRedirectionsPage() {
               required
             />
             <p className="mt-1 text-sm text-neutral-500">
-              Vous pouvez coller une URL complète ou seulement le chemin.
+              URL complète ou chemin accepté.
             </p>
           </div>
 
@@ -144,18 +180,30 @@ export default function AdminRedirectionsPage() {
               required
             />
             <p className="mt-1 text-sm text-neutral-500">
-              L’URL sera automatiquement nettoyée avant enregistrement.
+              L’URL sera nettoyée automatiquement.
             </p>
           </div>
 
-          <button
-            disabled={saving}
-            className="rounded bg-[#4b0f14] px-5 py-3 text-white disabled:opacity-60"
-          >
-            {saving ? "Enregistrement..." : "Enregistrer la redirection"}
-          </button>
+          <div className="flex flex-wrap gap-3">
+            <button
+              disabled={saving}
+              className="rounded bg-[#4b0f14] px-5 py-3 text-white disabled:opacity-60"
+            >
+              {saving ? "Enregistrement..." : "Enregistrer la redirection"}
+            </button>
+
+            <button
+              type="button"
+              disabled={testing || !sourcePath || !destinationPath}
+              onClick={() => testRedirect(sourcePath, destinationPath)}
+              className="rounded border border-[#4b0f14] px-5 py-3 text-[#4b0f14] disabled:opacity-50"
+            >
+              {testing ? "Test en cours..." : "Tester la redirection"}
+            </button>
+          </div>
 
           {message && <p className="mt-4">{message}</p>}
+          {testMessage && <p className="mt-4 font-semibold">{testMessage}</p>}
         </form>
 
         <div className="rounded-xl bg-white p-6 shadow">
@@ -167,7 +215,7 @@ export default function AdminRedirectionsPage() {
             {items.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center justify-between rounded border p-3"
+                className="flex items-center justify-between gap-4 rounded border p-3"
               >
                 <div>
                   <p className="font-semibold">{item.source_path}</p>
@@ -176,12 +224,23 @@ export default function AdminRedirectionsPage() {
                   </p>
                 </div>
 
-                <button
-                  onClick={() => deleteRedirect(item.id)}
-                  className="rounded bg-red-700 px-3 py-2 text-sm text-white"
-                >
-                  Supprimer
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() =>
+                      testRedirect(item.source_path, item.destination_path)
+                    }
+                    className="rounded border border-[#4b0f14] px-3 py-2 text-sm text-[#4b0f14]"
+                  >
+                    Tester
+                  </button>
+
+                  <button
+                    onClick={() => deleteRedirect(item.id)}
+                    className="rounded bg-red-700 px-3 py-2 text-sm text-white"
+                  >
+                    Supprimer
+                  </button>
+                </div>
               </div>
             ))}
 

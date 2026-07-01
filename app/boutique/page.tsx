@@ -4,231 +4,179 @@ const categories = [
   {
     title: "Bordeaux",
     slug: "bordeaux",
-    description:
-      "Premiers Grands Crus Classés, crus classés du Médoc, grands Pomerol et Saint-Émilion.",
-    highlight: "Pauillac · Margaux · Saint-Julien · Pomerol",
+    image: "/images/boutique-hero.png",
+    text: "Premiers Grands Crus Classés, Médoc, Pomerol, Saint-Émilion et grandes signatures bordelaises.",
   },
   {
     title: "Bourgogne",
     slug: "bourgogne",
-    description:
-      "Grands crus, premiers crus et domaines recherchés de la Côte de Nuits et de la Côte de Beaune.",
-    highlight: "Côte de Nuits · Côte de Beaune · Chablis",
-  },
-  {
-    title: "Rhône",
-    slug: "rhone",
-    description:
-      "Grandes appellations du Rhône nord et sud, des Syrah de légende aux grands Châteauneuf.",
-    highlight: "Côte-Rôtie · Hermitage · Châteauneuf-du-Pape",
-  },
-  {
-    title: "Grands vins d’Italie",
-    slug: "italie",
-    description:
-      "Icônes italiennes, Super Toscans, grands vins du Piémont et références de collection.",
-    highlight: "Toscane · Piémont · Barolo · Bolgheri",
-  },
-  {
-    title: "Espagne",
-    slug: "espagne",
-    description:
-      "Grandes bouteilles espagnoles issues des régions les plus reconnues.",
-    highlight: "Ribera del Duero · Rioja · Priorat",
-  },
-  {
-    title: "USA",
-    slug: "usa",
-    description:
-      "Sélection de grandes références américaines, principalement Napa Valley et Sonoma.",
-    highlight: "Napa Valley · Sonoma · Oakville",
+    image: "/images/romanee-conti-caisse.png",
+    text: "Domaines recherchés, grands crus, premiers crus et appellations de collection.",
   },
   {
     title: "Primeurs 2025",
     slug: "primeurs-2025",
-    description:
-      "Sélection Bordeaux Primeurs 2025, sorties en cours, allocations et disponibilités.",
-    highlight: "Campagne Primeurs · Bordeaux 2025",
+    image: "/images/boutique-hero.png",
+    text: "Campagne Bordeaux Primeurs 2025, allocations, sorties et disponibilités.",
   },
-];
-
-const quickSearches = [
-  { label: "Lafite Rothschild", href: "/boutique/bordeaux?search=lafite" },
-  { label: "Château Margaux", href: "/boutique/bordeaux?search=margaux" },
-  { label: "Pauillac", href: "/boutique/bordeaux?search=pauillac" },
-  { label: "Pomerol", href: "/boutique/bordeaux?search=pomerol" },
-  { label: "Romanée-Conti", href: "/boutique/bourgogne?search=romanee" },
-  { label: "Sassicaia", href: "/boutique/italie?search=sassicaia" },
+  {
+    title: "Italie",
+    slug: "italie",
+    image: "/images/boutique-hero.png",
+    text: "Super Toscans, Piémont, Bolgheri et grandes cuvées italiennes.",
+  },
+  {
+    title: "Espagne",
+    slug: "espagne",
+    image: "/images/boutique-hero.png",
+    text: "Rioja, Ribera del Duero, Priorat et grandes références espagnoles.",
+  },
+  {
+    title: "Rhône",
+    slug: "rhone",
+    image: "/images/boutique-hero.png",
+    text: "Hermitage, Côte-Rôtie, Châteauneuf-du-Pape et grandes Syrah.",
+  },
 ];
 
 export default function BoutiquePage() {
   return (
-    <main className="min-h-screen bg-[#f7f1e8] text-[#24110d]">
-      <section className="bg-[#170606] px-6 py-16 text-white md:py-24">
-        <div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-[1.05fr_0.95fr] md:items-center">
+    <main className="min-h-screen bg-[#120706] text-[#f8efe3]">
+      <section className="relative overflow-hidden px-6 py-20 md:py-28">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(216,181,109,0.24),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(116,19,22,0.45),transparent_38%),linear-gradient(135deg,#180605,#2a0b0b_45%,#090202)]" />
+
+        <div className="relative mx-auto grid max-w-7xl gap-12 md:grid-cols-[0.95fr_1.05fr] md:items-center">
           <div>
-            <p className="text-sm uppercase tracking-[0.32em] text-[#d8b56d]">
+            <p className="text-sm uppercase tracking-[0.42em] text-[#d8b56d]">
               The Wine Watchers
             </p>
 
-            <h1 className="mt-5 font-serif text-4xl font-semibold leading-tight md:text-6xl">
-              Trouvez votre vin en quelques secondes.
+            <h1 className="mt-7 font-serif text-5xl font-semibold leading-tight md:text-7xl">
+              Une maison dédiée aux grands vins.
             </h1>
 
-            <p className="mt-6 max-w-2xl text-base leading-8 text-white/75 md:text-lg">
-              Accès direct aux grands crus, primeurs, domaines recherchés et
-              bouteilles disponibles par région, appellation ou producteur.
+            <p className="mt-7 max-w-2xl text-lg leading-9 text-white/72">
+              Bordeaux, Bourgogne, Primeurs, domaines rares et bouteilles de
+              collection sélectionnés avec exigence.
             </p>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-10 flex flex-col gap-4 sm:flex-row">
               <Link
                 href="/boutique/bordeaux"
-                className="rounded-full bg-[#d8b56d] px-7 py-3 text-center text-sm font-semibold uppercase tracking-[0.14em] text-[#170606] transition hover:bg-white"
+                className="rounded-full bg-[#d8b56d] px-9 py-4 text-center text-sm font-semibold uppercase tracking-[0.16em] text-[#160604] transition hover:bg-white"
               >
-                Voir les vins
+                Explorer la boutique
               </Link>
 
               <Link
                 href="/boutique/primeurs-2025"
-                className="rounded-full border border-white/25 px-7 py-3 text-center text-sm font-semibold uppercase tracking-[0.14em] text-white transition hover:border-[#d8b56d] hover:text-[#d8b56d]"
+                className="rounded-full border border-[#d8b56d]/50 px-9 py-4 text-center text-sm font-semibold uppercase tracking-[0.16em] text-[#d8b56d] transition hover:bg-[#d8b56d] hover:text-[#160604]"
               >
                 Primeurs 2025
               </Link>
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-[2rem] border border-white/15 shadow-2xl">
-            <img
-              src="/images/boutique-hero.png"
-              alt="Boutique de grands vins The Wine Watchers"
-              className="h-72 w-full object-cover md:h-[420px]"
-            />
+          <div className="relative">
+            <div className="absolute -inset-5 rounded-[3rem] bg-[#d8b56d]/10 blur-2xl" />
+            <div className="relative overflow-hidden rounded-[2.5rem] border border-white/15 bg-white/5 p-3 shadow-2xl">
+              <img
+                src="/images/boutique-hero.png"
+                alt="Sélection de grands vins The Wine Watchers"
+                className="h-[420px] w-full rounded-[2rem] object-cover md:h-[540px]"
+              />
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="border-b border-[#e2d2bd] bg-[#fffaf3] px-6 py-8">
+      <section className="bg-[#f7f1e8] px-6 py-18 text-[#24110d] md:py-20">
         <div className="mx-auto max-w-7xl">
-          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.22em] text-[#8a6a2f]">
-            Recherche rapide
-          </p>
+          <div className="mb-12 max-w-3xl">
+            <p className="text-sm uppercase tracking-[0.35em] text-[#8a6a2f]">
+              Sélections
+            </p>
 
-          <div className="flex flex-wrap gap-3">
-            {quickSearches.map((item) => (
+            <h2 className="mt-4 font-serif text-4xl leading-tight md:text-5xl">
+              Choisissez votre univers.
+            </h2>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            {categories.map((category) => (
               <Link
-                key={item.label}
-                href={item.href}
-                className="rounded-full border border-[#d8c6aa] bg-white px-5 py-3 text-sm font-semibold text-[#24110d] transition hover:border-[#8a1f1f] hover:text-[#8a1f1f]"
+                key={category.slug}
+                href={`/boutique/${category.slug}`}
+                className="group overflow-hidden rounded-[2rem] border border-[#dfceb7] bg-[#fffaf3] shadow-sm transition hover:-translate-y-1 hover:border-[#d8b56d] hover:shadow-2xl"
               >
-                {item.label}
+                <div className="relative h-56 overflow-hidden">
+                  <img
+                    src={category.image}
+                    alt={category.title}
+                    className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#160604]/85 via-[#160604]/20 to-transparent" />
+                  <h3 className="absolute bottom-6 left-6 font-serif text-4xl text-white">
+                    {category.title}
+                  </h3>
+                </div>
+
+                <div className="p-7">
+                  <p className="min-h-20 text-sm leading-7 text-[#6d5b50]">
+                    {category.text}
+                  </p>
+
+                  <span className="mt-6 inline-block text-sm font-semibold uppercase tracking-[0.16em] text-[#8a1f1f]">
+                    Voir la sélection →
+                  </span>
+                </div>
               </Link>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 py-14 md:py-20">
-        <div className="mb-10">
-          <p className="text-sm uppercase tracking-[0.3em] text-[#8a6a2f]">
-            Boutique
-          </p>
-
-          <h2 className="mt-3 font-serif text-4xl text-[#24110d] md:text-5xl">
-            Choisissez une région
-          </h2>
-
-          <p className="mt-5 max-w-3xl text-base leading-8 text-[#6d5b50]">
-            Chaque entrée mène directement à la sélection correspondante, avec
-            filtres, recherche et bouteilles disponibles.
-          </p>
-        </div>
-
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {categories.map((category) => (
-            <Link
-              key={category.slug}
-              href={`/boutique/${category.slug}`}
-              className="group rounded-[1.75rem] border border-[#e1d1bd] bg-[#fffaf3] p-7 shadow-sm transition hover:-translate-y-1 hover:border-[#d8b56d] hover:shadow-xl"
-            >
-              <p className="text-xs uppercase tracking-[0.25em] text-[#8a6a2f]">
-                Accès direct
+      <section className="bg-[#fffaf3] px-6 py-16 text-[#24110d]">
+        <div className="mx-auto max-w-7xl rounded-[2.5rem] border border-[#dfceb7] bg-[#120706] p-8 text-white md:p-12">
+          <div className="grid gap-10 md:grid-cols-[0.9fr_1.1fr] md:items-center">
+            <div>
+              <p className="text-sm uppercase tracking-[0.35em] text-[#d8b56d]">
+                Service
               </p>
 
-              <h3 className="mt-4 font-serif text-3xl text-[#24110d] group-hover:text-[#8a1f1f]">
-                {category.title}
-              </h3>
+              <h2 className="mt-4 font-serif text-4xl leading-tight">
+                Vous recherchez une bouteille précise ?
+              </h2>
 
-              <p className="mt-4 text-sm leading-7 text-[#6d5b50]">
-                {category.description}
+              <p className="mt-5 text-base leading-8 text-white/70">
+                Château, domaine, format, millésime ou allocation spécifique :
+                nous pouvons vous accompagner dans votre recherche.
               </p>
+            </div>
 
-              <p className="mt-5 text-sm font-semibold text-[#8a6a2f]">
-                {category.highlight}
-              </p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {[
+                "Recherche sur demande",
+                "Grands domaines",
+                "Provenance suivie",
+                "Paiement sécurisé",
+              ].map((item) => (
+                <div
+                  key={item}
+                  className="rounded-2xl border border-white/10 bg-white/5 p-5 text-sm font-semibold text-white"
+                >
+                  {item}
+                </div>
+              ))}
 
-              <span className="mt-7 inline-block text-sm font-semibold uppercase tracking-[0.16em] text-[#24110d] group-hover:text-[#8a1f1f]">
-                Voir la sélection →
-              </span>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      <section className="bg-[#fffaf3] px-6 py-14">
-        <div className="mx-auto grid max-w-7xl gap-6 md:grid-cols-3">
-          <div className="rounded-[1.5rem] border border-[#e1d1bd] bg-white p-6">
-            <p className="text-xs uppercase tracking-[0.25em] text-[#8a6a2f]">
-              1
-            </p>
-            <h3 className="mt-3 font-serif text-2xl">Cherchez</h3>
-            <p className="mt-3 text-sm leading-7 text-[#6d5b50]">
-              Par région, appellation, producteur ou millésime.
-            </p>
+              <Link
+                href="/contact"
+                className="rounded-2xl bg-[#d8b56d] p-5 text-center text-sm font-semibold uppercase tracking-[0.16em] text-[#160604] transition hover:bg-white sm:col-span-2"
+              >
+                Nous contacter
+              </Link>
+            </div>
           </div>
-
-          <div className="rounded-[1.5rem] border border-[#e1d1bd] bg-white p-6">
-            <p className="text-xs uppercase tracking-[0.25em] text-[#8a6a2f]">
-              2
-            </p>
-            <h3 className="mt-3 font-serif text-2xl">Filtrez</h3>
-            <p className="mt-3 text-sm leading-7 text-[#6d5b50]">
-              Affinez rapidement la sélection selon votre recherche.
-            </p>
-          </div>
-
-          <div className="rounded-[1.5rem] border border-[#e1d1bd] bg-white p-6">
-            <p className="text-xs uppercase tracking-[0.25em] text-[#8a6a2f]">
-              3
-            </p>
-            <h3 className="mt-3 font-serif text-2xl">Commandez</h3>
-            <p className="mt-3 text-sm leading-7 text-[#6d5b50]">
-              Ajoutez vos bouteilles au panier ou contactez-nous.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-[#170606] px-6 py-18 text-white md:py-20">
-        <div className="mx-auto max-w-4xl text-center">
-          <p className="text-sm uppercase tracking-[0.35em] text-[#d8b56d]">
-            Recherche spécifique
-          </p>
-
-          <h2 className="mt-4 font-serif text-4xl md:text-5xl">
-            Vous recherchez un château, un domaine ou un millésime précis ?
-          </h2>
-
-          <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-white/70">
-            Certaines bouteilles peuvent être disponibles sur demande ou en
-            allocation limitée.
-          </p>
-
-          <Link
-            href="/contact"
-            className="mt-9 inline-block rounded-full bg-[#d8b56d] px-8 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#170606] transition hover:bg-white"
-          >
-            Nous contacter
-          </Link>
         </div>
       </section>
     </main>

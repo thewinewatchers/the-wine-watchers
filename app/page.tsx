@@ -91,21 +91,22 @@ export default async function Home() {
       style={{
         minHeight: "100vh",
         backgroundImage:
-          "linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.65)), url('/images/lafite.jpg')",
+          "linear-gradient(115deg, rgba(12,8,7,0.92), rgba(28,12,14,0.78), rgba(0,0,0,0.58)), url('/images/lafite.jpg')",
         backgroundSize: "cover",
         backgroundPosition: "center",
         textAlign: "center",
-        padding: "40px",
+        padding: "34px 22px 70px",
         fontFamily: "Georgia, serif",
       }}
     >
-      <div style={{ maxWidth: 850, margin: "0 auto", paddingTop: 90 }}>
+      <div style={{ maxWidth: 1080, margin: "0 auto", paddingTop: 76 }}>
         <p
           style={{
-            letterSpacing: 6,
+            letterSpacing: 7,
             color: "#d6b36a",
-            marginBottom: 20,
+            marginBottom: 22,
             textTransform: "uppercase",
+            fontSize: 13,
           }}
         >
           The Wine Watchers
@@ -113,10 +114,11 @@ export default async function Home() {
 
         <h1
           style={{
-            fontSize: "clamp(52px, 8vw, 96px)",
+            fontSize: "clamp(50px, 8vw, 104px)",
             color: "#fffaf3",
-            lineHeight: 1,
+            lineHeight: 0.95,
             marginBottom: 30,
+            textShadow: "0 18px 48px rgba(0,0,0,0.55)",
           }}
         >
           L’Excellence des
@@ -126,41 +128,45 @@ export default async function Home() {
 
         <p
           style={{
-            color: "#e8dccb",
+            color: "#efe2cf",
             fontSize: 22,
             lineHeight: 1.7,
-            maxWidth: 700,
-            margin: "0 auto 40px",
+            maxWidth: 760,
+            margin: "0 auto 42px",
           }}
         >
           Une sélection confidentielle de vins rares et prestigieux destinée aux
-          amateurs, investisseurs et collectionneurs.
+          amateurs, collectionneurs et passionnés de grands terroirs.
         </p>
 
-        <a
+        <Link
           href="/boutique"
           style={{
             display: "inline-block",
-            padding: "18px 36px",
+            padding: "18px 38px",
             borderRadius: 999,
-            background: "#d6b36a",
+            background: "linear-gradient(135deg, #f0d58a, #c39a42)",
             color: "#1f1a17",
             textDecoration: "none",
             fontWeight: "bold",
             fontSize: 18,
+            boxShadow: "0 18px 42px rgba(0,0,0,0.32)",
           }}
         >
           Découvrir la collection
-        </a>
+        </Link>
 
         {offerWines.length > 0 && (
           <section
             style={{
-              margin: "42px auto 0",
-              maxWidth: 850,
-              borderTop: "1px solid rgba(214,179,106,0.45)",
-              borderBottom: "1px solid rgba(214,179,106,0.45)",
-              padding: "22px 0",
+              margin: "48px auto 0",
+              maxWidth: 930,
+              borderRadius: 28,
+              border: "1px solid rgba(214,179,106,0.42)",
+              padding: "26px",
+              background: "rgba(20,12,10,0.56)",
+              boxShadow: "0 24px 70px rgba(0,0,0,0.38)",
+              backdropFilter: "blur(8px)",
             }}
           >
             <p
@@ -169,7 +175,7 @@ export default async function Home() {
                 letterSpacing: 4,
                 textTransform: "uppercase",
                 fontSize: 12,
-                marginBottom: 18,
+                marginBottom: 22,
               }}
             >
               Nos offres du moment
@@ -178,9 +184,9 @@ export default async function Home() {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-                gap: 14,
-                textAlign: "left",
+                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                gap: 16,
+                textAlign: "center",
               }}
             >
               {offerWines.map((wine) => {
@@ -195,14 +201,17 @@ export default async function Home() {
                       display: "block",
                       textDecoration: "none",
                       color: "#fffaf3",
-                      padding: "0 10px",
+                      padding: "22px 16px",
+                      borderRadius: 20,
+                      background: "rgba(255,250,243,0.08)",
+                      border: "1px solid rgba(255,250,243,0.14)",
                     }}
                   >
                     <h3
                       style={{
-                        fontSize: 16,
-                        lineHeight: 1.25,
-                        marginBottom: 8,
+                        fontSize: 17,
+                        lineHeight: 1.35,
+                        marginBottom: 10,
                         color: "#fffaf3",
                       }}
                     >
@@ -215,10 +224,10 @@ export default async function Home() {
 
                     <p
                       style={{
-                        color: "rgba(232,220,203,0.7)",
+                        color: "rgba(232,220,203,0.72)",
                         textDecoration: "line-through",
                         fontSize: 13,
-                        marginBottom: 2,
+                        marginBottom: 3,
                       }}
                     >
                       {formatPrice(wine.compare_at_price)}
@@ -227,7 +236,7 @@ export default async function Home() {
                     <p
                       style={{
                         color: "#d6b36a",
-                        fontSize: 20,
+                        fontSize: 22,
                         fontWeight: "bold",
                         marginBottom: 4,
                       }}
@@ -238,12 +247,12 @@ export default async function Home() {
                     {discount && (
                       <p
                         style={{
-                          color: "#e8dccb",
-                          fontSize: 12,
-                          marginBottom: 8,
+                          color: "#efe2cf",
+                          fontSize: 13,
+                          marginBottom: 10,
                         }}
                       >
-                        (-{discount.percent}%)
+                        -{discount.percent}%
                       </p>
                     )}
 
@@ -263,7 +272,7 @@ export default async function Home() {
               })}
             </div>
 
-            <div style={{ marginTop: 20 }}>
+            <div style={{ marginTop: 22 }}>
               <Link
                 href="/offres"
                 style={{
@@ -281,23 +290,25 @@ export default async function Home() {
           </section>
         )}
 
-        <div
+        <section
           style={{
-            margin: "48px auto 0",
-            maxWidth: 720,
-            borderRadius: 28,
-            padding: "34px 28px",
-            background: "rgba(255,250,243,0.12)",
-            border: "1px solid rgba(214,179,106,0.45)",
-            boxShadow: "0 24px 60px rgba(0,0,0,0.35)",
-            backdropFilter: "blur(8px)",
+            margin: "50px auto 0",
+            maxWidth: 820,
+            borderRadius: 32,
+            padding: "38px 30px",
+            background:
+              "linear-gradient(145deg, rgba(255,250,243,0.16), rgba(255,250,243,0.07))",
+            border: "1px solid rgba(214,179,106,0.46)",
+            boxShadow: "0 28px 80px rgba(0,0,0,0.42)",
+            backdropFilter: "blur(10px)",
           }}
         >
           <h2
             style={{
               color: "#fffaf3",
-              fontSize: 30,
-              marginBottom: 12,
+              fontSize: "clamp(28px, 4vw, 38px)",
+              marginBottom: 14,
+              lineHeight: 1.15,
             }}
           >
             Recevez nos allocations et offres exclusives
@@ -305,11 +316,11 @@ export default async function Home() {
 
           <p
             style={{
-              color: "#e8dccb",
+              color: "#efe2cf",
               fontSize: 17,
-              lineHeight: 1.6,
-              margin: "0 auto",
-              maxWidth: 560,
+              lineHeight: 1.65,
+              margin: "0 auto 10px",
+              maxWidth: 600,
             }}
           >
             Primeurs Bordeaux, Bourgognes rares, nouvelles disponibilités et
@@ -317,29 +328,41 @@ export default async function Home() {
           </p>
 
           <NewsletterForm />
-        </div>
+        </section>
 
-        <div
+        <section
           style={{
-            marginTop: 42,
+            margin: "52px auto 0",
+            maxWidth: 760,
             display: "flex",
             justifyContent: "center",
+            alignItems: "center",
           }}
         >
-          <img
-            src="/images/accueil-sommelier.jpg"
-            alt="Sommelier dégustant un grand vin - The Wine Watchers"
+          <div
             style={{
               width: "100%",
-              maxWidth: 620,
-              height: 340,
-              borderRadius: 24,
-              boxShadow: "0 24px 60px rgba(0,0,0,0.40)",
-              objectFit: "cover",
-              objectPosition: "center top",
+              borderRadius: 30,
+              padding: 10,
+              background: "rgba(255,250,243,0.10)",
+              border: "1px solid rgba(214,179,106,0.34)",
+              boxShadow: "0 28px 75px rgba(0,0,0,0.46)",
             }}
-          />
-        </div>
+          >
+            <img
+              src="/images/accueil-sommelier.jpg"
+              alt="Sommelier dégustant un grand vin - The Wine Watchers"
+              style={{
+                display: "block",
+                width: "100%",
+                height: "clamp(300px, 42vw, 430px)",
+                borderRadius: 22,
+                objectFit: "cover",
+                objectPosition: "center center",
+              }}
+            />
+          </div>
+        </section>
       </div>
     </main>
   );
