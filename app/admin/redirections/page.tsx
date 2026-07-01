@@ -10,11 +10,41 @@ type RedirectItem = {
   active: boolean;
 };
 
+const SITE_URLS = [
+  "https://www.thewinewatchers.com",
+  "https://thewinewatchers.com",
+  "http://www.thewinewatchers.com",
+  "http://thewinewatchers.com",
+];
+
+function normalizePath(value: string) {
+  let cleaned = value.trim();
+
+  for (const siteUrl of SITE_URLS) {
+    if (cleaned.startsWith(siteUrl)) {
+      cleaned = cleaned.replace(siteUrl, "");
+    }
+
+    if (cleaned.startsWith(`/${siteUrl}`)) {
+      cleaned = cleaned.replace(`/${siteUrl}`, "");
+    }
+  }
+
+  cleaned = cleaned.split("?")[0].split("#")[0].trim();
+
+  if (!cleaned.startsWith("/")) {
+    cleaned = `/${cleaned}`;
+  }
+
+  return cleaned.replace(/\/+/g, "/");
+}
+
 export default function AdminRedirectionsPage() {
   const [items, setItems] = useState<RedirectItem[]>([]);
   const [sourcePath, setSourcePath] = useState("");
   const [destinationPath, setDestinationPath] = useState("");
   const [message, setMessage] = useState("");
+  const [saving, setSaving] = useState(false);
 
   async function loadRedirects() {
     const res = await fetch("/api/admin/redirections");
@@ -32,6 +62,10 @@ export default function AdminRedirectionsPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setMessage("");
+    setSaving(true);
+
+    const normalizedSource = normalizePath(sourcePath);
+    const normalizedDestination = normalizePath(destinationPath);
 
     const res = await fetch("/api/admin/redirections", {
       method: "POST",
@@ -39,8 +73,8 @@ export default function AdminRedirectionsPage() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        source_path: sourcePath,
-        destination_path: destinationPath,
+        source_path: normalizedSource,
+        destination_path: normalizedDestination,
         permanent: true,
         active: true,
       }),
@@ -50,12 +84,16 @@ export default function AdminRedirectionsPage() {
 
     if (!res.ok) {
       setMessage(data.error || "Erreur lors de l’enregistrement.");
+      setSaving(false);
       return;
     }
 
-    setMessage("Redirection enregistrée avec succès.");
+    setMessage(
+      `Redirection enregistrée : ${normalizedSource} → ${normalizedDestination}`
+    );
     setSourcePath("");
     setDestinationPath("");
+    setSaving(false);
     loadRedirects();
   }
 
@@ -87,10 +125,13 @@ export default function AdminRedirectionsPage() {
             <input
               value={sourcePath}
               onChange={(e) => setSourcePath(e.target.value)}
-              placeholder="/vin/chateau-margaux-2025-primeur"
+              placeholder="https://www.thewinewatchers.com/boutique/vin/ancienne-url"
               className="w-full rounded border p-3"
               required
             />
+            <p className="mt-1 text-sm text-neutral-500">
+              Vous pouvez coller une URL complète ou seulement le chemin.
+            </p>
           </div>
 
           <div className="mb-4">
@@ -98,14 +139,20 @@ export default function AdminRedirectionsPage() {
             <input
               value={destinationPath}
               onChange={(e) => setDestinationPath(e.target.value)}
-              placeholder="/boutique/bordeaux"
+              placeholder="https://www.thewinewatchers.com/boutique/vin/nouvelle-url"
               className="w-full rounded border p-3"
               required
             />
+            <p className="mt-1 text-sm text-neutral-500">
+              L’URL sera automatiquement nettoyée avant enregistrement.
+            </p>
           </div>
 
-          <button className="rounded bg-[#4b0f14] px-5 py-3 text-white">
-            Enregistrer la redirection
+          <button
+            disabled={saving}
+            className="rounded bg-[#4b0f14] px-5 py-3 text-white disabled:opacity-60"
+          >
+            {saving ? "Enregistrement..." : "Enregistrer la redirection"}
           </button>
 
           {message && <p className="mt-4">{message}</p>}
