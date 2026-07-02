@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import type { ReactNode } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
 type Wine = {
@@ -177,6 +178,19 @@ function producerToSlug(producer?: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+function appellationToSlug(appellation?: string) {
+  if (!appellation) return "";
+
+  return appellation
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/œ/g, "oe")
+    .replace(/æ/g, "ae")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 function getWineUrl(wine: Wine) {
   return `/boutique/vin/${wine.slug || wine.id}`;
 }
@@ -186,7 +200,7 @@ function InfoCard({
   value,
 }: {
   label: string;
-  value?: string | number | null;
+  value?: ReactNode;
 }) {
   if (!value && value !== 0) return null;
 
@@ -195,7 +209,7 @@ function InfoCard({
       <p className="text-xs uppercase tracking-[0.24em] text-[#8a6a2f]">
         {label}
       </p>
-      <p className="mt-3 text-base font-medium text-[#24110d]">{value}</p>
+      <div className="mt-3 text-base font-medium text-[#24110d]">{value}</div>
     </div>
   );
 }
@@ -420,6 +434,8 @@ export default function WinePage() {
   );
 
   const categorySlug = categoryToSlug(wine?.category);
+  const regionSlug = categoryToSlug(wine?.region);
+  const appellationSlug = appellationToSlug(wine?.appellation);
   const vintage = wine?.vintage ? String(wine.vintage) : undefined;
   const stock = availableStock;
   const isAvailable = stock > 0;
@@ -579,7 +595,6 @@ export default function WinePage() {
       setAddingToCart(false);
     }
   };
-
   if (loading) {
     return (
       <main className="min-h-screen bg-[#f8f3ea] px-6 py-20 text-[#24110d]">
@@ -635,24 +650,55 @@ export default function WinePage() {
           </div>
 
           <div className="flex flex-col justify-center">
-            <p className="text-sm uppercase tracking-[0.35em] text-[#d8b56d]">
-              {wine.category || "Grand vin"}
-            </p>
+            {categorySlug ? (
+              <Link
+                href={`/boutique/${categorySlug}`}
+                className="text-sm uppercase tracking-[0.35em] text-[#d8b56d] transition hover:text-white"
+              >
+                {wine.category || "Grand vin"}
+              </Link>
+            ) : (
+              <p className="text-sm uppercase tracking-[0.35em] text-[#d8b56d]">
+                {wine.category || "Grand vin"}
+              </p>
+            )}
 
             <h1 className="mt-5 font-serif text-xl leading-tight text-white md:text-3xl">
               {wine.name}
             </h1>
 
             <div className="mt-5 flex flex-wrap gap-3 text-sm text-white/75">
-              {wine.producer && (
+                          {wine.producer && (
                 <Link
                   href={`/producteur/${producerToSlug(wine.producer)}`}
                   className="underline underline-offset-4 transition hover:text-[#d8b56d]"
                 >
-                  {wine.producer}
+                  Producteur : {wine.producer}
                 </Link>
               )}
-              {wine.appellation && <span>• {wine.appellation}</span>}
+
+              {wine.appellation && appellationSlug && (
+                <Link
+                  href={`/appellation/${appellationSlug}`}
+                  className="underline underline-offset-4 transition hover:text-[#d8b56d]"
+                >
+                  • {wine.appellation}
+                </Link>
+              )}
+
+              {wine.appellation && !appellationSlug && (
+                <span>• {wine.appellation}</span>
+              )}
+
+              {wine.region && regionSlug && (
+                <Link
+                  href={`/boutique/${regionSlug}`}
+                  className="underline underline-offset-4 transition hover:text-[#d8b56d]"
+                >
+                  • {wine.region}
+                </Link>
+              )}
+
               {vintage && <span>• {vintage}</span>}
             </div>
 
@@ -807,9 +853,55 @@ export default function WinePage() {
           <InfoCard label="Flaconnage" value={wine.bottle_size} />
           <InfoCard label="Caissage" value={wine.packaging} />
           <InfoCard label="Note" value={wine.rating} />
-          <InfoCard label="Région" value={wine.region} />
-          <InfoCard label="Appellation" value={wine.appellation} />
-          <InfoCard label="Domaine" value={wine.producer} />
+
+          <InfoCard
+            label="Région"
+            value={
+              wine.region && regionSlug ? (
+                <Link
+                  href={`/boutique/${regionSlug}`}
+                  className="underline underline-offset-4 transition hover:text-[#8a1f1f]"
+                >
+                  {wine.region}
+                </Link>
+              ) : (
+                wine.region
+              )
+            }
+          />
+
+          <InfoCard
+            label="Appellation"
+            value={
+              wine.appellation && appellationSlug ? (
+                <Link
+                  href={`/appellation/${appellationSlug}`}
+                  className="underline underline-offset-4 transition hover:text-[#8a1f1f]"
+                >
+                  {wine.appellation}
+                </Link>
+              ) : (
+                wine.appellation
+              )
+            }
+          />
+
+          <InfoCard
+            label="Domaine"
+            value={
+              wine.producer ? (
+                <Link
+                  href={`/producteur/${producerToSlug(wine.producer)}`}
+                  className="underline underline-offset-4 transition hover:text-[#8a1f1f]"
+                >
+                  {wine.producer}
+                </Link>
+              ) : (
+                wine.producer
+              )
+            }
+          />
+
           <InfoCard label="Pays" value={wine.country} />
           <InfoCard label="Couleur" value={wine.color} />
           <InfoCard label="Classification" value={wine.classification} />
