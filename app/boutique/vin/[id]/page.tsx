@@ -35,6 +35,34 @@ function getImageUrl(image?: string) {
   return `${SITE_URL}${image.startsWith("/") ? image : `/${image}`}`;
 }
 
+function slugify(value?: string | null) {
+  if (!value) return "";
+
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/œ/g, "oe")
+    .replace(/æ/g, "ae")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function categoryToSlug(value?: string | null) {
+  if (!value) return "";
+
+  const normalized = slugify(value);
+
+  if (normalized.includes("italie")) return "italie";
+  if (normalized.includes("bourgogne")) return "bourgogne";
+  if (normalized.includes("bordeaux")) return "bordeaux";
+  if (normalized.includes("rhone")) return "rhone";
+  if (normalized.includes("espagne")) return "espagne";
+  if (normalized.includes("primeur")) return "primeurs-2025";
+
+  return normalized;
+}
+
 async function getWine(id: string) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
@@ -139,6 +167,8 @@ export default async function WinePage({ params }: Props) {
   const price = parsePrice(wine.price);
   const imageUrl = getImageUrl(wine.image);
   const canonicalUrl = `${SITE_URL}/boutique/vin/${slug}`;
+  const regionSlug = categoryToSlug(wine.region || wine.category);
+  const appellationSlug = slugify(wine.appellation);
 
   const productJsonLd = {
     "@context": "https://schema.org",
@@ -167,12 +197,65 @@ export default async function WinePage({ params }: Props) {
     },
   };
 
+  const breadcrumbItems = [
+    {
+      "@type": "ListItem",
+      position: 1,
+      name: "Accueil",
+      item: SITE_URL,
+    },
+    {
+      "@type": "ListItem",
+      position: 2,
+      name: "Boutique",
+      item: `${SITE_URL}/boutique`,
+    },
+  ];
+
+  if (regionSlug) {
+    breadcrumbItems.push({
+      "@type": "ListItem",
+      position: breadcrumbItems.length + 1,
+      name: wine.region || wine.category || "Région",
+      item: `${SITE_URL}/boutique/${regionSlug}`,
+    });
+  }
+
+  if (wine.appellation && appellationSlug) {
+    breadcrumbItems.push({
+      "@type": "ListItem",
+      position: breadcrumbItems.length + 1,
+      name: wine.appellation,
+      item: `${SITE_URL}/appellation/${appellationSlug}`,
+    });
+  }
+
+  breadcrumbItems.push({
+    "@type": "ListItem",
+    position: breadcrumbItems.length + 1,
+    name: wine.name || "Fiche vin",
+    item: canonicalUrl,
+  });
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: breadcrumbItems,
+  };
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(productJsonLd),
+        }}
+      />
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbJsonLd),
         }}
       />
 
