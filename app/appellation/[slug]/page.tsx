@@ -139,15 +139,44 @@ type AppellationWine = {
   id: string;
   slug?: string | null;
   name?: string | null;
+  producer?: string | null;
   vintage?: string | number | null;
   price?: string | number | null;
   image?: string | null;
   appellation?: string | null;
+  region?: string | null;
+  category?: string | null;
   classification?: string | null;
   bottle_size?: string | null;
   packaging?: string | null;
   hidden_from_site?: boolean | null;
 };
+
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/œ/g, "oe")
+    .replace(/æ/g, "ae")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function categoryToSlug(value?: string | null) {
+  if (!value) return "";
+
+  const normalized = slugify(value);
+
+  if (normalized.includes("italie")) return "italie";
+  if (normalized.includes("bourgogne")) return "bourgogne";
+  if (normalized.includes("bordeaux")) return "bordeaux";
+  if (normalized.includes("rhone")) return "rhone";
+  if (normalized.includes("espagne")) return "espagne";
+  if (normalized.includes("primeur")) return "primeurs-2025";
+
+  return normalized;
+}
 
 function getWineHref(wine: AppellationWine) {
   return `/boutique/vin/${wine.slug || wine.id}`;
@@ -156,9 +185,18 @@ function getWineHref(wine: AppellationWine) {
 function formatPrice(price?: string | number | null) {
   if (!price) return "Prix sur demande";
 
-  const value = Number(price);
+  const value =
+    typeof price === "number"
+      ? price
+      : Number(
+          price
+            .toString()
+            .replace(/[€\s]/g, "")
+            .replace(/\./g, "")
+            .replace(",", ".")
+        );
 
-  if (Number.isNaN(value)) return String(price);
+  if (Number.isNaN(value) || value <= 0) return "Prix sur demande";
 
   return (
     value.toLocaleString("fr-FR", {
@@ -179,15 +217,22 @@ export async function generateMetadata({
   if (!appellation) {
     return {
       title: "Appellation introuvable | The Wine Watchers",
+      robots: {
+        index: false,
+        follow: false,
+      },
     };
   }
 
   return {
     title: `${appellation.title} | The Wine Watchers`,
     description: appellation.description,
+    robots: {
+      index: true,
+      follow: true,
+    },
   };
 }
-
 export default async function AppellationPage({
   params,
 }: {
@@ -203,7 +248,7 @@ export default async function AppellationPage({
   const { data: wines, error } = await supabase
     .from("wines")
     .select(
-      "id, slug, name, vintage, price, image, appellation, classification, bottle_size, packaging, hidden_from_site"
+      "id, slug, name, producer, vintage, price, image, appellation, region, category, classification, bottle_size, packaging, hidden_from_site"
     )
     .eq("appellation", appellation.name)
     .neq("hidden_from_site", true)
@@ -213,9 +258,21 @@ export default async function AppellationPage({
     (wine) => wine.hidden_from_site !== true
   );
 
+  const producers = Array.from(
+    new Set(visibleWines.map((wine) => wine.producer).filter(Boolean))
+  ) as string[];
+
+  const regions = Array.from(
+    new Set(
+      visibleWines
+        .map((wine) => wine.region || wine.category)
+        .filter(Boolean)
+    )
+  ) as string[];
+
   return (
     <main className="min-h-screen bg-[#f8f5f0] px-6 py-12">
-      <section className="mx-auto max-w-6xl">
+      <section className="mx-auto max-w-7xl">
         <div className="mb-6 flex flex-wrap items-center gap-2 text-sm text-gray-600">
           <Link href="/" className="transition hover:text-[#8B1E2D]">
             Accueil
@@ -239,7 +296,7 @@ export default async function AppellationPage({
           </span>
         </div>
 
-        <div className="mb-10 rounded-2xl bg-white p-8 shadow-sm">
+        <div className="mb-10 rounded-[2rem] bg-white p-8 shadow-sm">
           <div className="mb-6">
             <Link
               href={appellation.boutiqueHref}
@@ -253,7 +310,7 @@ export default async function AppellationPage({
             Appellation
           </p>
 
-          <h1 className="mb-3 text-4xl font-serif text-[#3b1f1f]">
+          <h1 className="mb-3 font-serif text-4xl text-[#3b1f1f] md:text-6xl">
             {appellation.name}
           </h1>
 
@@ -270,44 +327,141 @@ export default async function AppellationPage({
               Erreur Supabase : {error.message}
             </p>
           )}
+
+          <div className="mt-8 flex flex-wrap gap-3">
+            {regions.map((region) => {
+              const regionSlug = categoryToSlug(region);
+
+              if (!regionSlug) return null;
+
+              return (
+                <Link
+                  key={region}
+                  href={`/boutique/${regionSlug}`}
+                  className="rounded-full border border-[#d8b56d]/50 bg-[#fffaf3] px-5 py-2 text-sm text-[#6d5b50] transition hover:border-[#8a1f1f] hover:text-[#8a1f1f]"
+                >
+                  Voir les vins {region}
+                </Link>
+              );
+            })}
+          </div>
         </div>
 
+        {producers.length > 0 && (
+          <div className="mb-10 rounded-[2rem] border border-[#e1d1bd] bg-white p-8 shadow-sm">
+            <p className="text-sm uppercase tracking-[0.28em] text-[#8a6a2f]">
+              Producteurs liés
+            </p>
+
+            <div className="mt-5 flex flex-wrap gap-3">
+              {producers.map((producer) => (
+                <Link
+                  key={producer}
+                  href={`/producteur/${slugify(producer)}`}
+                  className="rounded-full border border-[#d8b56d]/50 bg-[#fffaf3] px-5 py-2 text-sm text-[#6d5b50] transition hover:border-[#8a1f1f] hover:text-[#8a1f1f]"
+                >
+                  {producer}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="mb-8">
+          <p className="text-sm uppercase tracking-[0.28em] text-[#8a6a2f]">
+            Sélection disponible
+          </p>
+
+          <h2 className="mt-3 font-serif text-4xl text-[#24110d]">
+            Vins de {appellation.name}
+          </h2>
+
+          <p className="mt-4 max-w-3xl text-sm leading-7 text-[#6d5b50]">
+            Chaque fiche produit détaille le millésime, le producteur, le prix,
+            la disponibilité et les informations de commande. Les liens
+            ci-dessous renforcent le maillage interne entre appellation,
+            producteur, région et fiche vin.
+          </p>
+        </div>
         {visibleWines.length === 0 ? (
           <div className="rounded-2xl bg-white p-6 text-gray-600 shadow-sm">
             Aucun vin disponible actuellement pour cette appellation.
           </div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {visibleWines.map((wine) => (
-              <Link
-                key={wine.id}
-                href={getWineHref(wine)}
-                className="block rounded-2xl bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
-              >
-                {wine.image && (
-                  <img
-                    src={wine.image}
-                    alt={wine.name || "Vin"}
-                    className="mb-4 h-56 w-full object-contain"
-                  />
-                )}
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {visibleWines.map((wine) => {
+              const regionValue = wine.region || wine.category;
+              const regionSlug = categoryToSlug(regionValue);
 
-                <h2 className="text-xl font-serif text-[#3b1f1f]">
-                  {wine.name}
-                </h2>
+              return (
+                <article
+                  key={wine.id}
+                  className="group overflow-hidden rounded-[1.7rem] border border-[#dfcfb8] bg-[#fffaf3] shadow-sm transition hover:-translate-y-1 hover:border-[#d8b56d] hover:shadow-xl"
+                >
+                  <Link href={getWineHref(wine)} className="block">
+                    <div className="flex h-[245px] items-center justify-center bg-[#efe3d2] p-6">
+                      {wine.image ? (
+                        <img
+                          src={wine.image}
+                          alt={wine.name || appellation.name}
+                          className="max-h-[205px] w-auto object-contain transition group-hover:scale-105"
+                        />
+                      ) : (
+                        <span className="text-sm text-[#8a6a2f]">
+                          Image non disponible
+                        </span>
+                      )}
+                    </div>
+                  </Link>
 
-                <div className="mt-3 space-y-1 text-sm text-gray-600">
-                  {wine.vintage && <p>Millésime : {wine.vintage}</p>}
-                  {wine.classification && <p>{wine.classification}</p>}
-                  {wine.bottle_size && <p>Flaconnage : {wine.bottle_size}</p>}
-                  {wine.packaging && <p>Caissage : {wine.packaging}</p>}
-                </div>
+                  <div className="p-5">
+                    {wine.producer && (
+                      <Link
+                        href={`/producteur/${slugify(wine.producer)}`}
+                        className="mb-3 block rounded-full bg-[#24110d]/90 px-3 py-1.5 text-center text-[10px] uppercase tracking-[0.16em] text-[#d8b56d] transition hover:bg-[#8a1f1f]"
+                      >
+                        {wine.producer}
+                      </Link>
+                    )}
 
-                <p className="mt-4 font-semibold text-[#3b1f1f]">
-                  {formatPrice(wine.price)}
-                </p>
-              </Link>
-            ))}
+                    <Link href={getWineHref(wine)} className="block">
+                      <h3 className="min-h-[64px] font-serif text-sm leading-tight text-[#24110d] group-hover:text-[#8a1f1f]">
+                        {wine.name}
+                      </h3>
+                    </Link>
+
+                    <div className="mt-3 space-y-1 text-sm text-[#6d5b50]">
+                      {wine.vintage && <p>Millésime {wine.vintage}</p>}
+                      {wine.classification && <p>{wine.classification}</p>}
+                      {wine.bottle_size && (
+                        <p>Flaconnage : {wine.bottle_size}</p>
+                      )}
+                      {wine.packaging && <p>Caissage : {wine.packaging}</p>}
+
+                      {regionValue && regionSlug && (
+                        <Link
+                          href={`/boutique/${regionSlug}`}
+                          className="inline-block underline underline-offset-4 transition hover:text-[#8a1f1f]"
+                        >
+                          {regionValue}
+                        </Link>
+                      )}
+                    </div>
+
+                    <p className="mt-4 font-serif text-2xl text-[#8a1f1f]">
+                      {formatPrice(wine.price)}
+                    </p>
+
+                    <Link
+                      href={getWineHref(wine)}
+                      className="mt-5 inline-flex w-full justify-center rounded-full bg-[#8a1f1f] px-5 py-3 text-center text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#641313]"
+                    >
+                      Voir le vin
+                    </Link>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         )}
       </section>
