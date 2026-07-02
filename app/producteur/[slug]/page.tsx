@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
@@ -55,6 +56,10 @@ function formatPrice(price?: string | number | null) {
 
 function getWineUrl(wine: Wine) {
   return `/boutique/vin/${wine.slug || wine.id}`;
+}
+
+function getAbsoluteWineUrl(wine: Wine) {
+  return `${SITE_URL}${getWineUrl(wine)}`;
 }
 
 export async function generateMetadata({
@@ -141,8 +146,30 @@ export default async function ProducteurPage({
     new Set(visibleWines.map((wine) => wine.region || wine.category).filter(Boolean))
   ) as string[];
 
+  const itemListJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: `Vins de ${producer}`,
+    description: `Sélection de vins disponibles de ${producer} chez The Wine Watchers.`,
+    url: `${SITE_URL}/producteur/${slug}`,
+    numberOfItems: visibleWines.length,
+    itemListElement: visibleWines.map((wine, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      url: getAbsoluteWineUrl(wine),
+      name: wine.name || `${producer} ${wine.vintage || ""}`.trim(),
+    })),
+  };
+
   return (
     <main className="min-h-screen bg-[#f8f3ea] text-[#24110d]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(itemListJsonLd),
+        }}
+      />
+
       <section className="bg-[#1c0f0b] px-6 py-20 text-white">
         <div className="mx-auto max-w-7xl">
           <Link
@@ -291,3 +318,4 @@ export default async function ProducteurPage({
     </main>
   );
 }
+

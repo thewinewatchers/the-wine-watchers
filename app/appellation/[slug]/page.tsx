@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
+const SITE_URL = "https://www.thewinewatchers.com";
+
 const appellations: Record<
   string,
   {
@@ -182,6 +184,10 @@ function getWineHref(wine: AppellationWine) {
   return `/boutique/vin/${wine.slug || wine.id}`;
 }
 
+function getAbsoluteWineUrl(wine: AppellationWine) {
+  return `${SITE_URL}${getWineHref(wine)}`;
+}
+
 function formatPrice(price?: string | number | null) {
   if (!price) return "Prix sur demande";
 
@@ -227,12 +233,16 @@ export async function generateMetadata({
   return {
     title: `${appellation.title} | The Wine Watchers`,
     description: appellation.description,
+    alternates: {
+      canonical: `${SITE_URL}/appellation/${slug}`,
+    },
     robots: {
       index: true,
       follow: true,
     },
   };
 }
+
 export default async function AppellationPage({
   params,
 }: {
@@ -270,8 +280,30 @@ export default async function AppellationPage({
     )
   ) as string[];
 
+  const itemListJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: `Vins de ${appellation.name}`,
+    description: appellation.description,
+    url: `${SITE_URL}/appellation/${slug}`,
+    numberOfItems: visibleWines.length,
+    itemListElement: visibleWines.map((wine, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      url: getAbsoluteWineUrl(wine),
+      name: wine.name || `${appellation.name} ${wine.vintage || ""}`.trim(),
+    })),
+  };
+
   return (
     <main className="min-h-screen bg-[#f8f5f0] px-6 py-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(itemListJsonLd),
+        }}
+      />
+
       <section className="mx-auto max-w-7xl">
         <div className="mb-6 flex flex-wrap items-center gap-2 text-sm text-gray-600">
           <Link href="/" className="transition hover:text-[#8B1E2D]">
@@ -383,6 +415,7 @@ export default async function AppellationPage({
             producteur, région et fiche vin.
           </p>
         </div>
+
         {visibleWines.length === 0 ? (
           <div className="rounded-2xl bg-white p-6 text-gray-600 shadow-sm">
             Aucun vin disponible actuellement pour cette appellation.
