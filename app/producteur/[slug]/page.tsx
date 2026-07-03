@@ -238,10 +238,9 @@ export default async function ProducteurPage({
           </h2>
 
           <p className="mt-4 max-w-3xl text-sm leading-7 text-[#6d5b50]">
-            Chaque fiche produit détaille le millésime, l’appellation, le prix,
-            la disponibilité et les informations de commande. Les liens ci-dessous
-            renforcent le maillage interne entre producteur, appellation, région
-            et fiche vin.
+            Retrouvez l’ensemble des vins actuellement disponibles de ce producteur.
+Consultez les différents millésimes, comparez les appellations et
+accédez en un clic à la fiche détaillée de chaque vin.
           </p>
         </div>
 

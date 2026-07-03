@@ -165,6 +165,183 @@ function categoryToSlug(category?: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+function normalizeSlugSource(value?: string | null) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[’']/g, "")
+    .replace(/œ/g, "oe")
+    .replace(/æ/g, "ae")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function getMainCategorySlug(wine?: Wine | null) {
+  if (!wine) return "";
+
+  const values = [
+    wine.category,
+    wine.country,
+    wine.region,
+    wine.appellation,
+    wine.producer,
+    wine.name,
+  ]
+    .map((value) => normalizeSlugSource(value))
+    .filter(Boolean);
+
+  const joined = values.join(" ");
+
+  if (
+    joined.includes("bordeaux") ||
+    joined.includes("pauillac") ||
+    joined.includes("margaux") ||
+    joined.includes("saint julien") ||
+    joined.includes("saint estephe") ||
+    joined.includes("saint emilion") ||
+    joined.includes("pomerol") ||
+    joined.includes("pessac leognan") ||
+    joined.includes("sauternes")
+  ) {
+    return "bordeaux";
+  }
+
+  if (
+    joined.includes("bourgogne") ||
+    joined.includes("burgundy") ||
+    joined.includes("cote de nuits") ||
+    joined.includes("cote de beaune") ||
+    joined.includes("chablis") ||
+    joined.includes("meursault") ||
+    joined.includes("puligny montrachet") ||
+    joined.includes("gevrey chambertin") ||
+    joined.includes("vosne romanee") ||
+    joined.includes("chambolle musigny") ||
+    joined.includes("romanee conti") ||
+    joined.includes("drc")
+  ) {
+    return "bourgogne";
+  }
+
+  if (
+    joined.includes("italie") ||
+    joined.includes("italy") ||
+    joined.includes("toscane") ||
+    joined.includes("toscana") ||
+    joined.includes("piemont") ||
+    joined.includes("piedmont") ||
+    joined.includes("barolo") ||
+    joined.includes("barbaresco") ||
+    joined.includes("brunello") ||
+    joined.includes("bolgheri") ||
+    joined.includes("sassicaia") ||
+    joined.includes("ornellaia") ||
+    joined.includes("masseto")
+  ) {
+    return "italie";
+  }
+
+  if (
+    joined.includes("espagne") ||
+    joined.includes("spain") ||
+    joined.includes("ribera del duero") ||
+    joined.includes("rioja") ||
+    joined.includes("priorat") ||
+    joined.includes("toro") ||
+    joined.includes("rias baixas") ||
+    joined.includes("vega sicilia") ||
+    joined.includes("pingus")
+  ) {
+    return "espagne";
+  }
+
+  if (
+    joined.includes("usa") ||
+    joined.includes("united states") ||
+    joined.includes("etats unis") ||
+    joined.includes("californie") ||
+    joined.includes("california") ||
+    joined.includes("napa") ||
+    joined.includes("sonoma") ||
+    joined.includes("oakville") ||
+    joined.includes("rutherford") ||
+    joined.includes("stags leap") ||
+    joined.includes("opus one") ||
+    joined.includes("screaming eagle")
+  ) {
+    return "usa";
+  }
+
+  if (joined.includes("rhone")) return "rhone";
+  if (joined.includes("primeur")) return "primeurs-2025";
+
+  return categoryToSlug(wine.category || wine.region || wine.country);
+}
+
+const DEDICATED_APPELLATION_SLUGS = new Set([
+  "pauillac",
+  "margaux",
+  "saint-julien",
+  "saint-estephe",
+  "pomerol",
+  "saint-emilion",
+  "pessac-leognan",
+  "sauternes",
+  "meursault",
+  "vosne-romanee",
+  "gevrey-chambertin",
+  "chambolle-musigny",
+]);
+
+function getAppellationHref(wine?: Wine | null) {
+  if (!wine?.appellation) return "";
+
+  const appellationSlug = appellationToSlug(wine.appellation);
+
+  if (DEDICATED_APPELLATION_SLUGS.has(appellationSlug)) {
+    return `/appellation/${appellationSlug}`;
+  }
+
+  const mainCategorySlug = getMainCategorySlug(wine);
+
+  if (!mainCategorySlug) return "";
+
+  return `/boutique/${mainCategorySlug}?appellation=${encodeURIComponent(
+    wine.appellation
+  )}`;
+}
+
+function getCategoryLabel(wine?: Wine | null) {
+  if (!wine) return "Grand vin";
+
+  const mainCategorySlug = getMainCategorySlug(wine);
+  const currentCategorySlug = categoryToSlug(wine.category);
+
+  if (mainCategorySlug === "usa" && (!wine.category || currentCategorySlug === "autres")) {
+    return "USA";
+  }
+
+  if (mainCategorySlug === "italie" && (!wine.category || currentCategorySlug === "autres")) {
+    return "Grands vins d’Italie";
+  }
+
+  if (mainCategorySlug === "espagne" && (!wine.category || currentCategorySlug === "autres")) {
+    return "Espagne";
+  }
+
+  if (mainCategorySlug === "bourgogne" && (!wine.category || currentCategorySlug === "autres")) {
+    return "Bourgogne";
+  }
+
+  if (mainCategorySlug === "bordeaux" && (!wine.category || currentCategorySlug === "autres")) {
+    return "Bordeaux";
+  }
+
+  return wine.category || wine.country || wine.region || "Grand vin";
+}
+
+
 function producerToSlug(producer?: string) {
   if (!producer) return "";
 
@@ -433,9 +610,10 @@ export default function WinePage() {
     [wine?.tasting_notes]
   );
 
-  const categorySlug = categoryToSlug(wine?.category);
-  const regionSlug = categoryToSlug(wine?.region);
-  const appellationSlug = appellationToSlug(wine?.appellation);
+  const categorySlug = getMainCategorySlug(wine);
+  const regionSlug = categorySlug;
+  const appellationHref = getAppellationHref(wine);
+  const categoryLabel = getCategoryLabel(wine);
   const vintage = wine?.vintage ? String(wine.vintage) : undefined;
   const stock = availableStock;
   const isAvailable = stock > 0;
@@ -655,11 +833,11 @@ export default function WinePage() {
                 href={`/boutique/${categorySlug}`}
                 className="text-sm uppercase tracking-[0.35em] text-[#d8b56d] transition hover:text-white"
               >
-                {wine.category || "Grand vin"}
+                {categoryLabel}
               </Link>
             ) : (
               <p className="text-sm uppercase tracking-[0.35em] text-[#d8b56d]">
-                {wine.category || "Grand vin"}
+                {categoryLabel}
               </p>
             )}
 
@@ -677,16 +855,16 @@ export default function WinePage() {
                 </Link>
               )}
 
-              {wine.appellation && appellationSlug && (
+              {wine.appellation && appellationHref && (
                 <Link
-                  href={`/appellation/${appellationSlug}`}
+                  href={appellationHref}
                   className="underline underline-offset-4 transition hover:text-[#d8b56d]"
                 >
                   • {wine.appellation}
                 </Link>
               )}
 
-              {wine.appellation && !appellationSlug && (
+              {wine.appellation && !appellationHref && (
                 <span>• {wine.appellation}</span>
               )}
 
@@ -818,11 +996,7 @@ export default function WinePage() {
 
             <div className="mt-6 flex flex-wrap gap-4 text-sm">
               <Link
-                href={
-                  wine.category?.toLowerCase() === "bourgogne"
-                    ? "/boutique/bourgogne"
-                    : "/boutique"
-                }
+                href={categorySlug ? `/boutique/${categorySlug}` : "/boutique"}
                 className="text-[#d8b56d] transition hover:text-white"
               >
                 ← Retour boutique
@@ -833,7 +1007,7 @@ export default function WinePage() {
                   href={`/boutique/${categorySlug}`}
                   className="text-[#d8b56d] transition hover:text-white"
                 >
-                  Retour {wine.category}
+                  Retour {categoryLabel}
                 </Link>
               )}
             </div>
@@ -873,9 +1047,9 @@ export default function WinePage() {
           <InfoCard
             label="Appellation"
             value={
-              wine.appellation && appellationSlug ? (
+              wine.appellation && appellationHref ? (
                 <Link
-                  href={`/appellation/${appellationSlug}`}
+                  href={appellationHref}
                   className="underline underline-offset-4 transition hover:text-[#8a1f1f]"
                 >
                   {wine.appellation}
@@ -1098,7 +1272,7 @@ export default function WinePage() {
                 href={`/boutique/${categorySlug}`}
                 className="rounded-full border border-[#8a6a2f]/40 bg-white px-5 py-3 text-sm font-semibold text-[#6d5b50] transition hover:border-[#8a1f1f] hover:text-[#8a1f1f]"
               >
-                Tous les vins {wine.category}
+                Tous les vins {categoryLabel}
               </Link>
             )}
           </div>
