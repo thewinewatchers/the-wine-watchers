@@ -105,6 +105,46 @@ const appellations: Record<
     boutiqueHref: "/boutique/bourgogne",
     boutiqueLabel: "Retour à la boutique Bourgogne",
   },
+  "cote-de-nuits": {
+    name: "Côte de Nuits",
+    title: "Vins de Côte de Nuits – Grands rouges de Bourgogne",
+    description:
+      "Découvrez notre sélection de vins de Côte de Nuits : grands crus, premiers crus, domaines prestigieux et millésimes recherchés.",
+    intro:
+      "La Côte de Nuits concentre certains des plus grands terroirs de Bourgogne. Elle est mondialement réputée pour ses grands vins rouges, profonds, complexes et taillés pour la garde.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "cote-de-beaune": {
+    name: "Côte de Beaune",
+    title: "Vins de Côte de Beaune – Grands blancs et rouges de Bourgogne",
+    description:
+      "Découvrez notre sélection de vins de Côte de Beaune : grands blancs, rouges élégants, domaines réputés et millésimes recherchés.",
+    intro:
+      "La Côte de Beaune est l’un des grands secteurs de Bourgogne. Elle est particulièrement célèbre pour ses grands vins blancs, tout en offrant également des rouges élégants et raffinés.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  chablis: {
+    name: "Chablis",
+    title: "Vins de Chablis – Grands blancs de Bourgogne",
+    description:
+      "Découvrez notre sélection de vins de Chablis : grands blancs de Bourgogne, domaines réputés, premiers crus, grands crus et millésimes recherchés.",
+    intro:
+      "Chablis est une appellation emblématique du nord de la Bourgogne, réputée pour ses grands vins blancs issus du Chardonnay, marqués par la fraîcheur, la précision et la minéralité.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "puligny-montrachet": {
+    name: "Puligny-Montrachet",
+    title: "Vins de Puligny-Montrachet – Grands blancs de Bourgogne",
+    description:
+      "Découvrez notre sélection de vins de Puligny-Montrachet : grands blancs de Bourgogne, domaines prestigieux, premiers crus, grands crus et millésimes recherchés.",
+    intro:
+      "Puligny-Montrachet est l’une des appellations les plus prestigieuses de la Côte de Beaune. Elle est reconnue pour ses grands vins blancs d’une grande finesse, alliant tension, élégance et profondeur.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
   "vosne-romanee": {
     name: "Vosne-Romanée",
     title: "Vins de Vosne-Romanée – Grands rouges de Bourgogne",
@@ -263,7 +303,7 @@ export default async function AppellationPage({
     .eq("appellation", appellation.name)
     .neq("hidden_from_site", true)
     .order("name", { ascending: true })
-.order("vintage", { ascending: false });
+    .order("vintage", { ascending: false });
 
   const visibleWines = ((wines || []) as AppellationWine[]).filter(
     (wine) => wine.hidden_from_site !== true
@@ -412,7 +452,7 @@ export default async function AppellationPage({
           <p className="mt-4 max-w-3xl text-sm leading-7 text-[#6d5b50]">
             Découvrez les vins actuellement disponibles dans cette appellation.
 Comparez les domaines, les millésimes et les caractéristiques de chaque
-cuvée avant de consulter sa fiche détaillée
+            cuvée avant de consulter sa fiche détaillée.
           </p>
         </div>
 
