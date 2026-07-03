@@ -262,7 +262,8 @@ export default async function AppellationPage({
     )
     .eq("appellation", appellation.name)
     .neq("hidden_from_site", true)
-    .order("name", { ascending: true });
+    .order("name", { ascending: true })
+.order("vintage", { ascending: false });
 
   const visibleWines = ((wines || []) as AppellationWine[]).filter(
     (wine) => wine.hidden_from_site !== true
@@ -411,7 +412,7 @@ export default async function AppellationPage({
           <p className="mt-4 max-w-3xl text-sm leading-7 text-[#6d5b50]">
             Découvrez les vins actuellement disponibles dans cette appellation.
 Comparez les domaines, les millésimes et les caractéristiques de chaque
-cuvée avant de consulter sa fiche détaillée.
+cuvée avant de consulter sa fiche détaillée
           </p>
         </div>
 

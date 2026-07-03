@@ -132,7 +132,8 @@ export default async function ProducteurPage({
     )
     .eq("producer", producer)
     .neq("hidden_from_site", true)
-    .order("vintage", { ascending: false });
+    .order("name", { ascending: true })
+.order("vintage", { ascending: false });
 
   const visibleWines = ((wines || []) as Wine[]).filter(
     (wine) => wine.hidden_from_site !== true
