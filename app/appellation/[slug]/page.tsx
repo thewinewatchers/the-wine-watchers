@@ -170,8 +170,7 @@ const appellations: Record<
     title: "Vins de Chambolle-Musigny – Élégance bourguignonne",
     description:
       "Découvrez les vins de Chambolle-Musigny, grands rouges de Bourgogne réputés pour leur finesse.",
-    intro:
-      "Chambolle-Musigny incarne la finesse et l’élégance bourguignonnes.",
+    intro: "Chambolle-Musigny incarne la finesse et l’élégance bourguignonnes.",
     boutiqueHref: "/boutique/bourgogne",
     boutiqueLabel: "Retour à la boutique Bourgogne",
   },
@@ -239,7 +238,7 @@ function formatPrice(price?: string | number | null) {
             .toString()
             .replace(/[€\s]/g, "")
             .replace(/\./g, "")
-            .replace(",", ".")
+            .replace(",", "."),
         );
 
   if (Number.isNaN(value) || value <= 0) return "Prix sur demande";
@@ -298,7 +297,7 @@ export default async function AppellationPage({
   const { data: wines, error } = await supabase
     .from("wines")
     .select(
-      "id, slug, name, producer, vintage, price, image, appellation, region, category, classification, bottle_size, packaging, hidden_from_site"
+      "id, slug, name, producer, vintage, price, image, appellation, region, category, classification, bottle_size, packaging, hidden_from_site",
     )
     .eq("appellation", appellation.name)
     .neq("hidden_from_site", true)
@@ -306,19 +305,11 @@ export default async function AppellationPage({
     .order("vintage", { ascending: false });
 
   const visibleWines = ((wines || []) as AppellationWine[]).filter(
-    (wine) => wine.hidden_from_site !== true
+    (wine) => wine.hidden_from_site !== true,
   );
 
   const producers = Array.from(
-    new Set(visibleWines.map((wine) => wine.producer).filter(Boolean))
-  ) as string[];
-
-  const regions = Array.from(
-    new Set(
-      visibleWines
-        .map((wine) => wine.region || wine.category)
-        .filter(Boolean)
-    )
+    new Set(visibleWines.map((wine) => wine.producer).filter(Boolean)),
   ) as string[];
 
   const itemListJsonLd = {
@@ -364,13 +355,11 @@ export default async function AppellationPage({
               : "Bordeaux"}
           </Link>
           <span>/</span>
-          <span className="font-medium text-[#3b1f1f]">
-            {appellation.name}
-          </span>
+          <span className="font-medium text-[#3b1f1f]">{appellation.name}</span>
         </div>
 
         <div className="mb-10 rounded-[2rem] bg-white p-8 shadow-sm">
-          <div className="mb-6">
+          <div className="mb-8 flex flex-wrap gap-3">
             <Link
               href={appellation.boutiqueHref}
               className="inline-flex rounded-full border border-[#8B1E2D] px-5 py-2 text-sm font-semibold text-[#8B1E2D] transition hover:bg-[#8B1E2D] hover:text-white"
@@ -400,28 +389,13 @@ export default async function AppellationPage({
               Erreur Supabase : {error.message}
             </p>
           )}
-
-          <div className="mt-8 flex flex-wrap gap-3">
-            {regions.map((region) => {
-              const regionSlug = categoryToSlug(region);
-
-              if (!regionSlug) return null;
-
-              return (
-                <Link
-                  key={region}
-                  href={`/boutique/${regionSlug}`}
-                  className="rounded-full border border-[#d8b56d]/50 bg-[#fffaf3] px-5 py-2 text-sm text-[#6d5b50] transition hover:border-[#8a1f1f] hover:text-[#8a1f1f]"
-                >
-                  Voir les vins {region}
-                </Link>
-              );
-            })}
-          </div>
         </div>
 
         {producers.length > 0 && (
-          <div className="mb-10 rounded-[2rem] border border-[#e1d1bd] bg-white p-8 shadow-sm">
+          <div
+            id="producteurs"
+            className="mb-10 scroll-mt-24 rounded-[2rem] border border-[#e1d1bd] bg-white p-8 shadow-sm"
+          >
             <p className="text-sm uppercase tracking-[0.28em] text-[#8a6a2f]">
               Producteurs liés
             </p>
@@ -451,8 +425,8 @@ export default async function AppellationPage({
 
           <p className="mt-4 max-w-3xl text-sm leading-7 text-[#6d5b50]">
             Découvrez les vins actuellement disponibles dans cette appellation.
-Comparez les domaines, les millésimes et les caractéristiques de chaque
-            cuvée avant de consulter sa fiche détaillée.
+            Comparez les domaines, les millésimes et les caractéristiques de
+            chaque cuvée avant de consulter sa fiche détaillée.
           </p>
         </div>
 
@@ -513,7 +487,7 @@ Comparez les domaines, les millésimes et les caractéristiques de chaque
 
                       {regionValue && regionSlug && (
                         <Link
-                          href={`/boutique/${regionSlug}`}
+                          href={appellation.boutiqueHref}
                           className="inline-block underline underline-offset-4 transition hover:text-[#8a1f1f]"
                         >
                           {regionValue}
