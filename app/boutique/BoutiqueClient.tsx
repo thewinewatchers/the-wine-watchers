@@ -193,7 +193,7 @@ function WineCard({
           {image ? (
             <img
               src={image}
-              alt={name}
+              alt={`Bouteille de ${name} - The Wine Watchers`}
               className="relative z-10 max-h-[205px] w-auto object-contain transition duration-500 group-hover:scale-105"
             />
           ) : (

@@ -816,7 +816,7 @@ export default function WinePage() {
               {wine.image ? (
                 <img
                   src={wine.image}
-                  alt={wine.name || "Vin"}
+                  alt={`Bouteille de ${wine.name || "vin"}${wine.vintage ? ` ${wine.vintage}` : ""} - The Wine Watchers`}
                   className="h-[380px] w-full max-w-[340px] rounded-[1.5rem] object-contain"
                 />
               ) : (

@@ -450,7 +450,7 @@ export default async function AppellationPage({
                       {wine.image ? (
                         <img
                           src={wine.image}
-                          alt={wine.name || appellation.name}
+                          alt={`Bouteille de ${wine.name || "vin"}${wine.vintage ? ` ${wine.vintage}` : ""} - ${appellation.name}`}
                           className="max-h-[205px] w-auto object-contain transition group-hover:scale-105"
                         />
                       ) : (

@@ -256,7 +256,7 @@ accédez en un clic à la fiche détaillée de chaque vin.
                   {wine.image ? (
                     <img
                       src={wine.image}
-                      alt={wine.name || producer}
+                    alt={`Bouteille de ${wine.name || "vin"}${wine.vintage ? ` ${wine.vintage}` : ""} - ${producer}`}
                       className="max-h-[205px] w-auto object-contain transition group-hover:scale-105"
                     />
                   ) : (
