@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
@@ -250,7 +250,7 @@ function getAutomaticWeightKg(packaging?: string | null) {
   return 11;
 }
 
-export default function AdminCataloguePage() {
+function AdminCatalogueContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialSearch = searchParams.get("search") || "";
@@ -875,5 +875,12 @@ export default function AdminCataloguePage() {
         </div>
       </div>
     </main>
+  );
+}
+export default function AdminCataloguePage() {
+  return (
+    <Suspense fallback={<main className="min-h-screen bg-[#f8f3ea] px-6 py-12 text-[#1f1a17]">Chargement du catalogue...</main>}>
+      <AdminCatalogueContent />
+    </Suspense>
   );
 }
