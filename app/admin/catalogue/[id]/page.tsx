@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
 type WineForm = {
@@ -168,7 +168,13 @@ function parseStock(value: string) {
 
 export default function AdminEditWinePage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const wineId = String(params.id || "");
+
+  const search = searchParams.get("search") || "";
+  const backToCatalogueHref = search
+    ? `/admin/catalogue?search=${encodeURIComponent(search)}`
+    : "/admin/catalogue";
 
   const [form, setForm] = useState<WineForm>(emptyForm);
   const [loading, setLoading] = useState(true);
@@ -354,7 +360,9 @@ export default function AdminEditWinePage() {
     setForm((previous) => ({
       ...previous,
       stock: String(result?.wine?.stock ?? parsedStock),
-      compare_at_price: parsePrice(result?.wine?.compare_at_price ?? form.compare_at_price),
+      compare_at_price: parsePrice(
+        result?.wine?.compare_at_price ?? form.compare_at_price
+      ),
     }));
 
     setSuccessMessage(
@@ -380,7 +388,7 @@ export default function AdminEditWinePage() {
     <main className="min-h-screen bg-[#f8f3ea] px-6 py-12 text-[#1f1a17]">
       <div className="mx-auto max-w-7xl">
         <Link
-          href="/admin/catalogue"
+          href={backToCatalogueHref}
           className="text-sm uppercase tracking-[0.25em] text-[#8a6a2f] hover:text-black"
         >
           ← Retour catalogue
@@ -388,7 +396,7 @@ export default function AdminEditWinePage() {
 
         <div className="mt-4">
           <Link
-            href={`/boutique/vin/${wineId}`}
+            href={`/boutique/vin/${previewSlug || wineId}`}
             target="_blank"
             className="inline-flex rounded-full border border-[#8a6a2f] px-5 py-2 text-sm font-medium text-[#8a6a2f] hover:bg-[#8a6a2f] hover:text-white"
           >

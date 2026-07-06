@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -250,6 +251,10 @@ function getAutomaticWeightKg(packaging?: string | null) {
 }
 
 export default function AdminCataloguePage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialSearch = searchParams.get("search") || "";
+
   const [wines, setWines] = useState<Wine[]>([]);
   const [form, setForm] = useState<WineForm>(emptyForm);
   const [loading, setLoading] = useState(true);
@@ -259,7 +264,7 @@ export default function AdminCataloguePage() {
   const [updatingVisibilityId, setUpdatingVisibilityId] = useState<string | null>(
     null
   );
-  const [searchWine, setSearchWine] = useState("");
+  const [searchWine, setSearchWine] = useState(initialSearch);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -289,6 +294,27 @@ export default function AdminCataloguePage() {
     loadWines();
   }, []);
 
+  useEffect(() => {
+    const currentSearch = searchParams.get("search") || "";
+    const nextSearch = searchWine.trim();
+
+    if (currentSearch === nextSearch) return;
+
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (nextSearch) {
+      params.set("search", nextSearch);
+    } else {
+      params.delete("search");
+    }
+
+    const queryString = params.toString();
+    router.replace(
+      queryString ? `/admin/catalogue?${queryString}` : "/admin/catalogue",
+      { scroll: false }
+    );
+  }, [searchWine, router, searchParams]);
+
   const filteredAdminWines = useMemo(() => {
     if (!searchWine.trim()) return wines;
 
@@ -308,6 +334,10 @@ export default function AdminCataloguePage() {
   }, [form.slug, form.name, form.vintage]);
 
   const slugWarning = useMemo(() => getSlugWarning(form), [form]);
+
+  const catalogueSearchQuery = searchWine.trim()
+    ? `?search=${encodeURIComponent(searchWine.trim())}`
+    : "";
 
   function handleChange(
     event: React.ChangeEvent<
@@ -401,7 +431,7 @@ export default function AdminCataloguePage() {
     await loadWines();
 
     if (result?.wine?.id) {
-      window.location.href = `/admin/catalogue/${result.wine.id}`;
+      window.location.href = `/admin/catalogue/${result.wine.id}${catalogueSearchQuery}`;
     }
   }
 
@@ -441,6 +471,7 @@ export default function AdminCataloguePage() {
     setUpdatingVisibilityId(null);
     await loadWines();
   }
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -784,7 +815,7 @@ export default function AdminCataloguePage() {
                             </Link>
 
                             <Link
-                              href={`/admin/catalogue/${wine.id}`}
+                              href={`/admin/catalogue/${wine.id}${catalogueSearchQuery}`}
                               className="rounded-full border border-[#8a6a2f] px-3 py-2 text-xs uppercase tracking-[0.14em] text-[#8a6a2f] hover:bg-[#fffaf3]"
                             >
                               Modifier

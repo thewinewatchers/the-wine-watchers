@@ -7,6 +7,9 @@ type Props = {
 
 const SITE_URL = "https://www.thewinewatchers.com";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 function normalizeLegacySlug(slug: string) {
   return slug
     .replace(/-(2010|2015|2018|2019|2020|2021|2022|2023|2024|2025)-\1(-2)?$/, "-$1")
@@ -63,15 +66,21 @@ function categoryToSlug(value?: string | null) {
   return normalized;
 }
 
+function isUuid(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    value
+  );
+}
+
 async function getWine(id: string) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 
   if (!supabaseUrl || !supabaseKey) return null;
 
-  async function fetchWine(column: "id" | "slug") {
+  async function fetchWine(column: "id" | "slug", value: string) {
     const url =
-      `${supabaseUrl}/rest/v1/wines?${column}=eq.${encodeURIComponent(id)}` +
+      `${supabaseUrl}/rest/v1/wines?${column}=eq.${encodeURIComponent(value)}` +
       `&hidden_from_site=neq.true` +
       `&select=*&limit=1`;
 
@@ -80,7 +89,7 @@ async function getWine(id: string) {
         apikey: supabaseKey,
         Authorization: `Bearer ${supabaseKey}`,
       },
-      next: { revalidate: 3600 },
+      cache: "no-store",
     });
 
     if (!response.ok) return null;
@@ -89,7 +98,11 @@ async function getWine(id: string) {
     return data?.[0] || null;
   }
 
-  return (await fetchWine("id")) || (await fetchWine("slug"));
+  if (isUuid(id)) {
+    return (await fetchWine("id", id)) || null;
+  }
+
+  return (await fetchWine("slug", id)) || null;
 }
 
 export async function generateMetadata({ params }: Props) {
