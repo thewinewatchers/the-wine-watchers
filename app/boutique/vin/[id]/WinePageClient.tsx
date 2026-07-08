@@ -1123,24 +1123,34 @@ export default function WinePage() {
             </section>
           )}
 
-          {tastingNotes.length > 0 && (
-            <section className="rounded-[2rem] border border-[#e1d1bd] bg-[#fffaf3] p-6 shadow-sm">
-              <p className="text-sm uppercase tracking-[0.28em] text-[#8a6a2f]">
-                Notes de dégustation
-              </p>
+        {tastingNotes.length > 0 && (
+  <section className="rounded-[2rem] border border-[#e1d1bd] bg-[#fffaf3] p-8 shadow-sm">
+    <p className="text-sm uppercase tracking-[0.28em] text-[#8a6a2f]">
+      Notes de dégustation
+    </p>
 
-              <div className="mt-5 flex flex-wrap gap-2">
-                {tastingNotes.map((note) => (
-                  <span
-                    key={note}
-                    className="rounded-full border border-[#dfcfb8] bg-white px-4 py-2 text-sm text-[#6d5b50]"
-                  >
-                    {note}
-                  </span>
-                ))}
-              </div>
-            </section>
-          )}
+    <div className="mt-7 grid gap-4">
+      {tastingNotes.map((note) => (
+        <p
+          key={note}
+          className="rounded-[1.75rem] border border-[#dfcfb8] bg-white px-6 py-5 text-base leading-8 text-[#6d5b50]"
+        >
+          {note
+            .replace(
+              /(\d{2,3}\/100\s+[A-Z]+)\s+(\d{2,3}(?:-\d{2,3})?\s+[A-Z]+)\s*:/,
+              "$1\n$2 :"
+            )
+            .split("\n")
+            .map((line) => (
+              <span key={line} className="block">
+                {line}
+              </span>
+            ))}
+        </p>
+      ))}
+    </div>
+  </section>
+)}
 
           {wine.meta_content && (
             <section className="rounded-[2rem] border border-[#e1d1bd] bg-[#fffaf3] p-6 shadow-sm">

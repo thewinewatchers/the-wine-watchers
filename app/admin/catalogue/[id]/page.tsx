@@ -170,77 +170,57 @@ function getLength(value: string) {
   return value.trim().length;
 }
 
-function getSeoTone(value: number, min: number, max: number) {
-  if (value === 0) return "danger";
-  if (value < min) return "warning";
-  if (value > max) return "danger";
-  return "good";
-}
+function getSeoStatus(value: string, min: number, max: number) {
+  const length = getLength(value);
 
-function getMinimumTone(value: number, min: number) {
-  if (value === 0) return "danger";
-  if (value < min) return "warning";
-  return "good";
-}
-
-function toneClasses(tone: "good" | "warning" | "danger") {
-  if (tone === "good") {
-    return "border-green-200 bg-green-50 text-green-900";
+  if (length === 0) {
+    return {
+      label: "À corriger",
+      className: "border-red-200 bg-red-50 text-red-800",
+    };
   }
 
-  if (tone === "warning") {
-    return "border-orange-200 bg-orange-50 text-orange-900";
+  if (length < min) {
+    return {
+      label: "Trop court",
+      className: "border-orange-200 bg-orange-50 text-orange-800",
+    };
   }
 
-  return "border-red-200 bg-red-50 text-red-900";
+  if (length > max) {
+    return {
+      label: "Trop long",
+      className: "border-red-200 bg-red-50 text-red-800",
+    };
+  }
+
+  return {
+    label: "Longueur idéale",
+    className: "border-green-200 bg-green-50 text-green-800",
+  };
 }
 
-function getToneLabel(tone: "good" | "warning" | "danger") {
-  if (tone === "good") return "OK";
-  if (tone === "warning") return "À améliorer";
-  return "À corriger";
-}
+function getMinimumStatus(value: string, min: number) {
+  const length = getLength(value);
 
-function SeoIndicator({
-  label,
-  value,
-  min,
-  max,
-  type = "range",
-}: {
-  label: string;
-  value: number;
-  min: number;
-  max?: number;
-  type?: "range" | "minimum";
-}) {
-  const tone =
-    type === "minimum"
-      ? getMinimumTone(value, min)
-      : getSeoTone(value, min, max || min);
+  if (length === 0) {
+    return {
+      label: "À corriger",
+      className: "border-red-200 bg-red-50 text-red-800",
+    };
+  }
 
-  return (
-    <div className={`rounded-2xl border p-4 text-sm ${toneClasses(tone)}`}>
-      <div className="flex items-center justify-between gap-3">
-        <span className="font-semibold">{label}</span>
-        <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold">
-          {getToneLabel(tone)}
-        </span>
-      </div>
+  if (length < min) {
+    return {
+      label: "À enrichir",
+      className: "border-orange-200 bg-orange-50 text-orange-800",
+    };
+  }
 
-      <p className="mt-2">
-        {type === "minimum"
-          ? `${value} caractères / minimum conseillé : ${min}`
-          : `${value} caractères / idéal : ${min}-${max}`}
-      </p>
-    </div>
-  );
-}
-
-function scoreTone(score: number) {
-  if (score >= 90) return "good";
-  if (score >= 70) return "warning";
-  return "danger";
+  return {
+    label: "OK",
+    className: "border-green-200 bg-green-50 text-green-800",
+  };
 }
 
 function getSeoScore(form: WineForm, previewSlug: string) {
@@ -266,6 +246,47 @@ function getSeoScore(form: WineForm, previewSlug: string) {
   return Math.min(100, score);
 }
 
+function getScoreClass(score: number) {
+  if (score >= 90) return "border-green-200 bg-green-50 text-green-900";
+  if (score >= 70) return "border-orange-200 bg-orange-50 text-orange-900";
+  return "border-red-200 bg-red-50 text-red-900";
+}
+
+function SeoIndicator({
+  label,
+  value,
+  min,
+  max,
+  type = "range",
+}: {
+  label: string;
+  value: string;
+  min: number;
+  max?: number;
+  type?: "range" | "minimum";
+}) {
+  const status =
+    type === "minimum"
+      ? getMinimumStatus(value, min)
+      : getSeoStatus(value, min, max || min);
+
+  return (
+    <div className={`rounded-2xl border p-4 text-sm ${status.className}`}>
+      <div className="flex items-center justify-between gap-3">
+        <span className="font-semibold">{label}</span>
+        <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold">
+          {status.label}
+        </span>
+      </div>
+      <p className="mt-2">
+        {type === "minimum"
+          ? `${getLength(value)} caractères / minimum conseillé : ${min}`
+          : `${getLength(value)} caractères / idéal : ${min}-${max}`}
+      </p>
+    </div>
+  );
+}
+
 export default function AdminEditWinePage() {
   const params = useParams();
   const searchParams = useSearchParams();
@@ -288,9 +309,26 @@ export default function AdminEditWinePage() {
     return createSlug(`${form.name}-${form.vintage}`);
   }, [form.slug, form.name, form.vintage]);
 
+  const seoTitleStatus = useMemo(
+    () => getSeoStatus(form.seo_title, 35, 65),
+    [form.seo_title],
+  );
+
+  const seoDescriptionStatus = useMemo(
+    () => getSeoStatus(form.seo_description, 90, 165),
+    [form.seo_description],
+  );
+
   const seoScore = useMemo(() => {
     return getSeoScore(form, previewSlug);
   }, [form, previewSlug]);
+
+  const googleTitle =
+    form.seo_title.trim() || `${form.name || "Nom du vin"} | The Wine Watchers`;
+
+  const googleDescription =
+    form.seo_description.trim() ||
+    "Meta description non renseignée. Ajoutez une description optimisée pour améliorer l'affichage Google.";
 
   useEffect(() => {
     async function loadWine() {
@@ -360,7 +398,7 @@ export default function AdminEditWinePage() {
   function handleChange(
     event: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    >,
   ) {
     const { name, value } = event.target;
     setForm((previous) => ({ ...previous, [name]: value }));
@@ -376,8 +414,8 @@ export default function AdminEditWinePage() {
         value === "Bordeaux" || value === "Primeurs 2025"
           ? "Bordeaux"
           : value === "Bourgogne"
-          ? "Bourgogne"
-          : previous.region,
+            ? "Bourgogne"
+            : previous.region,
     }));
   }
 
@@ -423,10 +461,16 @@ export default function AdminEditWinePage() {
       seo_title: cleanText(form.seo_title),
       seo_description: cleanText(form.seo_description),
       keywords: form.keywords
-        ? form.keywords.split(",").map((x) => x.trim()).filter(Boolean)
+        ? form.keywords
+            .split(",")
+            .map((x) => x.trim())
+            .filter(Boolean)
         : [],
       grape_varieties: form.grape_varieties
-        ? form.grape_varieties.split(",").map((x) => x.trim()).filter(Boolean)
+        ? form.grape_varieties
+            .split(",")
+            .map((x) => x.trim())
+            .filter(Boolean)
         : [],
       classification: cleanText(form.classification),
       soil: cleanText(form.soil),
@@ -455,7 +499,7 @@ export default function AdminEditWinePage() {
       setErrorMessage(
         result?.details ||
           result?.error ||
-          "Erreur lors de la modification du vin."
+          "Erreur lors de la modification du vin.",
       );
       setSaving(false);
       return;
@@ -465,14 +509,14 @@ export default function AdminEditWinePage() {
       ...previous,
       stock: String(result?.wine?.stock ?? parsedStock),
       compare_at_price: parsePrice(
-        result?.wine?.compare_at_price ?? form.compare_at_price
+        result?.wine?.compare_at_price ?? form.compare_at_price,
       ),
     }));
 
     setSuccessMessage(
       `Fiche vin modifiée avec succès. Stock enregistré : ${
         result?.wine?.stock ?? parsedStock
-      } caisse${Number(result?.wine?.stock ?? parsedStock) > 1 ? "s" : ""}.`
+      } caisse${Number(result?.wine?.stock ?? parsedStock) > 1 ? "s" : ""}.`,
     );
 
     setSaving(false);
@@ -487,13 +531,6 @@ export default function AdminEditWinePage() {
       </main>
     );
   }
-
-  const seoScoreDisplayTone = scoreTone(seoScore);
-  const googleTitle =
-    form.seo_title.trim() || `${form.name || "Nom du vin"} | The Wine Watchers`;
-  const googleDescription =
-    form.seo_description.trim() ||
-    "Meta description non renseignée. Ajoutez une description optimisée pour améliorer l'affichage Google.";
 
   return (
     <main className="min-h-screen bg-[#f8f3ea] px-6 py-12 text-[#1f1a17]">
@@ -526,9 +563,7 @@ export default function AdminEditWinePage() {
 
         <section className="mt-8 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
           <div
-            className={`rounded-3xl border p-6 shadow-sm ${toneClasses(
-              seoScoreDisplayTone
-            )}`}
+            className={`rounded-3xl border p-6 shadow-sm ${getScoreClass(seoScore)}`}
           >
             <p className="text-sm uppercase tracking-[0.22em] opacity-80">
               Assistant SEO
@@ -564,39 +599,34 @@ export default function AdminEditWinePage() {
         </section>
 
         <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <SeoIndicator
-            label="Slug"
-            value={getLength(previewSlug)}
-            min={1}
-            max={75}
-          />
+          <SeoIndicator label="Slug" value={previewSlug} min={1} max={75} />
           <SeoIndicator
             label="Titre SEO"
-            value={getLength(form.seo_title)}
+            value={form.seo_title}
             min={35}
             max={65}
           />
           <SeoIndicator
             label="Meta description"
-            value={getLength(form.seo_description)}
+            value={form.seo_description}
             min={90}
             max={165}
           />
           <SeoIndicator
             label="Description produit"
-            value={getLength(form.description)}
+            value={form.description}
             min={300}
             type="minimum"
           />
           <SeoIndicator
             label="Histoire domaine"
-            value={getLength(form.story)}
+            value={form.story}
             min={500}
             type="minimum"
           />
           <SeoIndicator
             label="Notes de dégustation"
-            value={getLength(form.tasting_notes)}
+            value={form.tasting_notes}
             min={120}
             type="minimum"
           />
@@ -619,79 +649,311 @@ export default function AdminEditWinePage() {
           )}
 
           <div className="grid gap-5 md:grid-cols-2">
-            <input name="name" value={form.name} onChange={handleChange} placeholder="Nom du vin *" className="rounded-xl border border-neutral-300 px-4 py-3" />
+            <input
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              placeholder="Nom du vin *"
+              className="rounded-xl border border-neutral-300 px-4 py-3"
+            />
 
-            <select name="category" value={form.category} onChange={handleCategoryChange} className="rounded-xl border border-neutral-300 px-4 py-3">
+            <select
+              name="category"
+              value={form.category}
+              onChange={handleCategoryChange}
+              className="rounded-xl border border-neutral-300 px-4 py-3"
+            >
               <option value="">Catégorie</option>
               {categoryOptions.map((category) => (
-                <option key={category} value={category}>{category}</option>
+                <option key={category} value={category}>
+                  {category}
+                </option>
               ))}
             </select>
 
-            <input name="region" value={form.region} onChange={handleChange} placeholder="Région" className="rounded-xl border border-neutral-300 px-4 py-3" />
+            <input
+              name="region"
+              value={form.region}
+              onChange={handleChange}
+              placeholder="Région"
+              className="rounded-xl border border-neutral-300 px-4 py-3"
+            />
 
-            {form.category === "Bordeaux" || form.category === "Primeurs 2025" ? (
-              <select name="appellation" value={form.appellation} onChange={handleChange} className="rounded-xl border border-neutral-300 px-4 py-3">
+            {form.category === "Bordeaux" ||
+            form.category === "Primeurs 2025" ? (
+              <select
+                name="appellation"
+                value={form.appellation}
+                onChange={handleChange}
+                className="rounded-xl border border-neutral-300 px-4 py-3"
+              >
                 <option value="">Appellation Bordeaux</option>
                 {bordeauxAppellations.map((appellation) => (
-                  <option key={appellation} value={appellation}>{appellation}</option>
+                  <option key={appellation} value={appellation}>
+                    {appellation}
+                  </option>
                 ))}
               </select>
             ) : (
-              <input name="appellation" value={form.appellation} onChange={handleChange} placeholder="Appellation" className="rounded-xl border border-neutral-300 px-4 py-3" />
+              <input
+                name="appellation"
+                value={form.appellation}
+                onChange={handleChange}
+                placeholder="Appellation"
+                className="rounded-xl border border-neutral-300 px-4 py-3"
+              />
             )}
 
             {form.category === "Bourgogne" ? (
-              <select name="producer" value={form.producer} onChange={handleChange} className="rounded-xl border border-neutral-300 px-4 py-3">
+              <select
+                name="producer"
+                value={form.producer}
+                onChange={handleChange}
+                className="rounded-xl border border-neutral-300 px-4 py-3"
+              >
                 <option value="">Domaine Bourgogne</option>
                 {bourgogneDomains.map((domain) => (
-                  <option key={domain} value={domain}>{domain}</option>
+                  <option key={domain} value={domain}>
+                    {domain}
+                  </option>
                 ))}
               </select>
             ) : (
-              <input name="producer" value={form.producer} onChange={handleChange} placeholder="Domaine / Château" className="rounded-xl border border-neutral-300 px-4 py-3" />
+              <input
+                name="producer"
+                value={form.producer}
+                onChange={handleChange}
+                placeholder="Domaine / Château"
+                className="rounded-xl border border-neutral-300 px-4 py-3"
+              />
             )}
 
-            <input name="country" value={form.country} onChange={handleChange} placeholder="Pays" className="rounded-xl border border-neutral-300 px-4 py-3" />
-            <input name="color" value={form.color} onChange={handleChange} placeholder="Couleur" className="rounded-xl border border-neutral-300 px-4 py-3" />
-            <input name="vintage" value={form.vintage} onChange={handleChange} placeholder="Millésime" className="rounded-xl border border-neutral-300 px-4 py-3" />
-            <input name="price" value={form.price} onChange={handleChange} placeholder="Prix HT" className="rounded-xl border border-neutral-300 px-4 py-3" />
-            <input name="compare_at_price" value={form.compare_at_price} onChange={handleChange} placeholder="Prix avant remise HT optionnel" className="rounded-xl border border-[#d6b36a] bg-[#fffaf3] px-4 py-3" />
-            <input name="stock" value={form.stock} onChange={handleChange} placeholder="Stock disponible (caisses)" className="rounded-xl border-2 border-green-500 bg-green-50 px-4 py-3 font-semibold" />
-            <input name="bottle_size" value={form.bottle_size} onChange={handleChange} placeholder="Flaconnage ex: 75cl" className="rounded-xl border border-neutral-300 px-4 py-3" />
-            <input name="packaging" value={form.packaging} onChange={handleChange} placeholder="Caissage ex: CBO/6" className="rounded-xl border border-neutral-300 px-4 py-3" />
-            <input name="image" value={form.image} onChange={handleChange} placeholder="Image ex: /images/chateau-margaux-2020.jpg" className="rounded-xl border border-neutral-300 px-4 py-3 md:col-span-2" />
-            <input name="slug" value={form.slug} onChange={handleChange} placeholder="Slug personnalisé optionnel" className="rounded-xl border border-neutral-300 px-4 py-3" />
-            <input name="rating" value={form.rating} onChange={handleChange} placeholder="Note ex: 98" className="rounded-xl border border-neutral-300 px-4 py-3" />
-            <input name="classification" value={form.classification} onChange={handleChange} placeholder="Classification" className="rounded-xl border border-neutral-300 px-4 py-3" />
+            <input
+              name="country"
+              value={form.country}
+              onChange={handleChange}
+              placeholder="Pays"
+              className="rounded-xl border border-neutral-300 px-4 py-3"
+            />
+            <input
+              name="color"
+              value={form.color}
+              onChange={handleChange}
+              placeholder="Couleur"
+              className="rounded-xl border border-neutral-300 px-4 py-3"
+            />
+            <input
+              name="vintage"
+              value={form.vintage}
+              onChange={handleChange}
+              placeholder="Millésime"
+              className="rounded-xl border border-neutral-300 px-4 py-3"
+            />
+            <input
+              name="price"
+              value={form.price}
+              onChange={handleChange}
+              placeholder="Prix HT"
+              className="rounded-xl border border-neutral-300 px-4 py-3"
+            />
+            <input
+              name="compare_at_price"
+              value={form.compare_at_price}
+              onChange={handleChange}
+              placeholder="Prix avant remise HT optionnel"
+              className="rounded-xl border border-[#d6b36a] bg-[#fffaf3] px-4 py-3"
+            />
+            <input
+              name="stock"
+              value={form.stock}
+              onChange={handleChange}
+              placeholder="Stock disponible (caisses)"
+              className="rounded-xl border-2 border-green-500 bg-green-50 px-4 py-3 font-semibold"
+            />
+            <input
+              name="bottle_size"
+              value={form.bottle_size}
+              onChange={handleChange}
+              placeholder="Flaconnage ex: 75cl"
+              className="rounded-xl border border-neutral-300 px-4 py-3"
+            />
+            <input
+              name="packaging"
+              value={form.packaging}
+              onChange={handleChange}
+              placeholder="Caissage ex: CBO/6"
+              className="rounded-xl border border-neutral-300 px-4 py-3"
+            />
+            <input
+              name="image"
+              value={form.image}
+              onChange={handleChange}
+              placeholder="Image ex: /images/chateau-margaux-2020.jpg"
+              className="rounded-xl border border-neutral-300 px-4 py-3 md:col-span-2"
+            />
+            <input
+              name="slug"
+              value={form.slug}
+              onChange={handleChange}
+              placeholder="Slug personnalisé optionnel"
+              className="rounded-xl border border-neutral-300 px-4 py-3"
+            />
+            <input
+              name="rating"
+              value={form.rating}
+              onChange={handleChange}
+              placeholder="Note ex: 98"
+              className="rounded-xl border border-neutral-300 px-4 py-3"
+            />
+            <input
+              name="classification"
+              value={form.classification}
+              onChange={handleChange}
+              placeholder="Classification"
+              className="rounded-xl border border-neutral-300 px-4 py-3"
+            />
 
-            <div className="md:col-span-2">
-              <input name="seo_title" value={form.seo_title} onChange={handleChange} placeholder="Titre SEO" className="w-full rounded-xl border border-neutral-300 px-4 py-3" />
-              <p className="mt-2 text-xs text-neutral-600">
+            <div
+              className={`rounded-2xl border p-4 md:col-span-2 ${seoTitleStatus.className}`}
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <label className="text-sm font-semibold">Titre SEO</label>
+                <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold">
+                  {seoTitleStatus.label}
+                </span>
+              </div>
+
+              <input
+                name="seo_title"
+                value={form.seo_title}
+                onChange={handleChange}
+                placeholder="Titre SEO"
+                className="mt-3 w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-[#24110d]"
+              />
+
+              <p className="mt-2 text-xs">
                 {getLength(form.seo_title)} caractères — idéal : 35 à 65.
               </p>
             </div>
 
-            <div className="md:col-span-2">
-              <textarea name="seo_description" value={form.seo_description} onChange={handleChange} rows={3} placeholder="Description SEO" className="w-full rounded-xl border border-neutral-300 px-4 py-3" />
-              <p className="mt-2 text-xs text-neutral-600">
+            <div
+              className={`rounded-2xl border p-4 md:col-span-2 ${seoDescriptionStatus.className}`}
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <label className="text-sm font-semibold">
+                  Meta description
+                </label>
+                <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold">
+                  {seoDescriptionStatus.label}
+                </span>
+              </div>
+
+              <textarea
+                name="seo_description"
+                value={form.seo_description}
+                onChange={handleChange}
+                rows={7}
+                placeholder="Meta description SEO"
+                className="mt-3 w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-[#24110d]"
+              />
+
+              <p className="mt-2 text-xs">
                 {getLength(form.seo_description)} caractères — idéal : 90 à 165.
               </p>
             </div>
+            <input
+              name="keywords"
+              value={form.keywords}
+              onChange={handleChange}
+              placeholder="Mots-clés séparés par virgules"
+              className="rounded-xl border border-neutral-300 px-4 py-3 md:col-span-2"
+            />
+            <input
+              name="grape_varieties"
+              value={form.grape_varieties}
+              onChange={handleChange}
+              placeholder="Cépages séparés par virgules"
+              className="rounded-xl border border-neutral-300 px-4 py-3 md:col-span-2"
+            />
+            <input
+              name="soil"
+              value={form.soil}
+              onChange={handleChange}
+              placeholder="Sol"
+              className="rounded-xl border border-neutral-300 px-4 py-3"
+            />
+            <input
+              name="style"
+              value={form.style}
+              onChange={handleChange}
+              placeholder="Style"
+              className="rounded-xl border border-neutral-300 px-4 py-3"
+            />
 
-            <input name="keywords" value={form.keywords} onChange={handleChange} placeholder="Mots-clés séparés par virgules" className="rounded-xl border border-neutral-300 px-4 py-3 md:col-span-2" />
-            <input name="grape_varieties" value={form.grape_varieties} onChange={handleChange} placeholder="Cépages séparés par virgules" className="rounded-xl border border-neutral-300 px-4 py-3 md:col-span-2" />
-            <input name="soil" value={form.soil} onChange={handleChange} placeholder="Sol" className="rounded-xl border border-neutral-300 px-4 py-3" />
-            <input name="style" value={form.style} onChange={handleChange} placeholder="Style" className="rounded-xl border border-neutral-300 px-4 py-3" />
-
-            <textarea name="description" value={form.description} onChange={handleChange} rows={4} placeholder="Description" className="rounded-xl border border-neutral-300 px-4 py-3 md:col-span-2" />
-            <textarea name="story" value={form.story} onChange={handleChange} rows={4} placeholder="Histoire / domaine" className="rounded-xl border border-neutral-300 px-4 py-3 md:col-span-2" />
-            <textarea name="tasting_notes" value={form.tasting_notes} onChange={handleChange} rows={4} placeholder="Notes de dégustation" className="rounded-xl border border-neutral-300 px-4 py-3 md:col-span-2" />
-            <textarea name="nose" value={form.nose} onChange={handleChange} rows={3} placeholder="Nez" className="rounded-xl border border-neutral-300 px-4 py-3" />
-            <textarea name="palate" value={form.palate} onChange={handleChange} rows={3} placeholder="Bouche" className="rounded-xl border border-neutral-300 px-4 py-3" />
-            <textarea name="pairing" value={form.pairing} onChange={handleChange} rows={3} placeholder="Accords mets-vins" className="rounded-xl border border-neutral-300 px-4 py-3" />
-            <textarea name="serving_temperature" value={form.serving_temperature} onChange={handleChange} rows={3} placeholder="Température de service" className="rounded-xl border border-neutral-300 px-4 py-3" />
-            <textarea name="aging_potential" value={form.aging_potential} onChange={handleChange} rows={3} placeholder="Potentiel de garde" className="rounded-xl border border-neutral-300 px-4 py-3" />
+            <textarea
+              name="description"
+              value={form.description}
+              onChange={handleChange}
+              rows={4}
+              placeholder="Description"
+              className="rounded-xl border border-neutral-300 px-4 py-3 md:col-span-2"
+            />
+            <textarea
+              name="story"
+              value={form.story}
+              onChange={handleChange}
+              rows={4}
+              placeholder="Histoire / domaine"
+              className="rounded-xl border border-neutral-300 px-4 py-3 md:col-span-2"
+            />
+            <textarea
+              name="tasting_notes"
+              value={form.tasting_notes}
+              onChange={handleChange}
+              rows={4}
+              placeholder="Notes de dégustation"
+              className="rounded-xl border border-neutral-300 px-4 py-3 md:col-span-2"
+            />
+            <textarea
+              name="nose"
+              value={form.nose}
+              onChange={handleChange}
+              rows={3}
+              placeholder="Nez"
+              className="rounded-xl border border-neutral-300 px-4 py-3"
+            />
+            <textarea
+              name="palate"
+              value={form.palate}
+              onChange={handleChange}
+              rows={3}
+              placeholder="Bouche"
+              className="rounded-xl border border-neutral-300 px-4 py-3"
+            />
+            <textarea
+              name="pairing"
+              value={form.pairing}
+              onChange={handleChange}
+              rows={3}
+              placeholder="Accords mets-vins"
+              className="rounded-xl border border-neutral-300 px-4 py-3"
+            />
+            <textarea
+              name="serving_temperature"
+              value={form.serving_temperature}
+              onChange={handleChange}
+              rows={3}
+              placeholder="Température de service"
+              className="rounded-xl border border-neutral-300 px-4 py-3"
+            />
+            <textarea
+              name="aging_potential"
+              value={form.aging_potential}
+              onChange={handleChange}
+              rows={3}
+              placeholder="Potentiel de garde"
+              className="rounded-xl border border-neutral-300 px-4 py-3"
+            />
 
             <textarea
               name="meta_content"
@@ -717,7 +979,9 @@ export default function AdminEditWinePage() {
             <strong className="text-black">{previewSlug || "—"}</strong>
             <br />
             Stock actuellement saisi :{" "}
-            <strong className="text-black">{form.stock || "0"} caisse(s)</strong>
+            <strong className="text-black">
+              {form.stock || "0"} caisse(s)
+            </strong>
           </div>
 
           <button
