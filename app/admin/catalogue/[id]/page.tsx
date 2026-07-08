@@ -387,12 +387,21 @@ export default function AdminEditWinePage() {
   return (
     <main className="min-h-screen bg-[#f8f3ea] px-6 py-12 text-[#1f1a17]">
       <div className="mx-auto max-w-7xl">
-        <Link
-          href={backToCatalogueHref}
-          className="text-sm uppercase tracking-[0.25em] text-[#8a6a2f] hover:text-black"
-        >
-          ← Retour catalogue
-        </Link>
+        <div className="flex flex-wrap items-center gap-6">
+          <Link
+            href={backToCatalogueHref}
+            className="text-sm uppercase tracking-[0.25em] text-[#8a6a2f] hover:text-black"
+          >
+            ← Retour catalogue
+          </Link>
+
+          <Link
+            href="/admin/seo"
+            className="text-sm uppercase tracking-[0.25em] text-[#8a6a2f] hover:text-black"
+          >
+            ← Retour tableau SEO
+          </Link>
+        </div>
 
         <div className="mt-4">
           <Link
