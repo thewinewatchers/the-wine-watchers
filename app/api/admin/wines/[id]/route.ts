@@ -102,7 +102,7 @@ export async function PATCH(
     .from("wines")
     .update(payload)
     .eq("id", id)
-    .select("id, stock, price, compare_at_price, rating, weight_kg")
+    .select("*")
     .maybeSingle();
 
   if (error) {
