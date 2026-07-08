@@ -180,9 +180,13 @@ function getSlugWarning(form: WineForm) {
 function parseNumber(value?: number | string | null) {
   if (value === null || value === undefined || value === "") return null;
 
+  if (typeof value === "number") {
+    return Number.isNaN(value) ? null : value;
+  }
+
   const cleaned = String(value)
+    .trim()
     .replace(/[€\s]/g, "")
-    .replace(/\./g, "")
     .replace(",", ".");
 
   const parsed = Number(cleaned);

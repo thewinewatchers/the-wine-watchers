@@ -93,15 +93,20 @@ function normalizeArray(value?: string[] | string): string[] {
 
 function parsePrice(price?: string | number) {
   if (price === undefined || price === null || price === "") return 0;
-  if (typeof price === "number") return price;
 
-  const cleaned = price
-    .toString()
-    .replace(/[€\s]/g, "")
-    .replace(/\./g, "")
-    .replace(",", ".");
+  if (typeof price === "number") {
+    return Number.isNaN(price) ? 0 : price;
+  }
 
-  const parsed = Number(cleaned);
+  const raw = String(price)
+    .trim()
+    .replace(/[€\s]/g, "");
+
+  const normalized = raw.includes(",")
+    ? raw.replace(/\./g, "").replace(",", ".")
+    : raw;
+
+  const parsed = Number(normalized);
   return Number.isNaN(parsed) ? 0 : parsed;
 }
 

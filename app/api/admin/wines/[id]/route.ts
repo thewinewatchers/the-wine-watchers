@@ -15,6 +15,27 @@ function createSlug(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+function parseFrenchNumber(value: unknown) {
+  if (value === null || value === undefined || value === "") return null;
+  if (typeof value === "number") return Number.isNaN(value) ? null : value;
+
+  const raw = String(value).trim();
+  if (!raw) return null;
+
+  const cleaned = raw
+    .replace(/[€\s]/g, "")
+    .replace(",", ".");
+
+  const parsed = Number(cleaned);
+  return Number.isNaN(parsed) ? null : parsed;
+}
+
+function parseFrenchStock(value: unknown) {
+  const parsed = parseFrenchNumber(value);
+  if (parsed === null) return 0;
+  return Math.max(0, Math.floor(parsed));
+}
+
 function createBaseWineSlug(name: string, vintage?: string | number | null) {
   const cleanName = String(name || "vin").trim();
   const cleanVintage = vintage ? String(vintage).trim() : "";
@@ -58,18 +79,30 @@ async function createUniqueDuplicateSlug(
   return candidate;
 }
 
+function normalizeWinePayload(body: Record<string, unknown>) {
+  return {
+    ...body,
+    price: parseFrenchNumber(body.price),
+    compare_at_price: parseFrenchNumber(body.compare_at_price),
+    rating: parseFrenchNumber(body.rating),
+    weight_kg: parseFrenchNumber(body.weight_kg),
+    stock: parseFrenchStock(body.stock),
+  };
+}
+
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
   const body = await request.json();
+  const payload = normalizeWinePayload(body);
 
   const { data, error } = await supabaseAdmin
     .from("wines")
-    .update(body)
+    .update(payload)
     .eq("id", id)
-    .select("id, stock")
+    .select("id, stock, price, compare_at_price, rating, weight_kg")
     .maybeSingle();
 
   if (error) {
