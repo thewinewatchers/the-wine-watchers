@@ -152,7 +152,7 @@ function WineIssueList({
       </div>
 
       {wines.length > 0 && (
-        <div className="mt-5 max-h-[420px] space-y-3 overflow-auto pr-2">
+        <div className="mt-5 space-y-3">
           {wines.map((wine) => (
             <div
               key={`${title}-${wine.id}`}
