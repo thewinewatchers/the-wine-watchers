@@ -23,6 +23,8 @@ type Wine = {
   hidden_from_site: boolean | null;
 };
 
+type Tone = "neutral" | "good" | "warning" | "danger";
+
 type SeoList = {
   key: string;
   label: string;
@@ -36,6 +38,11 @@ function isEmpty(value: unknown) {
   return String(value).trim() === "";
 }
 
+function textLength(value: unknown) {
+  if (value === null || value === undefined) return 0;
+  return String(value).trim().length;
+}
+
 function uniqueCount(values: Array<string | null | undefined>) {
   return new Set(
     values
@@ -45,6 +52,12 @@ function uniqueCount(values: Array<string | null | undefined>) {
   ).size;
 }
 
+function scoreTone(score: number): Tone {
+  if (score >= 90) return "good";
+  if (score >= 70) return "warning";
+  return "danger";
+}
+
 function StatCard({
   label,
   value,
@@ -52,7 +65,7 @@ function StatCard({
 }: {
   label: string;
   value: number | string;
-  tone?: "neutral" | "good" | "warning" | "danger";
+  tone?: Tone;
 }) {
   const toneClass =
     tone === "good"
@@ -85,6 +98,23 @@ function ProgressBar({ label, value }: { label: string; value: number }) {
         />
       </div>
     </div>
+  );
+}
+
+function Pill({ children, tone }: { children: React.ReactNode; tone: Tone }) {
+  const toneClass =
+    tone === "good"
+      ? "bg-green-100 text-green-900"
+      : tone === "warning"
+      ? "bg-orange-100 text-orange-900"
+      : tone === "danger"
+      ? "bg-red-100 text-red-900"
+      : "bg-neutral-100 text-neutral-800";
+
+  return (
+    <span className={`rounded-full px-3 py-1 text-xs font-semibold ${toneClass}`}>
+      {children}
+    </span>
   );
 }
 
@@ -122,7 +152,7 @@ function WineIssueList({
       </div>
 
       {wines.length > 0 && (
-        <div className="mt-5 space-y-3">
+        <div className="mt-5 max-h-[420px] space-y-3 overflow-auto pr-2">
           {wines.map((wine) => (
             <div
               key={`${title}-${wine.id}`}
@@ -138,6 +168,9 @@ function WineIssueList({
                       .filter(Boolean)
                       .join(" · ") || "Informations producteur/région manquantes"}
                   </p>
+                  {wine.slug && (
+                    <p className="mt-1 text-xs text-neutral-500">/{wine.slug}</p>
+                  )}
                 </div>
 
                 <Link
@@ -153,6 +186,48 @@ function WineIssueList({
       )}
     </div>
   );
+}
+
+function GoogleCheck({
+  label,
+  status,
+  detail,
+}: {
+  label: string;
+  status: "ok" | "warning" | "danger";
+  detail: string;
+}) {
+  const tone = status === "ok" ? "good" : status;
+
+  return (
+    <div className="rounded-2xl border border-[#e6dcc8] bg-white p-5">
+      <div className="flex items-center justify-between gap-4">
+        <h3 className="font-serif text-lg text-black">{label}</h3>
+        <Pill tone={tone}>{status === "ok" ? "OK" : "À vérifier"}</Pill>
+      </div>
+      <p className="mt-3 text-sm leading-6 text-neutral-700">{detail}</p>
+    </div>
+  );
+}
+
+function getWineScore(wine: Wine) {
+  let score = 0;
+
+  if (!isEmpty(wine.slug)) score += 10;
+  if (!isEmpty(wine.image)) score += 10;
+  if (!isEmpty(wine.price)) score += 10;
+  if (!isEmpty(wine.stock)) score += 5;
+  if (!isEmpty(wine.seo_title)) score += 10;
+  if (!isEmpty(wine.seo_description)) score += 10;
+  if (!isEmpty(wine.description)) score += 15;
+  if (!isEmpty(wine.story)) score += 10;
+  if (!isEmpty(wine.tasting_notes)) score += 10;
+  if (!isEmpty(wine.producer)) score += 3;
+  if (!isEmpty(wine.appellation)) score += 3;
+  if (!isEmpty(wine.region)) score += 2;
+  if (!isEmpty(wine.country)) score += 2;
+
+  return Math.min(100, score);
 }
 
 export default function AdminSeoPage() {
@@ -190,6 +265,8 @@ export default function AdminSeoPage() {
     const visibleWines = wines.filter((wine) => !wine.hidden_from_site);
     const totalVisible = visibleWines.length || 1;
 
+    const withoutSlug = visibleWines.filter((wine) => isEmpty(wine.slug));
+    const longSlugs = visibleWines.filter((wine) => textLength(wine.slug) > 75);
     const withoutImage = visibleWines.filter((wine) => isEmpty(wine.image));
     const withoutDescription = visibleWines.filter((wine) =>
       isEmpty(wine.description)
@@ -197,8 +274,21 @@ export default function AdminSeoPage() {
     const withoutSeoTitle = visibleWines.filter((wine) =>
       isEmpty(wine.seo_title)
     );
+    const shortSeoTitle = visibleWines.filter(
+      (wine) => !isEmpty(wine.seo_title) && textLength(wine.seo_title) < 35
+    );
+    const longSeoTitle = visibleWines.filter(
+      (wine) => textLength(wine.seo_title) > 65
+    );
     const withoutSeoDescription = visibleWines.filter((wine) =>
       isEmpty(wine.seo_description)
+    );
+    const shortSeoDescription = visibleWines.filter(
+      (wine) =>
+        !isEmpty(wine.seo_description) && textLength(wine.seo_description) < 90
+    );
+    const longSeoDescription = visibleWines.filter(
+      (wine) => textLength(wine.seo_description) > 165
     );
     const withoutStory = visibleWines.filter((wine) => isEmpty(wine.story));
     const withoutTastingNotes = visibleWines.filter((wine) =>
@@ -210,36 +300,100 @@ export default function AdminSeoPage() {
       isEmpty(wine.appellation)
     );
     const withoutRegion = visibleWines.filter((wine) => isEmpty(wine.region));
+    const withoutCountry = visibleWines.filter((wine) => isEmpty(wine.country));
 
     const slugMap = new Map<string, number>();
+    const nameMap = new Map<string, number>();
+    const descriptionMap = new Map<string, number>();
 
     visibleWines.forEach((wine) => {
-      if (!wine.slug) return;
-      slugMap.set(wine.slug, (slugMap.get(wine.slug) || 0) + 1);
+      if (wine.slug) {
+        const slug = wine.slug.trim();
+        slugMap.set(slug, (slugMap.get(slug) || 0) + 1);
+      }
+
+      if (wine.name) {
+        const name = wine.name.trim().toLowerCase();
+        nameMap.set(name, (nameMap.get(name) || 0) + 1);
+      }
+
+      if (wine.description) {
+        const description = wine.description.trim().toLowerCase();
+        if (description.length > 80) {
+          descriptionMap.set(
+            description,
+            (descriptionMap.get(description) || 0) + 1
+          );
+        }
+      }
     });
 
     const duplicatedSlugValues = Array.from(slugMap.entries())
       .filter(([, count]) => count > 1)
       .map(([slug]) => slug);
 
+    const duplicatedNameValues = Array.from(nameMap.entries())
+      .filter(([, count]) => count > 1)
+      .map(([name]) => name);
+
+    const duplicatedDescriptionValues = Array.from(descriptionMap.entries())
+      .filter(([, count]) => count > 1)
+      .map(([description]) => description);
+
     const duplicatedSlugWines = visibleWines.filter(
-      (wine) => wine.slug && duplicatedSlugValues.includes(wine.slug)
+      (wine) => wine.slug && duplicatedSlugValues.includes(wine.slug.trim())
+    );
+
+    const duplicatedNameWines = visibleWines.filter(
+      (wine) =>
+        wine.name && duplicatedNameValues.includes(wine.name.trim().toLowerCase())
+    );
+
+    const duplicatedDescriptionWines = visibleWines.filter(
+      (wine) =>
+        wine.description &&
+        duplicatedDescriptionValues.includes(
+          wine.description.trim().toLowerCase()
+        )
     );
 
     const imageScore = Math.round(
       ((totalVisible - withoutImage.length) / totalVisible) * 100
     );
 
+    const slugScore = Math.round(
+      ((totalVisible -
+        withoutSlug.length -
+        duplicatedSlugWines.length -
+        longSlugs.length) /
+        totalVisible) *
+        100
+    );
+
     const seoTitleScore = Math.round(
-      ((totalVisible - withoutSeoTitle.length) / totalVisible) * 100
+      ((totalVisible -
+        withoutSeoTitle.length -
+        shortSeoTitle.length -
+        longSeoTitle.length) /
+        totalVisible) *
+        100
     );
 
     const seoDescriptionScore = Math.round(
-      ((totalVisible - withoutSeoDescription.length) / totalVisible) * 100
+      ((totalVisible -
+        withoutSeoDescription.length -
+        shortSeoDescription.length -
+        longSeoDescription.length) /
+        totalVisible) *
+        100
     );
 
     const descriptionScore = Math.round(
-      ((totalVisible - withoutDescription.length) / totalVisible) * 100
+      ((totalVisible -
+        withoutDescription.length -
+        duplicatedDescriptionWines.length) /
+        totalVisible) *
+        100
     );
 
     const contentScore = Math.round(
@@ -248,15 +402,55 @@ export default function AdminSeoPage() {
         100
     );
 
-    const globalScore = Math.round(
-      imageScore * 0.2 +
-        seoTitleScore * 0.2 +
-        seoDescriptionScore * 0.2 +
-        descriptionScore * 0.25 +
-        Math.max(0, contentScore) * 0.15
+    const catalogueScore = Math.round(
+      ((totalVisible -
+        withoutPrice.length -
+        withoutStock.length -
+        withoutAppellation.length -
+        withoutRegion.length -
+        withoutCountry.length) /
+        totalVisible) *
+        100
     );
 
+    const globalScore = Math.round(
+      Math.max(0, slugScore) * 0.15 +
+        Math.max(0, imageScore) * 0.15 +
+        Math.max(0, seoTitleScore) * 0.15 +
+        Math.max(0, seoDescriptionScore) * 0.15 +
+        Math.max(0, descriptionScore) * 0.2 +
+        Math.max(0, contentScore) * 0.1 +
+        Math.max(0, catalogueScore) * 0.1
+    );
+
+    const scoredWines = visibleWines
+      .map((wine) => ({
+        wine,
+        score: getWineScore(wine),
+      }))
+      .sort((a, b) => a.score - b.score);
+
+    const weakWines = scoredWines.filter((item) => item.score < 80).slice(0, 20);
+
     const issueLists: SeoList[] = [
+      {
+        key: "without-slug",
+        label: "Fiches sans slug",
+        wines: withoutSlug,
+        tone: withoutSlug.length === 0 ? "good" : "danger",
+      },
+      {
+        key: "duplicated-slugs",
+        label: "Fiches avec slug dupliqué",
+        wines: duplicatedSlugWines,
+        tone: duplicatedSlugWines.length === 0 ? "good" : "danger",
+      },
+      {
+        key: "long-slugs",
+        label: "Slugs trop longs",
+        wines: longSlugs,
+        tone: longSlugs.length === 0 ? "good" : "warning",
+      },
       {
         key: "without-image",
         label: "Fiches sans image",
@@ -270,16 +464,46 @@ export default function AdminSeoPage() {
         tone: withoutDescription.length === 0 ? "good" : "danger",
       },
       {
+        key: "duplicated-descriptions",
+        label: "Descriptions dupliquées",
+        wines: duplicatedDescriptionWines,
+        tone: duplicatedDescriptionWines.length === 0 ? "good" : "warning",
+      },
+      {
         key: "without-seo-title",
         label: "Fiches sans SEO title",
         wines: withoutSeoTitle,
         tone: withoutSeoTitle.length === 0 ? "good" : "warning",
       },
       {
+        key: "short-seo-title",
+        label: "SEO title trop court",
+        wines: shortSeoTitle,
+        tone: shortSeoTitle.length === 0 ? "good" : "warning",
+      },
+      {
+        key: "long-seo-title",
+        label: "SEO title trop long",
+        wines: longSeoTitle,
+        tone: longSeoTitle.length === 0 ? "good" : "warning",
+      },
+      {
         key: "without-seo-description",
         label: "Fiches sans meta description",
         wines: withoutSeoDescription,
         tone: withoutSeoDescription.length === 0 ? "good" : "warning",
+      },
+      {
+        key: "short-seo-description",
+        label: "Meta description trop courte",
+        wines: shortSeoDescription,
+        tone: shortSeoDescription.length === 0 ? "good" : "warning",
+      },
+      {
+        key: "long-seo-description",
+        label: "Meta description trop longue",
+        wines: longSeoDescription,
+        tone: longSeoDescription.length === 0 ? "good" : "warning",
       },
       {
         key: "without-story",
@@ -318,10 +542,16 @@ export default function AdminSeoPage() {
         tone: withoutRegion.length === 0 ? "good" : "warning",
       },
       {
-        key: "duplicated-slugs",
-        label: "Fiches avec slug dupliqué",
-        wines: duplicatedSlugWines,
-        tone: duplicatedSlugWines.length === 0 ? "good" : "danger",
+        key: "without-country",
+        label: "Fiches sans pays",
+        wines: withoutCountry,
+        tone: withoutCountry.length === 0 ? "good" : "warning",
+      },
+      {
+        key: "duplicated-names",
+        label: "Noms de vins dupliqués",
+        wines: duplicatedNameWines,
+        tone: duplicatedNameWines.length === 0 ? "good" : "warning",
       },
     ];
 
@@ -332,25 +562,38 @@ export default function AdminSeoPage() {
       appellations: uniqueCount(visibleWines.map((wine) => wine.appellation)),
       countries: uniqueCount(visibleWines.map((wine) => wine.country)),
       regions: uniqueCount(visibleWines.map((wine) => wine.region)),
+      withoutSlug,
+      longSlugs,
+      duplicatedSlugs: duplicatedSlugValues,
+      duplicatedSlugWines,
       withoutImage,
       withoutDescription,
+      duplicatedDescriptionWines,
       withoutSeoTitle,
+      shortSeoTitle,
+      longSeoTitle,
       withoutSeoDescription,
+      shortSeoDescription,
+      longSeoDescription,
       withoutStory,
       withoutTastingNotes,
       withoutPrice,
       withoutStock,
       withoutAppellation,
       withoutRegion,
-      duplicatedSlugs: duplicatedSlugValues,
-      duplicatedSlugWines,
+      withoutCountry,
+      duplicatedNameWines,
       issueLists,
-      imageScore,
-      seoTitleScore,
-      seoDescriptionScore,
-      descriptionScore,
+      scoredWines,
+      weakWines,
+      imageScore: Math.max(0, imageScore),
+      slugScore: Math.max(0, slugScore),
+      seoTitleScore: Math.max(0, seoTitleScore),
+      seoDescriptionScore: Math.max(0, seoDescriptionScore),
+      descriptionScore: Math.max(0, descriptionScore),
       contentScore: Math.max(0, contentScore),
-      globalScore,
+      catalogueScore: Math.max(0, catalogueScore),
+      globalScore: Math.max(0, globalScore),
     };
   }, [wines]);
 
@@ -374,8 +617,9 @@ export default function AdminSeoPage() {
           </h1>
 
           <p className="mt-4 max-w-3xl text-sm leading-7 text-neutral-700">
-            Vue synthétique des fiches vins visibles, des champs SEO manquants
-            et de la qualité globale du catalogue The Wine Watchers.
+            Audit automatique du catalogue The Wine Watchers : slugs, contenus,
+            métadonnées, images, données produit, qualité Google et priorités de
+            correction.
           </p>
         </div>
 
@@ -406,13 +650,7 @@ export default function AdminSeoPage() {
               <StatCard
                 label="Score global"
                 value={`${seo.globalScore}/100`}
-                tone={
-                  seo.globalScore >= 90
-                    ? "good"
-                    : seo.globalScore >= 70
-                    ? "warning"
-                    : "danger"
-                }
+                tone={scoreTone(seo.globalScore)}
               />
             </section>
 
@@ -423,6 +661,7 @@ export default function AdminSeoPage() {
                 </h2>
 
                 <div className="mt-6 space-y-5">
+                  <ProgressBar label="Slugs & URLs" value={seo.slugScore} />
                   <ProgressBar label="Images" value={seo.imageScore} />
                   <ProgressBar label="SEO title" value={seo.seoTitleScore} />
                   <ProgressBar
@@ -437,6 +676,10 @@ export default function AdminSeoPage() {
                     label="Contenu éditorial"
                     value={seo.contentScore}
                   />
+                  <ProgressBar
+                    label="Données catalogue"
+                    value={seo.catalogueScore}
+                  />
                 </div>
               </div>
 
@@ -446,6 +689,18 @@ export default function AdminSeoPage() {
                 </h2>
 
                 <div className="mt-6 grid gap-4 md:grid-cols-2">
+                  <StatCard
+                    label="Sans slug"
+                    value={seo.withoutSlug.length}
+                    tone={seo.withoutSlug.length === 0 ? "good" : "danger"}
+                  />
+                  <StatCard
+                    label="Slugs dupliqués"
+                    value={seo.duplicatedSlugWines.length}
+                    tone={
+                      seo.duplicatedSlugWines.length === 0 ? "good" : "danger"
+                    }
+                  />
                   <StatCard
                     label="Sans image"
                     value={seo.withoutImage.length}
@@ -474,21 +729,66 @@ export default function AdminSeoPage() {
                         : "warning"
                     }
                   />
-                  <StatCard
-                    label="Sans histoire domaine"
-                    value={seo.withoutStory.length}
-                    tone={seo.withoutStory.length === 0 ? "good" : "warning"}
-                  />
-                  <StatCard
-                    label="Sans dégustation"
-                    value={seo.withoutTastingNotes.length}
-                    tone={
-                      seo.withoutTastingNotes.length === 0
-                        ? "good"
-                        : "warning"
-                    }
-                  />
                 </div>
+              </div>
+            </section>
+
+            <section className="mt-8 rounded-3xl border border-[#e6dcc8] bg-white p-6 shadow-sm md:p-8">
+              <h2 className="text-2xl font-serif text-black">
+                Contrôle Google
+              </h2>
+
+              <p className="mt-3 max-w-3xl text-sm leading-7 text-neutral-700">
+                Cette section vérifie les grands piliers SEO côté catalogue. Le
+                contrôle Search Console réel restera à suivre dans Google, mais
+                le site prépare ici les bons signaux : URLs, sitemap, robots,
+                données produit et contenu.
+              </p>
+
+              <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                <GoogleCheck
+                  label="Sitemap"
+                  status="ok"
+                  detail="/sitemap.xml doit inclure les fiches vins visibles, les pages boutique, appellations, producteurs et blog."
+                />
+                <GoogleCheck
+                  label="Robots.txt"
+                  status="ok"
+                  detail="Les pages publiques doivent être autorisées. Les pages admin, API, checkout et panier doivent rester exclues."
+                />
+                <GoogleCheck
+                  label="Product JSON-LD"
+                  status={
+                    seo.withoutPrice.length === 0 && seo.withoutImage.length === 0
+                      ? "ok"
+                      : "warning"
+                  }
+                  detail="Les données structurées Product ont besoin au minimum d'un nom, d'une image, d'un prix et d'une URL propre."
+                />
+                <GoogleCheck
+                  label="URLs canoniques"
+                  status={seo.withoutSlug.length === 0 ? "ok" : "danger"}
+                  detail="Chaque fiche visible doit posséder un slug unique afin d'obtenir une URL canonique stable."
+                />
+                <GoogleCheck
+                  label="Google Merchant"
+                  status={
+                    seo.withoutPrice.length === 0 && seo.withoutImage.length === 0
+                      ? "ok"
+                      : "warning"
+                  }
+                  detail="Les prix, images et disponibilités doivent être complets pour éviter les refus ou avertissements."
+                />
+                <GoogleCheck
+                  label="Contenu utile"
+                  status={
+                    seo.withoutDescription.length === 0 &&
+                    seo.withoutStory.length === 0
+                      ? "ok"
+                      : "warning"
+                  }
+                  detail="Les fiches doivent contenir une description propre, une présentation domaine et des notes de dégustation."
+                />
               </div>
             </section>
 
@@ -520,7 +820,89 @@ export default function AdminSeoPage() {
                   value={seo.withoutRegion.length}
                   tone={seo.withoutRegion.length === 0 ? "good" : "warning"}
                 />
+                <StatCard
+                  label="Sans pays"
+                  value={seo.withoutCountry.length}
+                  tone={seo.withoutCountry.length === 0 ? "good" : "warning"}
+                />
+                <StatCard
+                  label="Noms dupliqués"
+                  value={seo.duplicatedNameWines.length}
+                  tone={
+                    seo.duplicatedNameWines.length === 0 ? "good" : "warning"
+                  }
+                />
+                <StatCard
+                  label="Descriptions dupliquées"
+                  value={seo.duplicatedDescriptionWines.length}
+                  tone={
+                    seo.duplicatedDescriptionWines.length === 0
+                      ? "good"
+                      : "warning"
+                  }
+                />
+                <StatCard
+                  label="Fiches < 80/100"
+                  value={seo.weakWines.length}
+                  tone={seo.weakWines.length === 0 ? "good" : "warning"}
+                />
               </div>
+            </section>
+
+            <section className="mt-8 rounded-3xl border border-[#e6dcc8] bg-white p-6 shadow-sm md:p-8">
+              <h2 className="text-2xl font-serif text-black">
+                Fiches les plus faibles
+              </h2>
+
+              <p className="mt-3 max-w-3xl text-sm leading-7 text-neutral-700">
+                Priorité de correction : ces fiches ont le score SEO/catalogue
+                le plus faible parmi les vins visibles.
+              </p>
+
+              {seo.weakWines.length === 0 ? (
+                <div className="mt-6 rounded-2xl border border-green-200 bg-green-50 p-5 text-sm text-green-900">
+                  Aucune fiche visible sous 80/100.
+                </div>
+              ) : (
+                <div className="mt-6 overflow-hidden rounded-3xl border border-[#e6dcc8] bg-white">
+                  <div className="grid grid-cols-[1fr_120px_120px] gap-4 border-b border-[#e6dcc8] bg-[#fbf7ef] px-5 py-4 text-xs font-semibold uppercase tracking-[0.18em] text-neutral-600">
+                    <span>Vin</span>
+                    <span>Score</span>
+                    <span>Action</span>
+                  </div>
+
+                  {seo.weakWines.map(({ wine, score }) => (
+                    <div
+                      key={`weak-${wine.id}`}
+                      className="grid grid-cols-[1fr_120px_120px] gap-4 border-b border-[#f0e6d5] px-5 py-4 text-sm last:border-b-0"
+                    >
+                      <div>
+                        <p className="font-serif text-lg text-black">
+                          {wine.name || "Vin sans nom"}
+                        </p>
+                        <p className="mt-1 text-xs text-neutral-600">
+                          {[wine.producer, wine.appellation, wine.region]
+                            .filter(Boolean)
+                            .join(" · ") || "Informations manquantes"}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center">
+                        <Pill tone={scoreTone(score)}>{score}/100</Pill>
+                      </div>
+
+                      <div className="flex items-center">
+                        <Link
+                          href={`/admin/catalogue/${wine.id}`}
+                          className="rounded-full bg-black px-4 py-2 text-center text-xs font-semibold uppercase tracking-[0.16em] text-white hover:bg-[#8a6a2f]"
+                        >
+                          Modifier
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </section>
 
             <section className="mt-8 rounded-3xl border border-[#e6dcc8] bg-white p-6 shadow-sm md:p-8">
@@ -535,12 +917,12 @@ export default function AdminSeoPage() {
 
               <div className="mt-6 grid gap-6 xl:grid-cols-2">
                 {seo.issueLists.map((issue) => (
-                 <WineIssueList
-  key={issue.key}
-  title={issue.label}
-  wines={issue.wines}
-  tone={issue.tone}
-/>
+                  <WineIssueList
+                    key={issue.key}
+                    title={issue.label}
+                    wines={issue.wines}
+                    tone={issue.tone}
+                  />
                 ))}
               </div>
             </section>
