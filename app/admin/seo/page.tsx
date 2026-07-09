@@ -43,6 +43,30 @@ function textLength(value: unknown) {
   return String(value).trim().length;
 }
 
+function normalizeSeoText(value: unknown) {
+  if (value === null || value === undefined) return "";
+
+  return String(value)
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
+
+function duplicateContentKey(wine: Wine) {
+  return [
+    normalizeSeoText(wine.description),
+    normalizeSeoText(wine.story),
+    normalizeSeoText(wine.seo_description),
+    Array.isArray(wine.tasting_notes)
+      ? wine.tasting_notes.map((note) => normalizeSeoText(note)).join(" ")
+      : normalizeSeoText(wine.tasting_notes),
+  ]
+    .filter(Boolean)
+    .join(" | ");
+}
+
 function uniqueCount(values: Array<string | null | undefined>) {
   return new Set(
     values
@@ -303,28 +327,18 @@ export default function AdminSeoPage() {
     const withoutCountry = visibleWines.filter((wine) => isEmpty(wine.country));
 
     const slugMap = new Map<string, number>();
-    const nameMap = new Map<string, number>();
-    const descriptionMap = new Map<string, number>();
+    const contentMap = new Map<string, number>();
 
     visibleWines.forEach((wine) => {
       if (wine.slug) {
-        const slug = wine.slug.trim();
+        const slug = wine.slug.trim().toLowerCase();
         slugMap.set(slug, (slugMap.get(slug) || 0) + 1);
       }
 
-      if (wine.name) {
-        const name = wine.name.trim().toLowerCase();
-        nameMap.set(name, (nameMap.get(name) || 0) + 1);
-      }
+      const contentKey = duplicateContentKey(wine);
 
-      if (wine.description) {
-        const description = wine.description.trim().toLowerCase();
-        if (description.length > 80) {
-          descriptionMap.set(
-            description,
-            (descriptionMap.get(description) || 0) + 1
-          );
-        }
+      if (contentKey.length > 120) {
+        contentMap.set(contentKey, (contentMap.get(contentKey) || 0) + 1);
       }
     });
 
@@ -332,30 +346,18 @@ export default function AdminSeoPage() {
       .filter(([, count]) => count > 1)
       .map(([slug]) => slug);
 
-    const duplicatedNameValues = Array.from(nameMap.entries())
+    const duplicatedContentValues = Array.from(contentMap.entries())
       .filter(([, count]) => count > 1)
-      .map(([name]) => name);
-
-    const duplicatedDescriptionValues = Array.from(descriptionMap.entries())
-      .filter(([, count]) => count > 1)
-      .map(([description]) => description);
+      .map(([content]) => content);
 
     const duplicatedSlugWines = visibleWines.filter(
       (wine) => wine.slug && duplicatedSlugValues.includes(wine.slug.trim())
     );
 
-    const duplicatedNameWines = visibleWines.filter(
-      (wine) =>
-        wine.name && duplicatedNameValues.includes(wine.name.trim().toLowerCase())
-    );
-
-    const duplicatedDescriptionWines = visibleWines.filter(
-      (wine) =>
-        wine.description &&
-        duplicatedDescriptionValues.includes(
-          wine.description.trim().toLowerCase()
-        )
-    );
+    const duplicatedContentWines = visibleWines.filter((wine) => {
+      const contentKey = duplicateContentKey(wine);
+      return contentKey.length > 120 && duplicatedContentValues.includes(contentKey);
+    });
 
     const imageScore = Math.round(
       ((totalVisible - withoutImage.length) / totalVisible) * 100
@@ -391,7 +393,7 @@ export default function AdminSeoPage() {
     const descriptionScore = Math.round(
       ((totalVisible -
         withoutDescription.length -
-        duplicatedDescriptionWines.length) /
+        duplicatedContentWines.length) /
         totalVisible) *
         100
     );
@@ -465,9 +467,9 @@ export default function AdminSeoPage() {
       },
       {
         key: "duplicated-descriptions",
-        label: "Descriptions dupliquées",
-        wines: duplicatedDescriptionWines,
-        tone: duplicatedDescriptionWines.length === 0 ? "good" : "warning",
+        label: "Contenus dupliqués",
+        wines: duplicatedContentWines,
+        tone: duplicatedContentWines.length === 0 ? "good" : "warning",
       },
       {
         key: "without-seo-title",
@@ -547,12 +549,6 @@ export default function AdminSeoPage() {
         wines: withoutCountry,
         tone: withoutCountry.length === 0 ? "good" : "warning",
       },
-      {
-        key: "duplicated-names",
-        label: "Noms de vins dupliqués",
-        wines: duplicatedNameWines,
-        tone: duplicatedNameWines.length === 0 ? "good" : "warning",
-      },
     ];
 
     return {
@@ -568,7 +564,7 @@ export default function AdminSeoPage() {
       duplicatedSlugWines,
       withoutImage,
       withoutDescription,
-      duplicatedDescriptionWines,
+      duplicatedContentWines,
       withoutSeoTitle,
       shortSeoTitle,
       longSeoTitle,
@@ -582,7 +578,6 @@ export default function AdminSeoPage() {
       withoutAppellation,
       withoutRegion,
       withoutCountry,
-      duplicatedNameWines,
       issueLists,
       scoredWines,
       weakWines,
@@ -826,17 +821,10 @@ export default function AdminSeoPage() {
                   tone={seo.withoutCountry.length === 0 ? "good" : "warning"}
                 />
                 <StatCard
-                  label="Noms dupliqués"
-                  value={seo.duplicatedNameWines.length}
+                  label="Contenus dupliqués"
+                  value={seo.duplicatedContentWines.length}
                   tone={
-                    seo.duplicatedNameWines.length === 0 ? "good" : "warning"
-                  }
-                />
-                <StatCard
-                  label="Descriptions dupliquées"
-                  value={seo.duplicatedDescriptionWines.length}
-                  tone={
-                    seo.duplicatedDescriptionWines.length === 0
+                    seo.duplicatedContentWines.length === 0
                       ? "good"
                       : "warning"
                   }
