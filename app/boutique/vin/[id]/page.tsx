@@ -12,10 +12,12 @@ export const revalidate = 0;
 
 function normalizeLegacySlug(slug: string) {
   return slug
-    .replace(/-(2010|2015|2018|2019|2020|2021|2022|2023|2024|2025)-\1(-2)?$/, "-$1")
+    .replace(
+      /-(2010|2015|2018|2019|2020|2021|2022|2023|2024|2025)-\1(-2)?$/,
+      "-$1"
+    )
     .replace(/-(2025)-primeur-2025$/, "-$1")
-    .replace(/-copie$/, "")
-    .replace(/-2$/, "");
+    .replace(/-copie$/, "");
 }
 
 function parsePrice(price?: string | number) {

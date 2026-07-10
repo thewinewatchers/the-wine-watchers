@@ -17,16 +17,17 @@ function createSlug(value: string) {
 
 function parseFrenchNumber(value: unknown) {
   if (value === null || value === undefined || value === "") return null;
-  if (typeof value === "number") return Number.isNaN(value) ? null : value;
+
+  if (typeof value === "number") {
+    return Number.isNaN(value) ? null : value;
+  }
 
   const raw = String(value).trim();
   if (!raw) return null;
 
-  const cleaned = raw
-    .replace(/[€\s]/g, "")
-    .replace(",", ".");
-
+  const cleaned = raw.replace(/[€\s]/g, "").replace(",", ".");
   const parsed = Number(cleaned);
+
   return Number.isNaN(parsed) ? null : parsed;
 }
 
@@ -38,7 +39,8 @@ function parseFrenchStock(value: unknown) {
 
 function createBaseWineSlug(name: string, vintage?: string | number | null) {
   const cleanName = String(name || "vin").trim();
-  const cleanVintage = vintage ? String(vintage).trim() : "";
+  const cleanVintage =
+    vintage === null || vintage === undefined ? "" : String(vintage).trim();
 
   if (!cleanVintage) return createSlug(cleanName);
 
@@ -61,33 +63,59 @@ async function createUniqueDuplicateSlug(
 ) {
   const baseSlug = createBaseWineSlug(name, vintage);
 
-  const { data } = await supabaseAdmin
+  const { data, error } = await supabaseAdmin
     .from("wines")
     .select("slug")
     .or(`slug.eq.${baseSlug},slug.like.${baseSlug}-%`);
 
-  const existingSlugs = new Set((data || []).map((item) => item.slug));
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const existingSlugs = new Set(
+    (data || [])
+      .map((item) => item.slug)
+      .filter((slug): slug is string => Boolean(slug))
+  );
 
   let counter = 2;
   let candidate = `${baseSlug}-${counter}`;
 
   while (existingSlugs.has(candidate)) {
-    counter++;
+    counter += 1;
     candidate = `${baseSlug}-${counter}`;
   }
 
   return candidate;
 }
 
-function normalizeWinePayload(body: Record<string, unknown>) {
-  return {
-    ...body,
-    price: parseFrenchNumber(body.price),
-    compare_at_price: parseFrenchNumber(body.compare_at_price),
-    rating: parseFrenchNumber(body.rating),
-    weight_kg: parseFrenchNumber(body.weight_kg),
-    stock: parseFrenchStock(body.stock),
-  };
+function normalizePatchPayload(body: Record<string, unknown>) {
+  const payload: Record<string, unknown> = { ...body };
+
+  if ("price" in body) payload.price = parseFrenchNumber(body.price);
+  if ("compare_at_price" in body) {
+    payload.compare_at_price = parseFrenchNumber(body.compare_at_price);
+  }
+  if ("rating" in body) payload.rating = parseFrenchNumber(body.rating);
+  if ("weight_kg" in body) payload.weight_kg = parseFrenchNumber(body.weight_kg);
+  if ("stock" in body) payload.stock = parseFrenchStock(body.stock);
+  if ("quantity" in body) payload.quantity = parseFrenchStock(body.quantity);
+
+  if ("seo_title" in body) {
+    payload.seo_title =
+      body.seo_title === null || body.seo_title === undefined
+        ? null
+        : String(body.seo_title).trim() || null;
+  }
+
+  if ("seo_description" in body) {
+    payload.seo_description =
+      body.seo_description === null || body.seo_description === undefined
+        ? null
+        : String(body.seo_description).trim() || null;
+  }
+
+  return payload;
 }
 
 export async function PATCH(
@@ -95,8 +123,8 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const body = await request.json();
-  const payload = normalizeWinePayload(body);
+  const body = (await request.json()) as Record<string, unknown>;
+  const payload = normalizePatchPayload(body);
 
   const { data, error } = await supabaseAdmin
     .from("wines")
@@ -153,10 +181,7 @@ export async function DELETE(
     );
   }
 
-  return NextResponse.json({
-    success: true,
-    deletedWineId: id,
-  });
+  return NextResponse.json({ success: true, deletedWineId: id });
 }
 
 export async function POST(
@@ -171,64 +196,146 @@ export async function POST(
     .eq("id", id)
     .maybeSingle();
 
-  if (loadError || !original) {
+  if (loadError) {
+    return NextResponse.json(
+      {
+        error: "Erreur recherche du vin à dupliquer.",
+        details: loadError.message,
+      },
+      { status: 500 }
+    );
+  }
+
+  if (!original) {
     return NextResponse.json(
       { error: "Vin à dupliquer introuvable." },
       { status: 404 }
     );
   }
 
-  const cleanDuplicateSlug = await createUniqueDuplicateSlug(
-    original.name || "vin",
-    original.vintage || ""
-  );
+  let duplicateSlug: string;
 
-  const duplicatedWine = {
-    slug: cleanDuplicateSlug,
-    name: original.name || "Vin dupliqué",
-    producer: original.producer || null,
-    region: original.region || null,
-    appellation: original.appellation || null,
-    country: original.country || null,
-    color: original.color || null,
-    vintage: original.vintage || null,
-    price: original.price || null,
-    compare_at_price: original.compare_at_price || null,
-    stock: original.stock || 0,
-    bottle_size: original.bottle_size || null,
-    packaging: original.packaging || null,
-    weight_kg: original.weight_kg || null,
-    image: original.image || null,
-    category: original.category || null,
-    rating: original.rating || null,
-    seo_title: original.seo_title || null,
-    seo_description: original.seo_description || null,
-    keywords: original.keywords || [],
-    grape_varieties: original.grape_varieties || [],
-    classification: original.classification || null,
-    soil: original.soil || null,
-    style: original.style || null,
-    description: original.description || null,
-    story: original.story || null,
-    tasting_notes: original.tasting_notes || [],
-    nose: original.nose || null,
-    palate: original.palate || null,
-    pairing: original.pairing || null,
-    serving_temperature: original.serving_temperature || null,
-    aging_potential: original.aging_potential || null,
-    meta_content: original.meta_content || null,
+  try {
+    duplicateSlug = await createUniqueDuplicateSlug(
+      original.name ?? "vin",
+      original.vintage ?? ""
+    );
+  } catch (error) {
+    return NextResponse.json(
+      {
+        error: "Erreur création du slug de duplication.",
+        details:
+          error instanceof Error
+            ? error.message
+            : "Erreur inconnue lors de la création du slug.",
+      },
+      { status: 500 }
+    );
+  }
+
+  const duplicatedWine: Record<string, unknown> = {
+    slug: duplicateSlug,
+    name: original.name ?? "Vin dupliqué",
+    producer: original.producer ?? null,
+    region: original.region ?? null,
+    appellation: original.appellation ?? null,
+    country: original.country ?? null,
+    color: original.color ?? null,
+    vintage: original.vintage ?? null,
+    price: parseFrenchNumber(original.price),
+    compare_at_price: parseFrenchNumber(original.compare_at_price),
+    stock: parseFrenchStock(original.stock),
+    bottle_size: original.bottle_size ?? null,
+    packaging: original.packaging ?? null,
+    weight_kg: parseFrenchNumber(original.weight_kg),
+    image: original.image ?? null,
+    category: original.category ?? null,
+    rating: parseFrenchNumber(original.rating),
+    seo_title:
+      original.seo_title === null || original.seo_title === undefined
+        ? null
+        : String(original.seo_title).trim() || null,
+    seo_description:
+      original.seo_description === null ||
+      original.seo_description === undefined
+        ? null
+        : String(original.seo_description).trim() || null,
+    keywords: original.keywords ?? [],
+    grape_varieties: original.grape_varieties ?? [],
+    classification: original.classification ?? null,
+    soil: original.soil ?? null,
+    style: original.style ?? null,
+    description: original.description ?? null,
+    story: original.story ?? null,
+    tasting_notes: original.tasting_notes ?? [],
+    nose: original.nose ?? null,
+    palate: original.palate ?? null,
+    pairing: original.pairing ?? null,
+    serving_temperature: original.serving_temperature ?? null,
+    aging_potential: original.aging_potential ?? null,
+    meta_content: original.meta_content ?? null,
+    external_links: original.external_links ?? null,
     hidden_from_site: true,
   };
+
+  if ("quantity" in original) {
+    duplicatedWine.quantity = parseFrenchStock(original.quantity);
+  }
 
   const { data: insertedWine, error: insertError } = await supabaseAdmin
     .from("wines")
     .insert(duplicatedWine)
-    .select("id, slug")
+    .select("*")
     .single();
 
-  if (insertError) {
+  if (insertError || !insertedWine) {
     return NextResponse.json(
-      { error: "Erreur duplication vin.", details: insertError.message },
+      {
+        error: "Erreur duplication vin.",
+        details: insertError?.message || "La fiche dupliquée n'a pas été créée.",
+      },
+      { status: 500 }
+    );
+  }
+
+  const sourcePrice = parseFrenchNumber(original.price);
+  const sourceStock = parseFrenchStock(original.stock);
+  const sourceSeoTitle =
+    original.seo_title === null || original.seo_title === undefined
+      ? null
+      : String(original.seo_title).trim() || null;
+  const sourceSeoDescription =
+    original.seo_description === null ||
+    original.seo_description === undefined
+      ? null
+      : String(original.seo_description).trim() || null;
+
+  const copiedPrice = parseFrenchNumber(insertedWine.price);
+  const copiedStock = parseFrenchStock(insertedWine.stock);
+  const copiedSeoTitle =
+    insertedWine.seo_title === null || insertedWine.seo_title === undefined
+      ? null
+      : String(insertedWine.seo_title).trim() || null;
+  const copiedSeoDescription =
+    insertedWine.seo_description === null ||
+    insertedWine.seo_description === undefined
+      ? null
+      : String(insertedWine.seo_description).trim() || null;
+
+  if (
+    copiedPrice !== sourcePrice ||
+    copiedStock !== sourceStock ||
+    copiedSeoTitle !== sourceSeoTitle ||
+    copiedSeoDescription !== sourceSeoDescription
+  ) {
+    await supabaseAdmin.from("wines").delete().eq("id", insertedWine.id);
+
+    return NextResponse.json(
+      {
+        error: "La duplication a été annulée.",
+        details:
+          "Le prix, le stock, le titre SEO ou la meta description n'ont pas été recopiés correctement.",
+      },
       { status: 500 }
     );
   }
