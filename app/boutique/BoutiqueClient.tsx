@@ -109,15 +109,36 @@ function wineMatchesSearch(wine: Wine, search: string) {
   if (searchWords.length === 0) return true;
 
   const fields = getWineSearchFields(wine);
-  const wineWords = getSearchWords(
+  const identityWords = getSearchWords(
+    [fields.name, fields.producer].join(" ")
+  );
+  const allWineWords = getSearchWords(
     [fields.name, fields.producer, fields.other].join(" ")
+  );
+
+  const identityMarkers = new Set([
+    "chateau",
+    "domaine",
+    "domaines",
+    "tenuta",
+    "bodega",
+    "bodegas",
+  ]);
+
+  const searchesNamedEstate = searchWords.some((word) =>
+    identityMarkers.has(word)
   );
 
   return searchWords.every((searchWord) => {
     const acceptedWords = SEARCH_ALIASES[searchWord] || [searchWord];
+    const isTechnicalWord =
+      Boolean(SEARCH_ALIASES[searchWord]) || /^\d{4}$/.test(searchWord);
+
+    const wordsToSearch =
+      searchesNamedEstate && !isTechnicalWord ? identityWords : allWineWords;
 
     return acceptedWords.some((acceptedWord) =>
-      wineWords.includes(acceptedWord)
+      wordsToSearch.includes(acceptedWord)
     );
   });
 }
