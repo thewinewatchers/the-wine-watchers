@@ -65,6 +65,94 @@ function normalize(value?: string | number | null) {
     .trim();
 }
 
+
+const SEARCH_ALIASES: Record<string, string[]> = {
+  caisse: ["caisse", "cbo", "owc"],
+  caisses: ["caisse", "cbo", "owc"],
+  magnum: ["magnum", "1.5l", "150cl"],
+  primeur: ["primeur", "primeurs", "2025"],
+  primeurs: ["primeur", "primeurs", "2025"],
+};
+
+function getSearchWords(value?: string | number | null) {
+  return normalize(value)
+    .split(/[\s/]+/)
+    .map((word) => word.trim())
+    .filter(Boolean);
+}
+
+function getWineSearchFields(wine: Wine) {
+  return {
+    name: normalize([wine.name, wine.title, wine.chateau].filter(Boolean).join(" ")),
+    producer: normalize(wine.producer),
+    other: normalize(
+      [
+        wine.appellation,
+        wine.region,
+        wine.vintage,
+        wine.millesime,
+        wine.classification,
+        wine.bottle_size,
+        wine.packaging,
+        wine.category,
+        wine.categorie,
+      ]
+        .filter(Boolean)
+        .join(" ")
+    ),
+  };
+}
+
+function wineMatchesSearch(wine: Wine, search: string) {
+  const searchWords = getSearchWords(search);
+
+  if (searchWords.length === 0) return true;
+
+  const fields = getWineSearchFields(wine);
+  const wineWords = getSearchWords(
+    [fields.name, fields.producer, fields.other].join(" ")
+  );
+
+  return searchWords.every((searchWord) => {
+    const acceptedWords = SEARCH_ALIASES[searchWord] || [searchWord];
+
+    return acceptedWords.some((acceptedWord) =>
+      wineWords.includes(acceptedWord)
+    );
+  });
+}
+
+function getWineSearchScore(wine: Wine, search: string) {
+  const normalizedSearch = normalize(search);
+
+  if (!normalizedSearch) return 0;
+
+  const fields = getWineSearchFields(wine);
+  const searchWords = getSearchWords(search);
+  const nameWords = getSearchWords(fields.name);
+  const producerWords = getSearchWords(fields.producer);
+  const otherWords = getSearchWords(fields.other);
+
+  let score = 0;
+
+  if (fields.name === normalizedSearch) score += 500;
+  if (fields.producer === normalizedSearch) score += 450;
+  if (fields.name.startsWith(normalizedSearch)) score += 300;
+  if (fields.producer.startsWith(normalizedSearch)) score += 260;
+  if (fields.name.includes(normalizedSearch)) score += 180;
+  if (fields.producer.includes(normalizedSearch)) score += 150;
+
+  searchWords.forEach((searchWord) => {
+    const acceptedWords = SEARCH_ALIASES[searchWord] || [searchWord];
+
+    if (acceptedWords.some((word) => nameWords.includes(word))) score += 70;
+    if (acceptedWords.some((word) => producerWords.includes(word))) score += 55;
+    if (acceptedWords.some((word) => otherWords.includes(word))) score += 25;
+  });
+
+  return score;
+}
+
 function isVisibleWine(wine: Wine) {
   return wine.hidden_from_site !== true;
 }
@@ -309,7 +397,6 @@ export default function BoutiqueClient({
   const [errorMessage, setErrorMessage] = useState("");
 
   const [search, setSearch] = useState("");
-  const [selectedProducer, setSelectedProducer] = useState("");
   const [selectedAppellation, setSelectedAppellation] = useState("");
   const [selectedClassification, setSelectedClassification] = useState("");
   const [selectedVintage, setSelectedVintage] = useState("");
@@ -354,7 +441,6 @@ export default function BoutiqueClient({
     setCurrentPage(1);
   }, [
     search,
-    selectedProducer,
     selectedAppellation,
     selectedClassification,
     selectedVintage,
@@ -375,12 +461,6 @@ export default function BoutiqueClient({
       );
     });
   }, [wines, normalizedSlug, normalizedCategoryTitle]);
-
-  const producerOptions = useMemo(() => {
-    return uniqueSorted(
-      categoryWines.filter(isVisibleWine).map((wine) => wine.producer)
-    );
-  }, [categoryWines]);
 
   const appellationOptions = useMemo(() => {
     return uniqueSorted(
@@ -409,15 +489,10 @@ export default function BoutiqueClient({
       .filter((wine) => {
         if (!isVisibleWine(wine)) return false;
 
-        const wineProducer = normalize(wine.producer);
         const wineAppellation = normalize(wine.appellation);
         const wineRegion = normalize(wine.region);
         const wineClassification = normalize(wine.classification);
         const wineVintage = normalize(wine.vintage || wine.millesime);
-
-        const matchesProducer = selectedProducer
-          ? wineProducer === normalize(selectedProducer)
-          : true;
 
         const matchesAppellation = selectedAppellation
           ? wineAppellation === normalize(selectedAppellation) ||
@@ -432,36 +507,9 @@ export default function BoutiqueClient({
           ? wineVintage === normalize(selectedVintage)
           : true;
 
-        const mainSearchText = normalize(
-          [
-            wine.name,
-            wine.title,
-            wine.chateau,
-            wine.producer,
-            wine.appellation,
-            wine.region,
-            wine.vintage,
-            wine.millesime,
-          ]
-            .filter(Boolean)
-            .join(" ")
-        );
-
-        const searchVariants = search
-          ? [
-              normalizedSearch,
-              normalizedSearch.replaceAll("saint", "st"),
-              normalizedSearch.replaceAll("st", "saint"),
-              normalizedSearch.replaceAll("-", " "),
-            ]
-          : [];
-
-        const matchesSearch = search
-          ? searchVariants.some((variant) => mainSearchText.includes(variant))
-          : true;
+        const matchesSearch = search ? wineMatchesSearch(wine, search) : true;
 
         return (
-          matchesProducer &&
           matchesAppellation &&
           matchesClassification &&
           matchesVintage &&
@@ -469,6 +517,15 @@ export default function BoutiqueClient({
         );
       })
       .sort((a, b) => {
+        if (search) {
+          const scoreDifference =
+            getWineSearchScore(b, search) - getWineSearchScore(a, search);
+
+          if (scoreDifference !== 0) return scoreDifference;
+
+          return getWineName(a).localeCompare(getWineName(b), "fr");
+        }
+
         if (slug === "bordeaux") {
           const rankA = getBordeauxAppellationRank(a);
           const rankB = getBordeauxAppellationRank(b);
@@ -531,7 +588,6 @@ export default function BoutiqueClient({
     wines,
     categoryWines,
     search,
-    selectedProducer,
     selectedAppellation,
     selectedClassification,
     selectedVintage,
@@ -628,7 +684,6 @@ export default function BoutiqueClient({
 
   function resetFilters() {
     setSearch("");
-    setSelectedProducer("");
     setSelectedAppellation("");
     setSelectedClassification("");
     setSelectedVintage("");
@@ -636,11 +691,11 @@ export default function BoutiqueClient({
   }
 
   return (
-    <section className="relative overflow-hidden bg-[#f7f1e8] px-6 pb-28">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(216,181,109,0.20),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(138,31,31,0.10),transparent_32%)]" />
+    <section className="relative overflow-visible bg-[#f7f1e8] px-6 pb-28">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(216,181,109,0.20),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(138,31,31,0.10),transparent_32%)]" />
 
       <div className="relative mx-auto max-w-7xl">
-        <div className="mb-10 rounded-[2rem] border border-[#e1d1bd] bg-[#fffaf3]/90 p-6 shadow-sm backdrop-blur md:p-8">
+        <div className="relative z-30 mb-10 rounded-[2rem] border border-[#e1d1bd] bg-[#fffaf3]/90 p-6 shadow-sm backdrop-blur md:p-8">
           <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
             <div>
               <p className="text-sm uppercase tracking-[0.3em] text-[#8a6a2f]">
@@ -656,8 +711,8 @@ export default function BoutiqueClient({
               </h2>
 
               <p className="mt-4 max-w-2xl text-base leading-8 text-[#6d5b50]">
-                Filtrez la sélection par domaine, appellation, classification,
-                millésime ou recherche libre.
+                Recherchez précisément un vin, puis affinez par appellation,
+                classification ou millésime.
               </p>
             </div>
 
@@ -667,27 +722,42 @@ export default function BoutiqueClient({
             </div>
           </div>
 
-          <div className="mt-8 grid gap-4 lg:grid-cols-[1.4fr_1fr_1fr_1fr_0.8fr]">
-            <input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              type="search"
-              placeholder="Rechercher un domaine, un cru, un millésime..."
-              className="rounded-full border border-[#d8c6ae] bg-white px-5 py-3 text-sm text-[#24110d] outline-none transition placeholder:text-[#9b8c7d] focus:border-[#8a1f1f]"
-            />
+          <div className="mt-8 grid gap-4 lg:grid-cols-[2fr_1fr_1fr_0.8fr]">
+            <div className="relative">
+              <div className="pointer-events-none absolute inset-y-0 left-5 flex items-center text-[#8a6a2f]">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  className="h-5 w-5"
+                  aria-hidden="true"
+                >
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="m20 20-3.5-3.5" />
+                </svg>
+              </div>
 
-            <select
-              value={selectedProducer}
-              onChange={(event) => setSelectedProducer(event.target.value)}
-              className="rounded-full border border-[#d8c6ae] bg-white px-5 py-3 text-sm text-[#24110d] outline-none transition focus:border-[#8a1f1f]"
-            >
-              <option value="">Tous les domaines</option>
-              {producerOptions.map((producer) => (
-                <option key={producer} value={producer}>
-                  {producer}
-                </option>
-              ))}
-            </select>
+              <input
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                type="search"
+                placeholder="Rechercher un vin, une appellation, un millésime..."
+                autoComplete="off"
+                className="w-full rounded-full border border-[#d8c6ae] bg-white py-3 pl-13 pr-12 text-sm text-[#24110d] outline-none transition placeholder:text-[#9b8c7d] focus:border-[#8a1f1f] focus:ring-4 focus:ring-[#8a1f1f]/10"
+              />
+
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch("")}
+                  className="absolute inset-y-0 right-4 flex items-center text-xl text-[#8a6a2f] transition hover:text-[#8a1f1f]"
+                  aria-label="Effacer la recherche"
+                >
+                  ×
+                </button>
+              )}
+            </div>
 
             <select
               value={selectedAppellation}
