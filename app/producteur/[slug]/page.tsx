@@ -16,6 +16,11 @@ type Wine = {
   hidden_from_site?: boolean | null;
 };
 
+type WineGroup = {
+  title: string;
+  wines: Wine[];
+};
+
 const SITE_URL = "https://www.thewinewatchers.com";
 
 function slugify(value: string) {
@@ -189,31 +194,28 @@ export default async function ProducteurPage({
     )
   ) as string[];
 
-  const wineGroups = Array.from(
-    visibleWines.reduce(
-      (
-        map,
-        wine
-      ): Map<string, { title: string; wines: Wine[] }> => {
-        const title = getWineGroupTitle(wine);
-        const key = slugify(title);
+  const wineGroupMap = visibleWines.reduce<Map<string, WineGroup>>(
+    (map, wine) => {
+      const title = getWineGroupTitle(wine);
+      const key = slugify(title);
 
-        if (!map.has(key)) {
-          map.set(key, {
-            title,
-            wines: [],
-          });
-        }
+      if (!map.has(key)) {
+        map.set(key, {
+          title,
+          wines: [],
+        });
+      }
 
-        map.get(key)!.wines.push(wine);
+      map.get(key)!.wines.push(wine);
 
-        return map;
-      },
-      new Map()
-    ).values()
-  )
+      return map;
+    },
+    new Map<string, WineGroup>()
+  );
+
+  const wineGroups: WineGroup[] = Array.from(wineGroupMap.values())
     .sort((a, b) => a.title.localeCompare(b.title, "fr"))
-    .map((group) => ({
+    .map((group): WineGroup => ({
       ...group,
       wines: [...group.wines].sort((a, b) => {
         const vintageA = Number(a.vintage || 0);
