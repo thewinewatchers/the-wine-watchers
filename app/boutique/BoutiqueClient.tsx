@@ -266,6 +266,49 @@ function getBordeauxAppellationRank(wine: Wine) {
   return index >= 0 ? index : BORDEAUX_APPELLATION_ORDER.length - 1;
 }
 
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function removeWordsFromTitle(title: string, value?: string | number | null) {
+  const normalizedValue = String(value ?? "").trim();
+
+  if (!normalizedValue) return title;
+
+  return title.replace(
+    new RegExp(`(^|\\s|[–—-])${escapeRegExp(normalizedValue)}(?=$|\\s|[–—-])`, "gi"),
+    " "
+  );
+}
+
+function getWineGroupTitle(wine: Wine, categorySlug: string) {
+  let title = getWineName(wine).trim();
+
+  title = removeWordsFromTitle(title, getWineVintage(wine));
+  title = removeWordsFromTitle(title, wine.bottle_size);
+  title = removeWordsFromTitle(title, wine.packaging);
+
+  title = title
+    .replace(/\b(?:cbo|owc)\s*\/?\s*\d+\b/gi, " ")
+    .replace(/\b(?:75\s*cl|150\s*cl|1[.,]5\s*l|magnum)\b/gi, " ")
+    .replace(/\s*[–—-]\s*$/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (categorySlug === "rhone") {
+    title = removeWordsFromTitle(title, wine.producer);
+    title = removeWordsFromTitle(title, wine.appellation);
+    title = removeWordsFromTitle(title, wine.region);
+
+    title = title
+      .replace(/\b(?:cote rotie|côtes? du rhone|vallee du rhone)\b/gi, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  return title || getWineName(wine).trim();
+}
+
 function WineCard({
   wine,
   categoryTitle,
@@ -615,93 +658,152 @@ export default function BoutiqueClient({
     slug,
   ]);
 
-  const shouldGroupWines =
-    slug === "primeurs-2025" || slug === "bourgogne" || slug === "bordeaux";
-
   const groupedFilteredWines = useMemo(() => {
-    if (!shouldGroupWines) return [];
-
-    const groups: { title: string; wines: Wine[] }[] = [];
+    const producerMap = new Map<
+      string,
+      {
+        title: string;
+        appellationTitle: string;
+        appellationRank: number;
+        wineMap: Map<string, { title: string; wines: Wine[] }>;
+      }
+    >();
 
     filteredWines.forEach((wine) => {
-      const title =
-        slug === "bourgogne"
-          ? wine.producer || "Domaine non précisé"
-          : slug === "bordeaux"
-          ? getBordeauxAppellationTitle(wine)
-          : wine.appellation || wine.region || "Autres";
+      const producerTitle =
+        String(wine.producer || "").trim() || "Producteur non précisé";
+      const groupsByAppellation =
+        slug === "bordeaux" || slug === "primeurs-2025";
+      const appellationTitle = groupsByAppellation
+        ? getBordeauxAppellationTitle(wine)
+        : "";
+      const appellationRank = groupsByAppellation
+        ? getBordeauxAppellationRank(wine)
+        : 0;
+      const producerKey = normalize(
+        groupsByAppellation
+          ? `${appellationTitle}-${producerTitle}`
+          : producerTitle
+      );
 
-      const existingGroup = groups.find((group) => group.title === title);
+      const wineTitle = getWineGroupTitle(wine, slug);
+      const wineKey = normalize(wineTitle);
 
-      if (existingGroup) {
-        existingGroup.wines.push(wine);
-      } else {
-        groups.push({
-          title,
-          wines: [wine],
+      if (!producerMap.has(producerKey)) {
+        producerMap.set(producerKey, {
+          title: producerTitle,
+          appellationTitle,
+          appellationRank,
+          wineMap: new Map(),
         });
       }
+
+      const producerGroup = producerMap.get(producerKey)!;
+
+      if (!producerGroup.wineMap.has(wineKey)) {
+        producerGroup.wineMap.set(wineKey, {
+          title: wineTitle,
+          wines: [],
+        });
+      }
+
+      producerGroup.wineMap.get(wineKey)!.wines.push(wine);
     });
 
-    if (slug === "bordeaux") {
-      return groups.sort((a, b) => {
-        const indexA = BORDEAUX_APPELLATION_ORDER.indexOf(a.title);
-        const indexB = BORDEAUX_APPELLATION_ORDER.indexOf(b.title);
+    return Array.from(producerMap.values())
+      .sort((a, b) => {
+        const groupsByAppellation =
+          slug === "bordeaux" || slug === "primeurs-2025";
 
-        return (
-          (indexA >= 0 ? indexA : BORDEAUX_APPELLATION_ORDER.length - 1) -
-          (indexB >= 0 ? indexB : BORDEAUX_APPELLATION_ORDER.length - 1)
-        );
-      });
-    }
+        if (groupsByAppellation && a.appellationRank !== b.appellationRank) {
+          return a.appellationRank - b.appellationRank;
+        }
 
-    return groups;
-  }, [filteredWines, shouldGroupWines, slug]);
+        if (
+          groupsByAppellation &&
+          a.appellationTitle !== b.appellationTitle
+        ) {
+          return a.appellationTitle.localeCompare(b.appellationTitle, "fr");
+        }
+
+        return a.title.localeCompare(b.title, "fr");
+      })
+      .map((producerGroup) => ({
+        title: producerGroup.title,
+        appellationTitle: producerGroup.appellationTitle,
+        wineGroups: Array.from(producerGroup.wineMap.values())
+          .sort((a, b) => a.title.localeCompare(b.title, "fr"))
+          .map((wineGroup) => ({
+            ...wineGroup,
+            wines: [...wineGroup.wines].sort((a, b) => {
+              const vintageA = Number(getWineVintage(a) || 0);
+              const vintageB = Number(getWineVintage(b) || 0);
+
+              if (vintageA !== vintageB) return vintageB - vintageA;
+
+              return getWineName(a).localeCompare(getWineName(b), "fr");
+            }),
+          })),
+      }));
+  }, [filteredWines, slug]);
 
   const groupedPages = useMemo(() => {
-    if (!shouldGroupWines) return [];
+    type WineGroup = { title: string; wines: Wine[] };
+    type ProducerGroup = {
+      title: string;
+      appellationTitle: string;
+      wineGroups: WineGroup[];
+    };
 
-    const pages: { title: string; wines: Wine[] }[][] = [];
-    let currentPageGroups: { title: string; wines: Wine[] }[] = [];
+    const pages: ProducerGroup[][] = [];
+    let currentPageGroups: ProducerGroup[] = [];
     let currentPageWineCount = 0;
 
-    groupedFilteredWines.forEach((group) => {
-      const groupWineCount = group.wines.length;
-
-      if (
-        currentPageGroups.length > 0 &&
-        currentPageWineCount + groupWineCount > WINES_PER_PAGE
-      ) {
+    function pushCurrentPage() {
+      if (currentPageGroups.length > 0) {
         pages.push(currentPageGroups);
         currentPageGroups = [];
         currentPageWineCount = 0;
       }
-
-      currentPageGroups.push(group);
-      currentPageWineCount += groupWineCount;
-    });
-
-    if (currentPageGroups.length > 0) {
-      pages.push(currentPageGroups);
     }
 
+    groupedFilteredWines.forEach((producerGroup) => {
+      let currentProducerGroup: ProducerGroup | null = null;
+
+      producerGroup.wineGroups.forEach((wineGroup) => {
+        const wineCount = wineGroup.wines.length;
+
+        if (
+          currentPageWineCount > 0 &&
+          currentPageWineCount + wineCount > WINES_PER_PAGE
+        ) {
+          pushCurrentPage();
+          currentProducerGroup = null;
+        }
+
+        if (!currentProducerGroup) {
+          currentProducerGroup = {
+            title: producerGroup.title,
+            appellationTitle: producerGroup.appellationTitle,
+            wineGroups: [],
+          };
+
+          currentPageGroups.push(currentProducerGroup);
+        }
+
+        currentProducerGroup.wineGroups.push(wineGroup);
+        currentPageWineCount += wineCount;
+      });
+    });
+
+    pushCurrentPage();
+
     return pages;
-  }, [groupedFilteredWines, shouldGroupWines]);
+  }, [groupedFilteredWines]);
 
-  const totalPages = shouldGroupWines
-    ? Math.max(1, groupedPages.length)
-    : Math.max(1, Math.ceil(filteredWines.length / WINES_PER_PAGE));
+  const totalPages = Math.max(1, groupedPages.length);
 
-  const paginatedWines = shouldGroupWines
-    ? []
-    : filteredWines.slice(
-        (currentPage - 1) * WINES_PER_PAGE,
-        currentPage * WINES_PER_PAGE
-      );
-
-  const groupedPaginatedWines = shouldGroupWines
-    ? groupedPages[currentPage - 1] || []
-    : [];
+  const groupedPaginatedWines = groupedPages[currentPage - 1] || [];
 
   function resetFilters() {
     setSearch("");
@@ -870,73 +972,121 @@ export default function BoutiqueClient({
 
         {!loading &&
           !errorMessage &&
-          (shouldGroupWines
-            ? groupedPaginatedWines.length > 0
-            : paginatedWines.length > 0) && (
-          <>
-            {shouldGroupWines ? (
-              <div className="space-y-12">
-                {groupedPaginatedWines.map((group) => (
-                  <section key={group.title}>
-                    <div className="mb-6 rounded-2xl border border-[#d8b56d]/40 bg-[#24110d] px-6 py-4">
-                      <h3 className="font-serif text-3xl text-[#d8b56d]">
-                        {group.title}
-                      </h3>
+          groupedPaginatedWines.length > 0 && (
+            <>
+              <div className="space-y-9">
+                {groupedPaginatedWines.map((producerGroup, producerIndex) => {
+                  const previousGroup = groupedPaginatedWines[producerIndex - 1];
+                  const showAppellationBanner =
+                    (slug === "bordeaux" || slug === "primeurs-2025") &&
+                    (!previousGroup ||
+                      previousGroup.appellationTitle !==
+                        producerGroup.appellationTitle);
+
+                  return (
+                    <div key={`${producerGroup.title}-${producerIndex}`}>
+                      {showAppellationBanner && (
+                        <div className="mb-5 rounded-xl border border-[#8a1f1f]/30 bg-[#8a1f1f] px-5 py-3 shadow-sm">
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                            <p className="text-[9px] font-semibold uppercase tracking-[0.24em] text-white/60">
+                              Appellation
+                            </p>
+
+                            <h2 className="font-serif text-2xl text-white md:text-3xl">
+                              {producerGroup.appellationTitle}
+                            </h2>
+                          </div>
+                        </div>
+                      )}
+
+                      <section className="space-y-5">
+                        <div className="rounded-xl border border-[#d8b56d]/40 bg-[#24110d] px-5 py-3 shadow-sm">
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                            <p className="text-[9px] font-semibold uppercase tracking-[0.24em] text-white/50">
+                              Producteur
+                            </p>
+
+                            <h3 className="font-serif text-2xl text-[#d8b56d] md:text-3xl">
+                              {producerGroup.title}
+                            </h3>
+                          </div>
+                        </div>
+
+                        <div className="space-y-6">
+                          {producerGroup.wineGroups.map(
+                            (wineGroup, wineIndex) => (
+                              <section
+                                key={`${producerGroup.title}-${wineGroup.title}-${wineIndex}`}
+                              >
+                                <div className="mb-4 rounded-xl border border-[#d8c6ae] bg-[#fffaf3] px-5 py-3 shadow-sm">
+                                  <div className="flex flex-wrap items-center justify-between gap-2">
+                                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                                      <p className="text-[9px] font-semibold uppercase tracking-[0.22em] text-[#8a6a2f]">
+                                        Vin
+                                      </p>
+
+                                      <h4 className="font-serif text-xl leading-tight text-[#24110d] md:text-2xl">
+                                        {wineGroup.title}
+                                      </h4>
+                                    </div>
+
+                                    <p className="text-xs text-[#7d6b5e]">
+                                      {wineGroup.wines.length} millésime
+                                      {wineGroup.wines.length > 1 ? "s" : ""}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+                                  {wineGroup.wines.map((wine) => (
+                                    <WineCard
+                                      key={wine.id}
+                                      wine={wine}
+                                      categoryTitle={categoryTitle}
+                                    />
+                                  ))}
+                                </div>
+                              </section>
+                            )
+                          )}
+                        </div>
+                      </section>
                     </div>
-
-                    <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
-                      {group.wines.map((wine) => (
-                        <WineCard
-                          key={wine.id}
-                          wine={wine}
-                          categoryTitle={categoryTitle}
-                        />
-                      ))}
-                    </div>
-                  </section>
-                ))}
+                  );
+                })}
               </div>
-            ) : (
-              <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
-                {paginatedWines.map((wine) => (
-                  <WineCard
-                    key={wine.id}
-                    wine={wine}
-                    categoryTitle={categoryTitle}
-                  />
-                ))}
-              </div>
-            )}
 
-            {totalPages > 1 && (
-              <div className="mt-12 flex flex-wrap items-center justify-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
-                  disabled={currentPage === 1}
-                  className="rounded-full border border-[#d8c6ae] bg-[#fffaf3] px-5 py-3 text-sm font-semibold text-[#24110d] transition hover:border-[#8a1f1f] disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  ← Précédent
-                </button>
+              {totalPages > 1 && (
+                <div className="mt-12 flex flex-wrap items-center justify-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setCurrentPage((page) => Math.max(1, page - 1))
+                    }
+                    disabled={currentPage === 1}
+                    className="rounded-full border border-[#d8c6ae] bg-[#fffaf3] px-5 py-3 text-sm font-semibold text-[#24110d] transition hover:border-[#8a1f1f] disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    ← Précédent
+                  </button>
 
-                <span className="rounded-full border border-[#d8c6ae] bg-white px-5 py-3 text-sm text-[#6d5b50]">
-                  Page {currentPage} / {totalPages}
-                </span>
+                  <span className="rounded-full border border-[#d8c6ae] bg-white px-5 py-3 text-sm text-[#6d5b50]">
+                    Page {currentPage} / {totalPages}
+                  </span>
 
-                <button
-                  type="button"
-                  onClick={() =>
-                    setCurrentPage((page) => Math.min(totalPages, page + 1))
-                  }
-                  disabled={currentPage === totalPages}
-                  className="rounded-full border border-[#d8c6ae] bg-[#fffaf3] px-5 py-3 text-sm font-semibold text-[#24110d] transition hover:border-[#8a1f1f] disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  Suivant →
-                </button>
-              </div>
-            )}
-          </>
-        )}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setCurrentPage((page) => Math.min(totalPages, page + 1))
+                    }
+                    disabled={currentPage === totalPages}
+                    className="rounded-full border border-[#d8c6ae] bg-[#fffaf3] px-5 py-3 text-sm font-semibold text-[#24110d] transition hover:border-[#8a1f1f] disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Suivant →
+                  </button>
+                </div>
+              )}
+            </>
+          )}
       </div>
     </section>
   );

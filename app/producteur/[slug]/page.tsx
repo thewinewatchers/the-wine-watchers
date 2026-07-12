@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
@@ -60,6 +59,47 @@ function getWineUrl(wine: Wine) {
 
 function getAbsoluteWineUrl(wine: Wine) {
   return `${SITE_URL}${getWineUrl(wine)}`;
+}
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function removeWordsFromTitle(
+  title: string,
+  value?: string | number | null
+) {
+  const normalizedValue = String(value ?? "").trim();
+
+  if (!normalizedValue) return title;
+
+  return title.replace(
+    new RegExp(
+      `(^|\\s|[–—-])${escapeRegExp(normalizedValue)}(?=$|\\s|[–—-])`,
+      "gi"
+    ),
+    " "
+  );
+}
+
+function getWineGroupTitle(wine: Wine) {
+  let title = String(wine.name || "Vin sans nom").trim();
+
+  title = removeWordsFromTitle(title, wine.vintage);
+  title = removeWordsFromTitle(title, wine.producer);
+  title = removeWordsFromTitle(title, wine.appellation);
+  title = removeWordsFromTitle(title, wine.region);
+
+  title = title
+    .replace(/\b(?:19|20)\d{2}\b/g, " ")
+    .replace(/\b(?:cbo|owc)\s*\/?\s*\d+\b/gi, " ")
+    .replace(/\b(?:75\s*cl|150\s*cl|1[.,]5\s*l|magnum)\b/gi, " ")
+    .replace(/\b(?:cote rotie|côte rotie|côte-rôtie|côtes? du rhone|vallée du rhône|vallee du rhone)\b/gi, " ")
+    .replace(/\s*[–—-]\s*$/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return title || String(wine.name || "Vin sans nom").trim();
 }
 
 export async function generateMetadata({
@@ -133,7 +173,7 @@ export default async function ProducteurPage({
     .eq("producer", producer)
     .neq("hidden_from_site", true)
     .order("name", { ascending: true })
-.order("vintage", { ascending: false });
+    .order("vintage", { ascending: false });
 
   const visibleWines = ((wines || []) as Wine[]).filter(
     (wine) => wine.hidden_from_site !== true
@@ -144,8 +184,46 @@ export default async function ProducteurPage({
   ) as string[];
 
   const regions = Array.from(
-    new Set(visibleWines.map((wine) => wine.region || wine.category).filter(Boolean))
+    new Set(
+      visibleWines.map((wine) => wine.region || wine.category).filter(Boolean)
+    )
   ) as string[];
+
+  const wineGroups = Array.from(
+    visibleWines.reduce(
+      (
+        map,
+        wine
+      ): Map<string, { title: string; wines: Wine[] }> => {
+        const title = getWineGroupTitle(wine);
+        const key = slugify(title);
+
+        if (!map.has(key)) {
+          map.set(key, {
+            title,
+            wines: [],
+          });
+        }
+
+        map.get(key)!.wines.push(wine);
+
+        return map;
+      },
+      new Map()
+    ).values()
+  )
+    .sort((a, b) => a.title.localeCompare(b.title, "fr"))
+    .map((group) => ({
+      ...group,
+      wines: [...group.wines].sort((a, b) => {
+        const vintageA = Number(a.vintage || 0);
+        const vintageB = Number(b.vintage || 0);
+
+        if (vintageA !== vintageB) return vintageB - vintageA;
+
+        return String(a.name || "").localeCompare(String(b.name || ""), "fr");
+      }),
+    }));
 
   const itemListJsonLd = {
     "@context": "https://schema.org",
@@ -239,83 +317,118 @@ export default async function ProducteurPage({
           </h2>
 
           <p className="mt-4 max-w-3xl text-sm leading-7 text-[#6d5b50]">
-            Retrouvez l’ensemble des vins actuellement disponibles de ce producteur.
-Consultez les différents millésimes, comparez les appellations et
-accédez en un clic à la fiche détaillée de chaque vin.
+            Retrouvez l’ensemble des vins actuellement disponibles de ce
+            producteur. Consultez les différents millésimes, comparez les
+            appellations et accédez en un clic à la fiche détaillée de chaque
+            vin.
           </p>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
-          {visibleWines.map((wine) => (
-            <article
-              key={wine.id}
-              className="group overflow-hidden rounded-[1.7rem] border border-[#dfcfb8] bg-[#fffaf3] shadow-sm transition hover:-translate-y-1 hover:border-[#d8b56d] hover:shadow-xl"
-            >
-              <Link href={getWineUrl(wine)} className="block">
-                <div className="flex h-[245px] items-center justify-center bg-[#efe3d2] p-6">
-                  {wine.image ? (
-                    <img
-                      src={wine.image}
-                    alt={`Bouteille de ${wine.name || "vin"} - ${producer}`}
-                      className="max-h-[205px] w-auto object-contain transition group-hover:scale-105"
-                    />
-                  ) : (
-                    <span className="text-sm text-[#8a6a2f]">
-                      Image non disponible
-                    </span>
-                  )}
+        {visibleWines.length === 0 ? (
+          <div className="rounded-2xl bg-white p-6 text-gray-600 shadow-sm">
+            Aucun vin disponible actuellement pour ce producteur.
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {wineGroups.map((wineGroup) => (
+              <section key={wineGroup.title}>
+                <div className="mb-4 rounded-xl border border-[#d8c6ae] bg-[#fffaf3] px-5 py-2.5 shadow-sm">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                      <p className="text-[9px] font-semibold uppercase tracking-[0.22em] text-[#8a6a2f]">
+                        Vin
+                      </p>
+
+                      <h3 className="font-serif text-xl leading-tight text-[#24110d]">
+                        {wineGroup.title}
+                      </h3>
+                    </div>
+
+                    <p className="text-xs text-[#7d6b5e]">
+                      {wineGroup.wines.length} millésime
+                      {wineGroup.wines.length > 1 ? "s" : ""}
+                    </p>
+                  </div>
                 </div>
-              </Link>
 
-              <div className="p-5">
-                {wine.appellation ? (
-                  <Link
-                    href={`/appellation/${slugify(wine.appellation)}`}
-                    className="mb-3 block rounded-full bg-[#24110d]/90 px-3 py-1.5 text-center text-[10px] uppercase tracking-[0.16em] text-[#d8b56d] transition hover:bg-[#8a1f1f]"
-                  >
-                    {wine.appellation}
-                  </Link>
-                ) : (
-                  <p className="mb-3 rounded-full bg-[#24110d]/90 px-3 py-1.5 text-center text-[10px] uppercase tracking-[0.16em] text-[#d8b56d]">
-                    {wine.region || "Grand vin"}
-                  </p>
-                )}
-
-                <Link href={getWineUrl(wine)} className="block">
-                  <h3 className="min-h-[64px] font-serif text-sm leading-tight text-[#24110d] group-hover:text-[#8a1f1f]">
-                    {wine.name}
-                  </h3>
-                </Link>
-
-                <div className="mt-3 space-y-1 text-sm text-[#6d5b50]">
-                  {wine.vintage && <p>Millésime {wine.vintage}</p>}
-
-                  {(wine.region || wine.category) && (
-                    <Link
-                      href={`/boutique/${slugify(wine.region || wine.category || "")}`}
-                      className="inline-block underline underline-offset-4 transition hover:text-[#8a1f1f]"
+                <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+                  {wineGroup.wines.map((wine) => (
+                    <article
+                      key={wine.id}
+                      className="group overflow-hidden rounded-[1.7rem] border border-[#dfcfb8] bg-[#fffaf3] shadow-sm transition hover:-translate-y-1 hover:border-[#d8b56d] hover:shadow-xl"
                     >
-                      {wine.region || wine.category}
-                    </Link>
-                  )}
+                      <Link href={getWineUrl(wine)} className="block">
+                        <div className="flex h-[245px] items-center justify-center bg-[#efe3d2] p-6">
+                          {wine.image ? (
+                            <img
+                              src={wine.image}
+                              alt={`Bouteille de ${
+                                wine.name || "vin"
+                              } - ${producer}`}
+                              className="max-h-[205px] w-auto object-contain transition group-hover:scale-105"
+                            />
+                          ) : (
+                            <span className="text-sm text-[#8a6a2f]">
+                              Image non disponible
+                            </span>
+                          )}
+                        </div>
+                      </Link>
+
+                      <div className="p-5">
+                        {wine.appellation ? (
+                          <Link
+                            href={`/appellation/${slugify(wine.appellation)}`}
+                            className="mb-3 block rounded-full bg-[#24110d]/90 px-3 py-1.5 text-center text-[10px] uppercase tracking-[0.16em] text-[#d8b56d] transition hover:bg-[#8a1f1f]"
+                          >
+                            {wine.appellation}
+                          </Link>
+                        ) : (
+                          <p className="mb-3 rounded-full bg-[#24110d]/90 px-3 py-1.5 text-center text-[10px] uppercase tracking-[0.16em] text-[#d8b56d]">
+                            {wine.region || "Grand vin"}
+                          </p>
+                        )}
+
+                        <Link href={getWineUrl(wine)} className="block">
+                          <h3 className="min-h-[64px] font-serif text-sm leading-tight text-[#24110d] group-hover:text-[#8a1f1f]">
+                            {wine.name}
+                          </h3>
+                        </Link>
+
+                        <div className="mt-3 space-y-1 text-sm text-[#6d5b50]">
+                          {wine.vintage && <p>Millésime {wine.vintage}</p>}
+
+                          {(wine.region || wine.category) && (
+                            <Link
+                              href={`/boutique/${slugify(
+                                wine.region || wine.category || ""
+                              )}`}
+                              className="inline-block underline underline-offset-4 transition hover:text-[#8a1f1f]"
+                            >
+                              {wine.region || wine.category}
+                            </Link>
+                          )}
+                        </div>
+
+                        <p className="mt-4 font-serif text-2xl text-[#8a1f1f]">
+                          {formatPrice(wine.price)}
+                        </p>
+
+                        <Link
+                          href={getWineUrl(wine)}
+                          className="mt-5 inline-flex w-full justify-center rounded-full bg-[#8a1f1f] px-5 py-3 text-center text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#641313]"
+                        >
+                          Voir le vin
+                        </Link>
+                      </div>
+                    </article>
+                  ))}
                 </div>
-
-                <p className="mt-4 font-serif text-2xl text-[#8a1f1f]">
-                  {formatPrice(wine.price)}
-                </p>
-
-                <Link
-                  href={getWineUrl(wine)}
-                  className="mt-5 inline-flex w-full justify-center rounded-full bg-[#8a1f1f] px-5 py-3 text-center text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#641313]"
-                >
-                  Voir le vin
-                </Link>
-              </div>
-            </article>
-          ))}
-        </div>
+              </section>
+            ))}
+          </div>
+        )}
       </section>
     </main>
   );
 }
-
