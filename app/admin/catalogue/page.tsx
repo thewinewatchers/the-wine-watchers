@@ -4,7 +4,7 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
-import ImageGalleryEditor from "@/app/components/ImageGalleryEditor";
+import ImageGalleryEditor from "../../components/ImageGalleryEditor";
 
 type Wine = {
   id: string;
