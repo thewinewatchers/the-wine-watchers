@@ -66,45 +66,60 @@ function getAbsoluteWineUrl(wine: Wine) {
   return `${SITE_URL}${getWineUrl(wine)}`;
 }
 
+function normalizeForComparison(value?: string | number | null) {
+  return String(value ?? "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[’']/g, " ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function removeWordsFromTitle(
-  title: string,
-  value?: string | number | null
-) {
-  const normalizedValue = String(value ?? "").trim();
-
-  if (!normalizedValue) return title;
-
-  return title.replace(
-    new RegExp(
-      `(^|\\s|[–—-])${escapeRegExp(normalizedValue)}(?=$|\\s|[–—-])`,
-      "gi"
-    ),
-    " "
-  );
-}
-
 function getWineGroupTitle(wine: Wine) {
-  let title = String(wine.name || "Vin sans nom").trim();
+  const originalName = String(wine.name || "Vin sans nom").trim();
+  const producer = String(wine.producer || "").trim();
 
-  title = removeWordsFromTitle(title, wine.vintage);
-  title = removeWordsFromTitle(title, wine.producer);
-  title = removeWordsFromTitle(title, wine.appellation);
-  title = removeWordsFromTitle(title, wine.region);
-
-  title = title
+  let title = originalName
+    .replace(/\b(?:en\s+)?primeurs?\b/gi, " ")
     .replace(/\b(?:19|20)\d{2}\b/g, " ")
     .replace(/\b(?:cbo|owc)\s*\/?\s*\d+\b/gi, " ")
     .replace(/\b(?:75\s*cl|150\s*cl|1[.,]5\s*l|magnum)\b/gi, " ")
-    .replace(/\b(?:cote rotie|côte rotie|côte-rôtie|côtes? du rhone|vallée du rhône|vallee du rhone)\b/gi, " ")
+    .replace(/\s*[–—-]\s*(?:e\.?\s*guigal|domaine\s+guigal|maison\s+guigal)\s*$/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (producer) {
+    const normalizedTitle = normalizeForComparison(title);
+    const normalizedProducer = normalizeForComparison(producer);
+
+    if (
+      normalizedTitle !== normalizedProducer &&
+      normalizedTitle.includes(normalizedProducer)
+    ) {
+      title = title
+        .replace(new RegExp(escapeRegExp(producer), "gi"), " ")
+        .replace(/\b(?:du|de|des|d|la|le)\b\s*$/gi, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+  }
+
+  title = title
+    .replace(
+      /\b(?:cote rotie|côte rotie|côte-rôtie|côtes? du rhone|vallée du rhône|vallee du rhone)\b/gi,
+      " "
+    )
     .replace(/\s*[–—-]\s*$/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 
-  return title || String(wine.name || "Vin sans nom").trim();
+  return title || originalName;
 }
 
 export async function generateMetadata({

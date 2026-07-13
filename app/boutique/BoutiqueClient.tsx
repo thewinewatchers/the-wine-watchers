@@ -805,6 +805,32 @@ export default function BoutiqueClient({
 
   const groupedPaginatedWines = groupedPages[currentPage - 1] || [];
 
+  const primeurAppellationGroups = useMemo(() => {
+    if (slug !== "primeurs-2025") return [];
+
+    const groups: {
+      title: string;
+      producers: typeof groupedPaginatedWines;
+    }[] = [];
+
+    groupedPaginatedWines.forEach((producerGroup) => {
+      const existingGroup = groups.find(
+        (group) => group.title === producerGroup.appellationTitle
+      );
+
+      if (existingGroup) {
+        existingGroup.producers.push(producerGroup);
+      } else {
+        groups.push({
+          title: producerGroup.appellationTitle || "Autres",
+          producers: [producerGroup],
+        });
+      }
+    });
+
+    return groups;
+  }, [groupedPaginatedWines, slug]);
+
   function resetFilters() {
     setSearch("");
     setSelectedAppellation("");
@@ -974,87 +1000,146 @@ export default function BoutiqueClient({
           !errorMessage &&
           groupedPaginatedWines.length > 0 && (
             <>
-              <div className="space-y-9">
-                {groupedPaginatedWines.map((producerGroup, producerIndex) => {
-                  const previousGroup = groupedPaginatedWines[producerIndex - 1];
-                  const showAppellationBanner =
-                    (slug === "bordeaux" || slug === "primeurs-2025") &&
-                    (!previousGroup ||
-                      previousGroup.appellationTitle !==
-                        producerGroup.appellationTitle);
+              {slug === "primeurs-2025" ? (
+                <div className="space-y-9">
+                  {primeurAppellationGroups.map((appellationGroup) => (
+                    <section key={appellationGroup.title}>
+                      <div className="mb-5 rounded-xl border border-[#8a1f1f]/30 bg-[#8a1f1f] px-5 py-2.5 shadow-sm">
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                          <p className="text-[9px] font-semibold uppercase tracking-[0.24em] text-white/60">
+                            Appellation
+                          </p>
 
-                  return (
-                    <div key={`${producerGroup.title}-${producerIndex}`}>
-                      {showAppellationBanner && (
-                        <div className="mb-5 rounded-xl border border-[#8a1f1f]/30 bg-[#8a1f1f] px-5 py-3 shadow-sm">
-                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                            <p className="text-[9px] font-semibold uppercase tracking-[0.24em] text-white/60">
-                              Appellation
-                            </p>
-
-                            <h2 className="font-serif text-2xl text-white md:text-3xl">
-                              {producerGroup.appellationTitle}
-                            </h2>
-                          </div>
+                          <h2 className="font-serif text-2xl text-white">
+                            {appellationGroup.title}
+                          </h2>
                         </div>
-                      )}
+                      </div>
 
-                      <section className="space-y-5">
-                        <div className="rounded-xl border border-[#d8b56d]/40 bg-[#24110d] px-5 py-3 shadow-sm">
-                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                            <p className="text-[9px] font-semibold uppercase tracking-[0.24em] text-white/50">
-                              Producteur
-                            </p>
-
-                            <h3 className="font-serif text-2xl text-[#d8b56d] md:text-3xl">
-                              {producerGroup.title}
-                            </h3>
-                          </div>
-                        </div>
-
-                        <div className="space-y-6">
-                          {producerGroup.wineGroups.map(
-                            (wineGroup, wineIndex) => (
+                      <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+                        {appellationGroup.producers.flatMap((producerGroup) =>
+                          producerGroup.wineGroups.flatMap((wineGroup) =>
+                            wineGroup.wines.map((wine) => (
                               <section
-                                key={`${producerGroup.title}-${wineGroup.title}-${wineIndex}`}
+                                key={`${producerGroup.title}-${wineGroup.title}-${wine.id}`}
+                                className="min-w-0"
                               >
-                                <div className="mb-4 rounded-xl border border-[#d8c6ae] bg-[#fffaf3] px-5 py-3 shadow-sm">
-                                  <div className="flex flex-wrap items-center justify-between gap-2">
-                                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                                      <p className="text-[9px] font-semibold uppercase tracking-[0.22em] text-[#8a6a2f]">
-                                        Vin
-                                      </p>
+                                <div className="mb-3 rounded-xl border border-[#d8b56d]/40 bg-[#24110d] px-4 py-2 shadow-sm">
+                                  <p className="text-[8px] font-semibold uppercase tracking-[0.2em] text-white/45">
+                                    Producteur
+                                  </p>
 
-                                      <h4 className="font-serif text-xl leading-tight text-[#24110d] md:text-2xl">
-                                        {wineGroup.title}
-                                      </h4>
-                                    </div>
-
-                                    <p className="text-xs text-[#7d6b5e]">
-                                      {wineGroup.wines.length} millésime
-                                      {wineGroup.wines.length > 1 ? "s" : ""}
-                                    </p>
-                                  </div>
+                                  <h3 className="mt-0.5 truncate font-serif text-lg text-[#d8b56d]">
+                                    {producerGroup.title}
+                                  </h3>
                                 </div>
 
-                                <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
-                                  {wineGroup.wines.map((wine) => (
-                                    <WineCard
-                                      key={wine.id}
-                                      wine={wine}
-                                      categoryTitle={categoryTitle}
-                                    />
-                                  ))}
+                                <div className="mb-3 rounded-xl border border-[#d8c6ae] bg-[#fffaf3] px-4 py-2 shadow-sm">
+                                  <p className="text-[8px] font-semibold uppercase tracking-[0.2em] text-[#8a6a2f]">
+                                    Vin
+                                  </p>
+
+                                  <h4 className="mt-0.5 truncate font-serif text-base text-[#24110d]">
+                                    {wineGroup.title}
+                                  </h4>
                                 </div>
+
+                                <WineCard
+                                  wine={wine}
+                                  categoryTitle={categoryTitle}
+                                />
                               </section>
-                            )
-                          )}
-                        </div>
-                      </section>
-                    </div>
-                  );
-                })}
-              </div>
+                            ))
+                          )
+                        )}
+                      </div>
+                    </section>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-9">
+                  {groupedPaginatedWines.map((producerGroup, producerIndex) => {
+                    const previousGroup =
+                      groupedPaginatedWines[producerIndex - 1];
+                    const showAppellationBanner =
+                      slug === "bordeaux" &&
+                      (!previousGroup ||
+                        previousGroup.appellationTitle !==
+                          producerGroup.appellationTitle);
+
+                    return (
+                      <div key={`${producerGroup.title}-${producerIndex}`}>
+                        {showAppellationBanner && (
+                          <div className="mb-5 rounded-xl border border-[#8a1f1f]/30 bg-[#8a1f1f] px-5 py-3 shadow-sm">
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                              <p className="text-[9px] font-semibold uppercase tracking-[0.24em] text-white/60">
+                                Appellation
+                              </p>
+
+                              <h2 className="font-serif text-2xl text-white md:text-3xl">
+                                {producerGroup.appellationTitle}
+                              </h2>
+                            </div>
+                          </div>
+                        )}
+
+                        <section className="space-y-5">
+                          <div className="rounded-xl border border-[#d8b56d]/40 bg-[#24110d] px-5 py-3 shadow-sm">
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                              <p className="text-[9px] font-semibold uppercase tracking-[0.24em] text-white/50">
+                                Producteur
+                              </p>
+
+                              <h3 className="font-serif text-2xl text-[#d8b56d] md:text-3xl">
+                                {producerGroup.title}
+                              </h3>
+                            </div>
+                          </div>
+
+                          <div className="space-y-6">
+                            {producerGroup.wineGroups.map(
+                              (wineGroup, wineIndex) => (
+                                <section
+                                  key={`${producerGroup.title}-${wineGroup.title}-${wineIndex}`}
+                                >
+                                  <div className="mb-4 rounded-xl border border-[#d8c6ae] bg-[#fffaf3] px-5 py-3 shadow-sm">
+                                    <div className="flex flex-wrap items-center justify-between gap-2">
+                                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                                        <p className="text-[9px] font-semibold uppercase tracking-[0.22em] text-[#8a6a2f]">
+                                          Vin
+                                        </p>
+
+                                        <h4 className="font-serif text-xl leading-tight text-[#24110d] md:text-2xl">
+                                          {wineGroup.title}
+                                        </h4>
+                                      </div>
+
+                                      <p className="text-xs text-[#7d6b5e]">
+                                        {wineGroup.wines.length} millésime
+                                        {wineGroup.wines.length > 1 ? "s" : ""}
+                                      </p>
+                                    </div>
+                                  </div>
+
+                                  <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+                                    {wineGroup.wines.map((wine) => (
+                                      <WineCard
+                                        key={wine.id}
+                                        wine={wine}
+                                        categoryTitle={categoryTitle}
+                                      />
+                                    ))}
+                                  </div>
+                                </section>
+                              )
+                            )}
+                          </div>
+                        </section>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
 
               {totalPages > 1 && (
                 <div className="mt-12 flex flex-wrap items-center justify-center gap-3">
