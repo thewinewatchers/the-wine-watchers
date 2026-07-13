@@ -18,6 +18,7 @@ type Wine = {
   bottle_size?: string;
   packaging?: string;
   image?: string;
+  additional_images?: string[] | string;
   category?: string;
   rating?: string | number;
   seo_title?: string;
@@ -467,6 +468,7 @@ export default function WinePage() {
   const [sameProducerWines, setSameProducerWines] = useState<Wine[]>([]);
   const [sameAppellationWines, setSameAppellationWines] = useState<Wine[]>([]);
   const [sameVintageWines, setSameVintageWines] = useState<Wine[]>([]);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   useEffect(() => {
     async function loadWine() {
@@ -484,6 +486,7 @@ export default function WinePage() {
       setSameProducerWines([]);
       setSameAppellationWines([]);
       setSameVintageWines([]);
+      setSelectedImageIndex(0);
 
       try {
         let foundWine: Wine | null = null;
@@ -614,6 +617,26 @@ export default function WinePage() {
     () => normalizeArray(wine?.tasting_notes),
     [wine?.tasting_notes]
   );
+
+  const galleryImages = useMemo(() => {
+    const images = [
+      wine?.image,
+      ...normalizeArray(wine?.additional_images),
+    ]
+      .map((image) => String(image || "").trim())
+      .filter(Boolean);
+
+    return Array.from(new Set(images));
+  }, [wine?.image, wine?.additional_images]);
+
+  const selectedImage =
+    galleryImages[selectedImageIndex] || galleryImages[0] || "";
+
+  useEffect(() => {
+    if (selectedImageIndex >= galleryImages.length) {
+      setSelectedImageIndex(0);
+    }
+  }, [galleryImages.length, selectedImageIndex]);
 
   const categorySlug = getMainCategorySlug(wine);
   const regionSlug = categorySlug;
@@ -817,16 +840,54 @@ export default function WinePage() {
 
         <div className="relative mx-auto grid max-w-7xl gap-10 px-6 py-12 lg:grid-cols-[0.9fr_1.1fr] lg:py-16">
           <div className="flex items-center justify-center">
-            <div className="relative rounded-[2rem] border border-white/10 bg-white/5 p-5 shadow-2xl backdrop-blur">
-              {wine.image ? (
-                <img
-                  src={wine.image}
-                  alt={`Bouteille de ${wine.name || "vin"} - The Wine Watchers`}
-                  className="h-[380px] w-full max-w-[340px] rounded-[1.5rem] object-contain"
-                />
-              ) : (
-                <div className="flex h-[380px] w-[300px] items-center justify-center rounded-[1.5rem] bg-white/10 text-sm uppercase tracking-[0.2em] text-white/60">
-                  Image à venir
+            <div className="w-full max-w-[460px]">
+              <div className="relative rounded-[2rem] border border-white/10 bg-white/5 p-5 shadow-2xl backdrop-blur">
+                {selectedImage ? (
+                  <>
+                    <img
+                      src={selectedImage}
+                      alt={`${wine.name || "Vin"} - image ${
+                        selectedImageIndex + 1
+                      } - The Wine Watchers`}
+                      className="h-[420px] w-full rounded-[1.5rem] object-contain"
+                    />
+
+                    {galleryImages.length > 1 && (
+                      <div className="absolute right-8 top-8 rounded-full border border-white/15 bg-black/45 px-3 py-1 text-xs font-semibold tracking-[0.16em] text-white backdrop-blur">
+                        {selectedImageIndex + 1} / {galleryImages.length}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="flex h-[420px] w-full items-center justify-center rounded-[1.5rem] bg-white/10 text-sm uppercase tracking-[0.2em] text-white/60">
+                    Image à venir
+                  </div>
+                )}
+              </div>
+
+              {galleryImages.length > 1 && (
+                <div className="mt-4 grid grid-cols-4 gap-3 sm:grid-cols-5">
+                  {galleryImages.map((image, index) => (
+                    <button
+                      key={`${image}-${index}`}
+                      type="button"
+                      onClick={() => setSelectedImageIndex(index)}
+                      aria-label={`Afficher l’image ${index + 1} de ${
+                        wine.name || "ce vin"
+                      }`}
+                      className={`overflow-hidden rounded-xl border bg-white/5 p-1 transition ${
+                        selectedImageIndex === index
+                          ? "border-[#d8b56d] ring-2 ring-[#d8b56d]/30"
+                          : "border-white/10 hover:border-white/35"
+                      }`}
+                    >
+                      <img
+                        src={image}
+                        alt={`${wine.name || "Vin"} - miniature ${index + 1}`}
+                        className="h-20 w-full rounded-lg object-contain"
+                      />
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
