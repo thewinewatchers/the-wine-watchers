@@ -4,6 +4,7 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
+import ImageGalleryEditor from "@/app/components/ImageGalleryEditor";
 
 type Wine = {
   id: string;
@@ -38,6 +39,7 @@ type WineForm = {
   packaging: string;
   weight_kg: string;
   image: string;
+  additional_images: string[];
   category: string;
   rating: string;
   seo_title: string;
@@ -73,6 +75,7 @@ const emptyForm: WineForm = {
   packaging: "",
   weight_kg: "",
   image: "",
+  additional_images: [],
   category: "",
   rating: "",
   seo_title: "",
@@ -519,6 +522,7 @@ function AdminCatalogueContent() {
       packaging: form.packaging.trim() || null,
       weight_kg: parsedWeight,
       image: form.image.trim() || null,
+      additional_images: form.additional_images,
       category: form.category.trim() || form.region.trim() || null,
       rating: parsedRating,
       seo_title: form.seo_title.trim() || null,
@@ -651,7 +655,20 @@ function AdminCatalogueContent() {
               <input name="bottle_size" value={form.bottle_size} onChange={handleChange} placeholder="Flaconnage ex: 75cl" className="rounded-xl border border-neutral-300 px-4 py-3" />
               <input name="packaging" value={form.packaging} onChange={handleChange} placeholder="Caissage ex: CBO/6" className="rounded-xl border border-neutral-300 px-4 py-3" />
               <input name="weight_kg" value={form.weight_kg} onChange={handleChange} placeholder="Poids kg auto / modifiable" className="rounded-xl border border-neutral-300 px-4 py-3" />
-              <input name="image" value={form.image} onChange={handleChange} placeholder="Image ex: /images/chateau-margaux-2020.jpg" className="rounded-xl border border-neutral-300 px-4 py-3" />
+              <input name="image" value={form.image} onChange={handleChange} placeholder="Image principale ex: /images/chateau-margaux-2020.jpg" className="rounded-xl border border-neutral-300 px-4 py-3 md:col-span-2" />
+
+              <div className="md:col-span-2">
+                <ImageGalleryEditor
+                  images={form.additional_images}
+                  onChange={(images) =>
+                    setForm((previous) => ({
+                      ...previous,
+                      additional_images: images,
+                    }))
+                  }
+                />
+              </div>
+
               <input name="category" value={form.category} onChange={handleChange} placeholder="Catégorie ex: Bordeaux, Bourgogne" className="rounded-xl border border-neutral-300 px-4 py-3" />
               <input name="slug" value={form.slug} onChange={handleChange} placeholder="Slug personnalisé optionnel" className="rounded-xl border border-neutral-300 px-4 py-3" />
               <input name="rating" value={form.rating} onChange={handleChange} placeholder="Note ex: 98" className="rounded-xl border border-neutral-300 px-4 py-3" />
