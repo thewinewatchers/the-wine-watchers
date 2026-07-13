@@ -6,6 +6,7 @@ const siteUrl = "https://www.thewinewatchers.com";
 type SitemapWine = {
   slug: string | null;
   producer: string | null;
+  vintage: string | number | null;
 };
 
 function slugify(value: string) {
@@ -19,6 +20,16 @@ function slugify(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+function normalizeVintage(value: string | number | null) {
+  if (value === null || value === undefined) return null;
+
+  const year = String(value).trim();
+
+  if (!/^\d{4}$/.test(year)) return null;
+
+  return year;
+}
+
 async function getSitemapWines(): Promise<SitemapWine[]> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
@@ -28,7 +39,7 @@ async function getSitemapWines(): Promise<SitemapWine[]> {
   }
 
   const response = await fetch(
-    `${supabaseUrl}/rest/v1/wines?hidden_from_site=neq.true&slug=not.is.null&select=slug,producer&order=name.asc`,
+    `${supabaseUrl}/rest/v1/wines?hidden_from_site=neq.true&slug=not.is.null&select=slug,producer,vintage&order=name.asc`,
     {
       headers: {
         apikey: supabaseKey,
@@ -39,6 +50,12 @@ async function getSitemapWines(): Promise<SitemapWine[]> {
   );
 
   if (!response.ok) {
+    console.error(
+      "Erreur lors du chargement des vins pour le sitemap :",
+      response.status,
+      response.statusText
+    );
+
     return [];
   }
 
@@ -58,6 +75,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/boutique/italie",
     "/boutique/espagne",
     "/boutique/primeurs-2025",
+    "/millesimes",
     "/blog",
     "/a-propos",
     "/livraison",
@@ -70,7 +88,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     url: `${siteUrl}${path}`,
     lastModified: now,
     changeFrequency: "weekly",
-    priority: path === "" ? 1 : 0.8,
+    priority: path === "" ? 1 : path === "/millesimes" ? 0.9 : 0.8,
   }));
 
   const appellations = [
@@ -99,19 +117,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.85,
   }));
 
-  const pagesVins: MetadataRoute.Sitemap = wines.map((wine) => ({
-    url: `${siteUrl}/boutique/vin/${wine.slug}`,
-    lastModified: now,
-    changeFrequency: "monthly",
-    priority: 0.85,
-  }));
+  const pagesVins: MetadataRoute.Sitemap = wines
+    .filter(
+      (wine): wine is SitemapWine & { slug: string } =>
+        typeof wine.slug === "string" && wine.slug.trim().length > 0
+    )
+    .map((wine) => ({
+      url: `${siteUrl}/boutique/vin/${wine.slug}`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.85,
+    }));
 
   const producers = Array.from(
     new Set(
       wines
         .map((wine) => wine.producer)
-        .filter((producer): producer is string => Boolean(producer))
+        .filter(
+          (producer): producer is string =>
+            typeof producer === "string" && producer.trim().length > 0
+        )
         .map((producer) => slugify(producer))
+        .filter(Boolean)
     )
   );
 
@@ -120,6 +147,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     lastModified: now,
     changeFrequency: "weekly",
     priority: 0.8,
+  }));
+
+  const vintages = Array.from(
+    new Set(
+      wines
+        .map((wine) => normalizeVintage(wine.vintage))
+        .filter((vintage): vintage is string => Boolean(vintage))
+    )
+  ).sort((a, b) => Number(b) - Number(a));
+
+  const pagesMillesimes: MetadataRoute.Sitemap = vintages.map((year) => ({
+    url: `${siteUrl}/millesime/${year}`,
+    lastModified: now,
+    changeFrequency: "weekly",
+    priority: 0.85,
   }));
 
   const pagesBlog: MetadataRoute.Sitemap = blogPosts.map((post) => ({
@@ -133,6 +175,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...pagesPrincipales,
     ...pagesAppellations,
     ...pagesProducteurs,
+    ...pagesMillesimes,
     ...pagesVins,
     ...pagesBlog,
   ];

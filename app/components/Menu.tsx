@@ -119,6 +119,7 @@ export default function Menu() {
             priority
             className="h-14 w-auto object-contain"
           />
+
           <span className="hidden font-serif text-xl leading-tight tracking-wide text-neutral-900 sm:inline">
             The Wine Watchers
           </span>
@@ -128,6 +129,8 @@ export default function Menu() {
           type="button"
           onClick={() => setOpen(!open)}
           className="rounded border border-neutral-300 px-4 py-2 text-sm uppercase tracking-wide text-neutral-700 xl:hidden"
+          aria-expanded={open}
+          aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
         >
           Menu
         </button>
@@ -139,6 +142,10 @@ export default function Menu() {
 
           <Link href="/boutique" className="transition hover:text-[#8B1E2D]">
             Boutique
+          </Link>
+
+          <Link href="/millesimes" className="transition hover:text-[#8B1E2D]">
+            Millésimes
           </Link>
 
           {showLoggedOutLinks && (
@@ -223,6 +230,10 @@ export default function Menu() {
 
             <Link href="/boutique" onClick={() => setOpen(false)}>
               Boutique
+            </Link>
+
+            <Link href="/millesimes" onClick={() => setOpen(false)}>
+              Millésimes
             </Link>
 
             {showLoggedOutLinks && (

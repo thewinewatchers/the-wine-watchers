@@ -882,7 +882,14 @@ export default function WinePage() {
                 </Link>
               )}
 
-              {vintage && <span>• {vintage}</span>}
+             {vintage && (
+  <Link
+    href={`/millesime/${vintage}`}
+    className="underline underline-offset-4 transition hover:text-[#d8b56d]"
+  >
+    • {vintage}
+  </Link>
+)}
             </div>
 
             <div className="mt-7 grid gap-3 sm:grid-cols-4">
@@ -1022,7 +1029,21 @@ export default function WinePage() {
 
       <section className="mx-auto max-w-7xl px-6 py-12">
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          <InfoCard label="Millésime" value={vintage} />
+         <InfoCard
+  label="Millésime"
+  value={
+    vintage ? (
+      <Link
+        href={`/millesime/${vintage}`}
+        className="underline underline-offset-4 transition hover:text-[#8a1f1f]"
+      >
+        {vintage}
+      </Link>
+    ) : (
+      "-"
+    )
+  }
+/>
           <InfoCard
             label="Stock disponible"
             value={
