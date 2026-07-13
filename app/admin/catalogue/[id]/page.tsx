@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import ImageGalleryEditor from "@/app/components/ImageGalleryEditor";
 
 type WineForm = {
   slug: string;
@@ -20,6 +21,7 @@ type WineForm = {
   bottle_size: string;
   packaging: string;
   image: string;
+  additional_images: string[];
   category: string;
   rating: string;
   seo_title: string;
@@ -56,6 +58,7 @@ const emptyForm: WineForm = {
   bottle_size: "",
   packaging: "",
   image: "",
+  additional_images: [],
   category: "",
   rating: "",
   seo_title: "",
@@ -140,10 +143,21 @@ function parseTextArray(value: unknown) {
   return "";
 }
 
+function parseImageArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((image) => String(image || "").trim())
+    .filter(Boolean);
+}
+
 function parsePrice(value?: number | string | null) {
   if (value === null || value === undefined || value === "") return "";
+
   const parsed = Number(value);
+
   if (Number.isNaN(parsed)) return "";
+
   return String(parsed);
 }
 
@@ -153,16 +167,21 @@ function cleanText(value: unknown) {
 
 function parseNumber(value: string) {
   if (!value.trim()) return null;
+
   const cleaned = value.replace(/\s/g, "").replace(",", ".");
   const numberValue = Number(cleaned);
+
   return Number.isNaN(numberValue) ? null : numberValue;
 }
 
 function parseStock(value: string) {
   if (!value.trim()) return 0;
+
   const cleaned = value.replace(/\s/g, "").replace(",", ".");
   const numberValue = Number(cleaned);
+
   if (Number.isNaN(numberValue)) return 0;
+
   return Math.max(0, Math.floor(numberValue));
 }
 
@@ -247,8 +266,14 @@ function getSeoScore(form: WineForm, previewSlug: string) {
 }
 
 function getScoreClass(score: number) {
-  if (score >= 90) return "border-green-200 bg-green-50 text-green-900";
-  if (score >= 70) return "border-orange-200 bg-orange-50 text-orange-900";
+  if (score >= 90) {
+    return "border-green-200 bg-green-50 text-green-900";
+  }
+
+  if (score >= 70) {
+    return "border-orange-200 bg-orange-50 text-orange-900";
+  }
+
   return "border-red-200 bg-red-50 text-red-900";
 }
 
@@ -274,10 +299,12 @@ function SeoIndicator({
     <div className={`rounded-2xl border p-4 text-sm ${status.className}`}>
       <div className="flex items-center justify-between gap-3">
         <span className="font-semibold">{label}</span>
+
         <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold">
           {status.label}
         </span>
       </div>
+
       <p className="mt-2">
         {type === "minimum"
           ? `${getLength(value)} caractères / minimum conseillé : ${min}`
@@ -293,6 +320,7 @@ export default function AdminEditWinePage() {
   const wineId = String(params.id || "");
 
   const search = searchParams.get("search") || "";
+
   const backToCatalogueHref = search
     ? `/admin/catalogue?search=${encodeURIComponent(search)}`
     : "/admin/catalogue";
@@ -300,23 +328,23 @@ export default function AdminEditWinePage() {
   const [form, setForm] = useState<WineForm>(emptyForm);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
   const previewSlug = useMemo(() => {
     if (form.slug.trim()) return createSlug(form.slug);
+
     return createSlug(`${form.name}-${form.vintage}`);
   }, [form.slug, form.name, form.vintage]);
 
   const seoTitleStatus = useMemo(
     () => getSeoStatus(form.seo_title, 35, 65),
-    [form.seo_title],
+    [form.seo_title]
   );
 
   const seoDescriptionStatus = useMemo(
     () => getSeoStatus(form.seo_description, 90, 165),
-    [form.seo_description],
+    [form.seo_description]
   );
 
   const seoScore = useMemo(() => {
@@ -324,7 +352,8 @@ export default function AdminEditWinePage() {
   }, [form, previewSlug]);
 
   const googleTitle =
-    form.seo_title.trim() || `${form.name || "Nom du vin"} | The Wine Watchers`;
+    form.seo_title.trim() ||
+    `${form.name || "Nom du vin"} | The Wine Watchers`;
 
   const googleDescription =
     form.seo_description.trim() ||
@@ -368,6 +397,7 @@ export default function AdminEditWinePage() {
         bottle_size: data.bottle_size || "",
         packaging: data.packaging || "",
         image: data.image || "",
+        additional_images: parseImageArray(data.additional_images),
         category: data.category || "",
         rating: parsePrice(data.rating),
         seo_title: data.seo_title || "",
@@ -392,16 +422,22 @@ export default function AdminEditWinePage() {
       setLoading(false);
     }
 
-    if (wineId) loadWine();
+    if (wineId) {
+      loadWine();
+    }
   }, [wineId]);
 
   function handleChange(
     event: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
+    >
   ) {
     const { name, value } = event.target;
-    setForm((previous) => ({ ...previous, [name]: value }));
+
+    setForm((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
   }
 
   function handleCategoryChange(event: React.ChangeEvent<HTMLSelectElement>) {
@@ -456,6 +492,9 @@ export default function AdminEditWinePage() {
       bottle_size: cleanText(form.bottle_size),
       packaging: cleanText(form.packaging),
       image: cleanText(form.image),
+      additional_images: form.additional_images
+        .map((image) => image.trim())
+        .filter(Boolean),
       category: cleanText(form.category) || cleanText(form.region),
       rating: parseNumber(form.rating),
       seo_title: cleanText(form.seo_title),
@@ -463,13 +502,13 @@ export default function AdminEditWinePage() {
       keywords: form.keywords
         ? form.keywords
             .split(",")
-            .map((x) => x.trim())
+            .map((item) => item.trim())
             .filter(Boolean)
         : [],
       grape_varieties: form.grape_varieties
         ? form.grape_varieties
             .split(",")
-            .map((x) => x.trim())
+            .map((item) => item.trim())
             .filter(Boolean)
         : [],
       classification: cleanText(form.classification),
@@ -489,7 +528,9 @@ export default function AdminEditWinePage() {
 
     const response = await fetch(`/api/admin/wines/${wineId}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(payload),
     });
 
@@ -499,8 +540,9 @@ export default function AdminEditWinePage() {
       setErrorMessage(
         result?.details ||
           result?.error ||
-          "Erreur lors de la modification du vin.",
+          "Erreur lors de la modification du vin."
       );
+
       setSaving(false);
       return;
     }
@@ -509,19 +551,21 @@ export default function AdminEditWinePage() {
       ...previous,
       stock: String(result?.wine?.stock ?? parsedStock),
       compare_at_price: parsePrice(
-        result?.wine?.compare_at_price ?? form.compare_at_price,
+        result?.wine?.compare_at_price ?? form.compare_at_price
+      ),
+      additional_images: parseImageArray(
+        result?.wine?.additional_images ?? form.additional_images
       ),
     }));
 
     setSuccessMessage(
       `Fiche vin modifiée avec succès. Stock enregistré : ${
         result?.wine?.stock ?? parsedStock
-      } caisse${Number(result?.wine?.stock ?? parsedStock) > 1 ? "s" : ""}.`,
+      } caisse${Number(result?.wine?.stock ?? parsedStock) > 1 ? "s" : ""}.`
     );
 
     setSaving(false);
   }
-
   if (loading) {
     return (
       <main className="min-h-screen bg-[#f8f3ea] px-6 py-12 text-[#1f1a17]">
@@ -563,15 +607,19 @@ export default function AdminEditWinePage() {
 
         <section className="mt-8 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
           <div
-            className={`rounded-3xl border p-6 shadow-sm ${getScoreClass(seoScore)}`}
+            className={`rounded-3xl border p-6 shadow-sm ${getScoreClass(
+              seoScore
+            )}`}
           >
             <p className="text-sm uppercase tracking-[0.22em] opacity-80">
               Assistant SEO
             </p>
-            <p className="mt-3 text-5xl font-serif">{seoScore}/100</p>
+
+            <p className="mt-3 font-serif text-5xl">{seoScore}/100</p>
+
             <p className="mt-3 text-sm">
               Score calculé en temps réel selon le slug, le titre SEO, la meta
-              description, les contenus, l'image, le prix et le stock.
+              description, les contenus, l&apos;image, le prix et le stock.
             </p>
           </div>
 
@@ -579,16 +627,19 @@ export default function AdminEditWinePage() {
             <p className="text-sm uppercase tracking-[0.22em] text-[#8a6a2f]">
               Prévisualisation Google
             </p>
+
             <div className="mt-4 rounded-2xl border border-neutral-200 bg-white p-5">
               <p className="text-sm text-[#1a0dab]">
                 {googleTitle.length > 65
                   ? `${googleTitle.slice(0, 65)}...`
                   : googleTitle}
               </p>
+
               <p className="mt-1 text-xs text-green-700">
                 https://www.thewinewatchers.com/boutique/vin/
                 {previewSlug || wineId}
               </p>
+
               <p className="mt-2 text-sm leading-6 text-neutral-700">
                 {googleDescription.length > 165
                   ? `${googleDescription.slice(0, 165)}...`
@@ -599,31 +650,41 @@ export default function AdminEditWinePage() {
         </section>
 
         <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <SeoIndicator label="Slug" value={previewSlug} min={1} max={75} />
+          <SeoIndicator
+            label="Slug"
+            value={previewSlug}
+            min={1}
+            max={75}
+          />
+
           <SeoIndicator
             label="Titre SEO"
             value={form.seo_title}
             min={35}
             max={65}
           />
+
           <SeoIndicator
             label="Meta description"
             value={form.seo_description}
             min={90}
             max={165}
           />
+
           <SeoIndicator
             label="Description produit"
             value={form.description}
             min={300}
             type="minimum"
           />
+
           <SeoIndicator
             label="Histoire domaine"
             value={form.story}
             min={500}
             type="minimum"
           />
+
           <SeoIndicator
             label="Notes de dégustation"
             value={form.tasting_notes}
@@ -664,6 +725,7 @@ export default function AdminEditWinePage() {
               className="rounded-xl border border-neutral-300 px-4 py-3"
             >
               <option value="">Catégorie</option>
+
               {categoryOptions.map((category) => (
                 <option key={category} value={category}>
                   {category}
@@ -688,6 +750,7 @@ export default function AdminEditWinePage() {
                 className="rounded-xl border border-neutral-300 px-4 py-3"
               >
                 <option value="">Appellation Bordeaux</option>
+
                 {bordeauxAppellations.map((appellation) => (
                   <option key={appellation} value={appellation}>
                     {appellation}
@@ -712,6 +775,7 @@ export default function AdminEditWinePage() {
                 className="rounded-xl border border-neutral-300 px-4 py-3"
               >
                 <option value="">Domaine Bourgogne</option>
+
                 {bourgogneDomains.map((domain) => (
                   <option key={domain} value={domain}>
                     {domain}
@@ -735,6 +799,7 @@ export default function AdminEditWinePage() {
               placeholder="Pays"
               className="rounded-xl border border-neutral-300 px-4 py-3"
             />
+
             <input
               name="color"
               value={form.color}
@@ -742,6 +807,7 @@ export default function AdminEditWinePage() {
               placeholder="Couleur"
               className="rounded-xl border border-neutral-300 px-4 py-3"
             />
+
             <input
               name="vintage"
               value={form.vintage}
@@ -749,6 +815,7 @@ export default function AdminEditWinePage() {
               placeholder="Millésime"
               className="rounded-xl border border-neutral-300 px-4 py-3"
             />
+
             <input
               name="price"
               value={form.price}
@@ -756,6 +823,7 @@ export default function AdminEditWinePage() {
               placeholder="Prix HT"
               className="rounded-xl border border-neutral-300 px-4 py-3"
             />
+
             <input
               name="compare_at_price"
               value={form.compare_at_price}
@@ -763,6 +831,7 @@ export default function AdminEditWinePage() {
               placeholder="Prix avant remise HT optionnel"
               className="rounded-xl border border-[#d6b36a] bg-[#fffaf3] px-4 py-3"
             />
+
             <input
               name="stock"
               value={form.stock}
@@ -770,6 +839,7 @@ export default function AdminEditWinePage() {
               placeholder="Stock disponible (caisses)"
               className="rounded-xl border-2 border-green-500 bg-green-50 px-4 py-3 font-semibold"
             />
+
             <input
               name="bottle_size"
               value={form.bottle_size}
@@ -777,6 +847,7 @@ export default function AdminEditWinePage() {
               placeholder="Flaconnage ex: 75cl"
               className="rounded-xl border border-neutral-300 px-4 py-3"
             />
+
             <input
               name="packaging"
               value={form.packaging}
@@ -784,6 +855,7 @@ export default function AdminEditWinePage() {
               placeholder="Caissage ex: CBO/6"
               className="rounded-xl border border-neutral-300 px-4 py-3"
             />
+
             <input
               name="image"
               value={form.image}
@@ -791,6 +863,17 @@ export default function AdminEditWinePage() {
               placeholder="Image ex: /images/chateau-margaux-2020.jpg"
               className="rounded-xl border border-neutral-300 px-4 py-3 md:col-span-2"
             />
+
+            <ImageGalleryEditor
+              images={form.additional_images}
+              onChange={(images) =>
+                setForm((previous) => ({
+                  ...previous,
+                  additional_images: images,
+                }))
+              }
+            />
+
             <input
               name="slug"
               value={form.slug}
@@ -798,6 +881,7 @@ export default function AdminEditWinePage() {
               placeholder="Slug personnalisé optionnel"
               className="rounded-xl border border-neutral-300 px-4 py-3"
             />
+
             <input
               name="rating"
               value={form.rating}
@@ -805,6 +889,7 @@ export default function AdminEditWinePage() {
               placeholder="Note ex: 98"
               className="rounded-xl border border-neutral-300 px-4 py-3"
             />
+
             <input
               name="classification"
               value={form.classification}
@@ -818,6 +903,7 @@ export default function AdminEditWinePage() {
             >
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <label className="text-sm font-semibold">Titre SEO</label>
+
                 <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold">
                   {seoTitleStatus.label}
                 </span>
@@ -843,6 +929,7 @@ export default function AdminEditWinePage() {
                 <label className="text-sm font-semibold">
                   Meta description
                 </label>
+
                 <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold">
                   {seoDescriptionStatus.label}
                 </span>
@@ -858,9 +945,11 @@ export default function AdminEditWinePage() {
               />
 
               <p className="mt-2 text-xs">
-                {getLength(form.seo_description)} caractères — idéal : 90 à 165.
+                {getLength(form.seo_description)} caractères — idéal : 90 à
+                165.
               </p>
             </div>
+
             <input
               name="keywords"
               value={form.keywords}
@@ -868,6 +957,7 @@ export default function AdminEditWinePage() {
               placeholder="Mots-clés séparés par virgules"
               className="rounded-xl border border-neutral-300 px-4 py-3 md:col-span-2"
             />
+
             <input
               name="grape_varieties"
               value={form.grape_varieties}
@@ -875,6 +965,7 @@ export default function AdminEditWinePage() {
               placeholder="Cépages séparés par virgules"
               className="rounded-xl border border-neutral-300 px-4 py-3 md:col-span-2"
             />
+
             <input
               name="soil"
               value={form.soil}
@@ -882,6 +973,7 @@ export default function AdminEditWinePage() {
               placeholder="Sol"
               className="rounded-xl border border-neutral-300 px-4 py-3"
             />
+
             <input
               name="style"
               value={form.style}
@@ -898,6 +990,7 @@ export default function AdminEditWinePage() {
               placeholder="Description"
               className="rounded-xl border border-neutral-300 px-4 py-3 md:col-span-2"
             />
+
             <textarea
               name="story"
               value={form.story}
@@ -906,6 +999,7 @@ export default function AdminEditWinePage() {
               placeholder="Histoire / domaine"
               className="rounded-xl border border-neutral-300 px-4 py-3 md:col-span-2"
             />
+
             <textarea
               name="tasting_notes"
               value={form.tasting_notes}
@@ -914,6 +1008,7 @@ export default function AdminEditWinePage() {
               placeholder="Notes de dégustation"
               className="rounded-xl border border-neutral-300 px-4 py-3 md:col-span-2"
             />
+
             <textarea
               name="nose"
               value={form.nose}
@@ -922,6 +1017,7 @@ export default function AdminEditWinePage() {
               placeholder="Nez"
               className="rounded-xl border border-neutral-300 px-4 py-3"
             />
+
             <textarea
               name="palate"
               value={form.palate}
@@ -930,6 +1026,7 @@ export default function AdminEditWinePage() {
               placeholder="Bouche"
               className="rounded-xl border border-neutral-300 px-4 py-3"
             />
+
             <textarea
               name="pairing"
               value={form.pairing}
@@ -938,6 +1035,7 @@ export default function AdminEditWinePage() {
               placeholder="Accords mets-vins"
               className="rounded-xl border border-neutral-300 px-4 py-3"
             />
+
             <textarea
               name="serving_temperature"
               value={form.serving_temperature}
@@ -946,6 +1044,7 @@ export default function AdminEditWinePage() {
               placeholder="Température de service"
               className="rounded-xl border border-neutral-300 px-4 py-3"
             />
+
             <textarea
               name="aging_potential"
               value={form.aging_potential}
@@ -969,7 +1068,11 @@ export default function AdminEditWinePage() {
               value={form.external_links}
               onChange={handleChange}
               rows={5}
-              placeholder={`Liens externes\n\nSite officiel|https://www.chateau-palmer.com\nWine-Searcher|https://www.wine-searcher.com\niDealwine|https://www.idealwine.com`}
+              placeholder={`Liens externes
+
+Site officiel|https://www.chateau-palmer.com
+Wine-Searcher|https://www.wine-searcher.com
+iDealwine|https://www.idealwine.com`}
               className="rounded-xl border border-neutral-300 px-4 py-3 md:col-span-2"
             />
           </div>
@@ -981,6 +1084,13 @@ export default function AdminEditWinePage() {
             Stock actuellement saisi :{" "}
             <strong className="text-black">
               {form.stock || "0"} caisse(s)
+            </strong>
+            <br />
+            Images supplémentaires :{" "}
+            <strong className="text-black">
+              {
+                form.additional_images.filter((image) => image.trim()).length
+              }
             </strong>
           </div>
 
