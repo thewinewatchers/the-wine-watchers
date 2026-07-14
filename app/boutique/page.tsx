@@ -37,6 +37,12 @@ const categories = [
     image: "/images/boutique-hero.png",
     text: "Hermitage, Côte-Rôtie, Châteauneuf-du-Pape et grandes Syrah.",
   },
+  {
+    title: "États-Unis",
+    slug: "usa",
+    image: "/images/boutique-hero.png",
+    text: "Napa Valley, grandes cuvées californiennes et domaines emblématiques comme Opus One.",
+  },
 ];
 
 export default function BoutiquePage() {
@@ -79,6 +85,7 @@ export default function BoutiquePage() {
 
           <div className="relative">
             <div className="absolute -inset-5 rounded-[3rem] bg-[#d8b56d]/10 blur-2xl" />
+
             <div className="relative overflow-hidden rounded-[2.5rem] border border-white/15 bg-white/5 p-3 shadow-2xl">
               <img
                 src="/images/boutique-hero.png"
@@ -115,7 +122,9 @@ export default function BoutiquePage() {
                     alt={category.title}
                     className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
                   />
+
                   <div className="absolute inset-0 bg-gradient-to-t from-[#160604]/85 via-[#160604]/20 to-transparent" />
+
                   <h3 className="absolute bottom-6 left-6 font-serif text-4xl text-white">
                     {category.title}
                   </h3>
