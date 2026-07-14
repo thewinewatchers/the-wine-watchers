@@ -66,13 +66,148 @@ function getAbsoluteWineUrl(wine: Wine) {
   return `${SITE_URL}${getWineUrl(wine)}`;
 }
 
+function getBoutiqueRegionUrl(region: string) {
+  const normalizedRegion = slugify(region);
+
+  const spanishRegions = [
+    "castille-et-leon",
+    "castille-leon",
+    "castilla-y-leon",
+    "ribera-del-duero",
+    "rioja",
+    "priorat",
+  ];
+
+  const italianRegions = [
+    "toscane",
+    "toscana",
+    "bolgheri",
+    "piemont",
+    "piedmont",
+    "italie",
+    "italia",
+  ];
+
+  const usaRegions = [
+    "napa-valley",
+    "napa",
+    "californie",
+    "california",
+    "etats-unis",
+    "etats-unis-d-amerique",
+    "usa",
+    "united-states",
+  ];
+
+  if (spanishRegions.includes(normalizedRegion)) {
+    return "/boutique/espagne";
+  }
+
+  if (italianRegions.includes(normalizedRegion)) {
+    return "/boutique/italie";
+  }
+
+  if (usaRegions.includes(normalizedRegion)) {
+    return "/boutique/usa";
+  }
+
+  return `/boutique/${normalizedRegion}`;
+}
+
+function getAppellationUrl(
+  appellation: string,
+  region?: string | null,
+  category?: string | null
+) {
+  const geographicValue = slugify(region || category || "");
+
+  const spanishRegions = [
+    "castille-et-leon",
+    "castille-leon",
+    "castilla-y-leon",
+    "ribera-del-duero",
+    "rioja",
+    "priorat",
+    "espagne",
+    "spain",
+  ];
+
+  const italianRegions = [
+    "toscane",
+    "toscana",
+    "bolgheri",
+    "piemont",
+    "piedmont",
+    "italie",
+    "italia",
+  ];
+
+  const usaRegions = [
+    "napa-valley",
+    "napa",
+    "californie",
+    "california",
+    "etats-unis",
+    "etats-unis-d-amerique",
+    "usa",
+    "united-states",
+  ];
+
+  if (spanishRegions.includes(geographicValue)) {
+    return "/boutique/espagne";
+  }
+
+  if (italianRegions.includes(geographicValue)) {
+    return "/boutique/italie";
+  }
+
+  if (usaRegions.includes(geographicValue)) {
+    return "/boutique/usa";
+  }
+
+  return `/appellation/${slugify(appellation)}`;
+}
+
+
 function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+function resolveProducer(producers: string[], requestedSlug: string) {
+  const exactProducer = producers.find(
+    (name) => slugify(name) === requestedSlug
+  );
+
+  if (exactProducer) {
+    return exactProducer;
+  }
+
+  if (requestedSlug === "opus-one") {
+    return producers.find((name) => {
+      const producerSlug = slugify(name);
+
+      return (
+        producerSlug.startsWith("opus-one-") ||
+        producerSlug.endsWith("-opus-one") ||
+        producerSlug.includes("opus-one")
+      );
+    });
+  }
+
+  return undefined;
+}
+
 function getWineGroupTitle(wine: Wine) {
   const originalName = String(wine.name || "Vin sans nom").trim();
+  const producerName = String(wine.producer || "").trim();
   const vintage = String(wine.vintage || "").trim();
+
+  if (
+    slugify(producerName).includes("opus-one") ||
+    slugify(originalName).startsWith("opus-one")
+  ) {
+    return "Opus One";
+  }
 
   if (vintage) {
     const titleBeforeVintage = originalName
@@ -114,7 +249,7 @@ export async function generateMetadata({
     new Set((data || []).map((wine) => wine.producer).filter(Boolean))
   ) as string[];
 
-  const producer = producers.find((name) => slugify(name) === slug);
+  const producer = resolveProducer(producers, slug);
 
   if (!producer) {
     return {
@@ -161,7 +296,7 @@ export default async function ProducteurPage({
     new Set((producerData || []).map((wine) => wine.producer).filter(Boolean))
   ) as string[];
 
-  const producer = producers.find((name) => slugify(name) === slug);
+  const producer = resolveProducer(producers, slug);
 
   if (!producer) {
     notFound();
@@ -277,7 +412,7 @@ export default async function ProducteurPage({
             {regions.map((region) => (
               <Link
                 key={region}
-                href={`/boutique/${slugify(region)}`}
+                href={getBoutiqueRegionUrl(region)}
                 className="rounded-full border border-[#d8b56d]/50 px-5 py-2 text-sm text-[#d8b56d] transition hover:border-white hover:text-white"
               >
                 Voir les vins {region}
@@ -298,7 +433,11 @@ export default async function ProducteurPage({
               {appellations.map((appellation) => (
                 <Link
                   key={appellation}
-                  href={`/appellation/${slugify(appellation)}`}
+                  href={getAppellationUrl(
+                    appellation,
+                    visibleWines[0]?.region,
+                    visibleWines[0]?.category
+                  )}
                   className="rounded-full border border-[#d8b56d]/50 bg-[#fffaf3] px-5 py-2 text-sm text-[#6d5b50] transition hover:border-[#8a1f1f] hover:text-[#8a1f1f]"
                 >
                   {appellation}
@@ -394,13 +533,7 @@ export default async function ProducteurPage({
                   </div>
                 </div>
 
-                <div
-                  className="grid gap-6"
-                  style={{
-                    gridTemplateColumns:
-                      "repeat(auto-fit, minmax(260px, 1fr))",
-                  }}
-                >
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {wineGroup.wines.map((wine) => (
                     <article
                       key={wine.id}
@@ -427,7 +560,11 @@ export default async function ProducteurPage({
                       <div className="p-5">
                         {wine.appellation ? (
                           <Link
-                            href={`/appellation/${slugify(wine.appellation)}`}
+                            href={getAppellationUrl(
+                              wine.appellation,
+                              wine.region,
+                              wine.category
+                            )}
                             className="mb-3 block rounded-full bg-[#24110d]/90 px-3 py-1.5 text-center text-[10px] uppercase tracking-[0.16em] text-[#d8b56d] transition hover:bg-[#8a1f1f]"
                           >
                             {wine.appellation}
@@ -449,9 +586,9 @@ export default async function ProducteurPage({
 
                           {(wine.region || wine.category) && (
                             <Link
-                              href={`/boutique/${slugify(
+                              href={getBoutiqueRegionUrl(
                                 wine.region || wine.category || ""
-                              )}`}
+                              )}
                               className="inline-block underline underline-offset-4 transition hover:text-[#8a1f1f]"
                             >
                               {wine.region || wine.category}
