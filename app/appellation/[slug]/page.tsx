@@ -843,7 +843,10 @@ export default async function AppellationPage({
         if (!map.has(producerKey)) {
           map.set(producerKey, {
             title: producerTitle,
-            wineMap: new Map(),
+            wineMap: new Map<
+              string,
+              { title: string; wines: AppellationWine[] }
+            >(),
           });
         }
 
@@ -860,7 +863,16 @@ export default async function AppellationPage({
 
         return map;
       },
-      new Map()
+      new Map<
+        string,
+        {
+          title: string;
+          wineMap: Map<
+            string,
+            { title: string; wines: AppellationWine[] }
+          >;
+        }
+      >()
     ).values()
   )
     .sort((a, b) => a.title.localeCompare(b.title, "fr"))
