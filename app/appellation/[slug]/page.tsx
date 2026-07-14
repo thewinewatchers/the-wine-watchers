@@ -170,7 +170,468 @@ const appellations: Record<
     title: "Vins de Chambolle-Musigny – Élégance bourguignonne",
     description:
       "Découvrez les vins de Chambolle-Musigny, grands rouges de Bourgogne réputés pour leur finesse.",
-    intro: "Chambolle-Musigny incarne la finesse et l’élégance bourguignonnes.",
+    intro:
+      "Chambolle-Musigny incarne la finesse et l’élégance bourguignonnes.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "morey-saint-denis": {
+    name: "Morey-Saint-Denis",
+    title: "Vins de Morey-Saint-Denis – Grands vins de la Côte de Nuits",
+    description:
+      "Découvrez notre sélection de vins de Morey-Saint-Denis : premiers crus, grands crus, domaines prestigieux et millésimes recherchés.",
+    intro:
+      "Morey-Saint-Denis est une appellation emblématique de la Côte de Nuits, réputée pour ses rouges profonds, élégants et structurés.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "nuits-saint-georges": {
+    name: "Nuits-Saint-Georges",
+    title: "Vins de Nuits-Saint-Georges – Grands rouges de Bourgogne",
+    description:
+      "Découvrez notre sélection de vins de Nuits-Saint-Georges : premiers crus, domaines réputés et millésimes recherchés.",
+    intro:
+      "Nuits-Saint-Georges produit des vins rouges puissants, structurés et aptes à une longue garde.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "vougeot": {
+    name: "Vougeot",
+    title: "Vins de Vougeot – Côte de Nuits",
+    description:
+      "Découvrez notre sélection de vins de Vougeot et du Clos de Vougeot, issus de terroirs historiques de Bourgogne.",
+    intro:
+      "Vougeot est une appellation historique de la Côte de Nuits, dominée par le célèbre Clos de Vougeot.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "flagey-echezeaux": {
+    name: "Flagey-Échezeaux",
+    title: "Vins de Flagey-Échezeaux – Grands Crus de Bourgogne",
+    description:
+      "Découvrez les vins de Flagey-Échezeaux, notamment Échezeaux et Grands-Échezeaux.",
+    intro:
+      "Flagey-Échezeaux abrite deux Grands Crus majeurs de la Côte de Nuits : Échezeaux et Grands-Échezeaux.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "aloxe-corton": {
+    name: "Aloxe-Corton",
+    title: "Vins d’Aloxe-Corton – Grands Crus de la Côte de Beaune",
+    description:
+      "Découvrez les vins d’Aloxe-Corton : rouges de caractère, Corton et Corton-Charlemagne.",
+    intro:
+      "Aloxe-Corton est une appellation majeure de la Côte de Beaune, célèbre pour la colline de Corton et ses Grands Crus.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "pernand-vergelesses": {
+    name: "Pernand-Vergelesses",
+    title: "Vins de Pernand-Vergelesses – Côte de Beaune",
+    description:
+      "Découvrez les vins de Pernand-Vergelesses, rouges et blancs de Bourgogne issus de terroirs réputés.",
+    intro:
+      "Pernand-Vergelesses produit des rouges élégants et des blancs précis au pied de la colline de Corton.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "savigny-les-beaune": {
+    name: "Savigny-lès-Beaune",
+    title: "Vins de Savigny-lès-Beaune – Côte de Beaune",
+    description:
+      "Découvrez notre sélection de vins de Savigny-lès-Beaune, rouges fins et blancs de Bourgogne.",
+    intro:
+      "Savigny-lès-Beaune est réputée pour ses vins accessibles, fins et expressifs.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  beaune: {
+    name: "Beaune",
+    title: "Vins de Beaune – Capitale des vins de Bourgogne",
+    description:
+      "Découvrez notre sélection de vins de Beaune : premiers crus, domaines historiques et millésimes recherchés.",
+    intro:
+      "Beaune est le cœur historique du vignoble bourguignon et possède une remarquable diversité de premiers crus.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  pommard: {
+    name: "Pommard",
+    title: "Vins de Pommard – Grands rouges de la Côte de Beaune",
+    description:
+      "Découvrez notre sélection de vins de Pommard : premiers crus, domaines prestigieux et millésimes de garde.",
+    intro:
+      "Pommard est célèbre pour ses vins rouges puissants, charpentés et profondément bourguignons.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  volnay: {
+    name: "Volnay",
+    title: "Vins de Volnay – Finesse de la Côte de Beaune",
+    description:
+      "Découvrez notre sélection de vins de Volnay, rouges fins, élégants et parfumés.",
+    intro:
+      "Volnay est l’une des appellations les plus élégantes de la Côte de Beaune.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "chassagne-montrachet": {
+    name: "Chassagne-Montrachet",
+    title: "Vins de Chassagne-Montrachet – Grands blancs de Bourgogne",
+    description:
+      "Découvrez notre sélection de vins de Chassagne-Montrachet : grands blancs, rouges, premiers crus et grands crus.",
+    intro:
+      "Chassagne-Montrachet produit certains des plus grands Chardonnay de Bourgogne ainsi que des rouges raffinés.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "saint-aubin": {
+    name: "Saint-Aubin",
+    title: "Vins de Saint-Aubin – Grands blancs de la Côte de Beaune",
+    description:
+      "Découvrez les vins de Saint-Aubin : blancs précis, premiers crus et domaines recherchés.",
+    intro:
+      "Saint-Aubin est reconnue pour ses blancs tendus et minéraux, à proximité immédiate de Montrachet.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "auxey-duresses": {
+    name: "Auxey-Duresses",
+    title: "Vins d’Auxey-Duresses – Côte de Beaune",
+    description:
+      "Découvrez les vins d’Auxey-Duresses, rouges et blancs de Bourgogne.",
+    intro:
+      "Auxey-Duresses offre des vins authentiques, équilibrés et expressifs.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "monthelie": {
+    name: "Monthélie",
+    title: "Vins de Monthélie – Côte de Beaune",
+    description:
+      "Découvrez les vins de Monthélie, rouges fins et blancs confidentiels de Bourgogne.",
+    intro:
+      "Monthélie produit des vins délicats et élégants entre Volnay et Meursault.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "saint-romain": {
+    name: "Saint-Romain",
+    title: "Vins de Saint-Romain – Bourgogne",
+    description:
+      "Découvrez les vins de Saint-Romain, blancs frais et rouges élégants de la Côte de Beaune.",
+    intro:
+      "Saint-Romain est une appellation d’altitude connue pour la fraîcheur et la précision de ses vins.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "corton": {
+    name: "Corton",
+    title: "Corton Grand Cru – Grands vins de Bourgogne",
+    description:
+      "Découvrez notre sélection de Corton Grand Cru, rouges puissants et grands vins de garde.",
+    intro:
+      "Corton est le seul Grand Cru rouge majeur de la Côte de Beaune et produit des vins profonds, structurés et durables.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "corton-charlemagne": {
+    name: "Corton-Charlemagne",
+    title: "Corton-Charlemagne Grand Cru – Grand blanc de Bourgogne",
+    description:
+      "Découvrez notre sélection de Corton-Charlemagne Grand Cru, l’un des plus grands vins blancs de Bourgogne.",
+    intro:
+      "Corton-Charlemagne est un Grand Cru blanc mythique, réputé pour sa puissance, sa minéralité et sa longévité.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "clos-de-vougeot": {
+    name: "Clos de Vougeot",
+    title: "Clos de Vougeot Grand Cru – Bourgogne",
+    description:
+      "Découvrez les vins du Clos de Vougeot Grand Cru, terroir historique de la Côte de Nuits.",
+    intro:
+      "Le Clos de Vougeot est l’un des Grands Crus les plus célèbres de Bourgogne.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "clos-de-la-roche": {
+    name: "Clos de la Roche",
+    title: "Clos de la Roche Grand Cru – Morey-Saint-Denis",
+    description:
+      "Découvrez notre sélection de Clos de la Roche Grand Cru, grand vin rouge de Bourgogne.",
+    intro:
+      "Clos de la Roche produit des vins profonds, puissants et complexes, parmi les plus grands de Morey-Saint-Denis.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "clos-saint-denis": {
+    name: "Clos Saint-Denis",
+    title: "Clos Saint-Denis Grand Cru – Morey-Saint-Denis",
+    description:
+      "Découvrez les vins de Clos Saint-Denis Grand Cru, réputés pour leur finesse et leur élégance.",
+    intro:
+      "Clos Saint-Denis est un Grand Cru de grande distinction, plus floral et délicat que ses voisins.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "clos-des-lambrays": {
+    name: "Clos des Lambrays",
+    title: "Clos des Lambrays Grand Cru – Morey-Saint-Denis",
+    description:
+      "Découvrez les vins du Clos des Lambrays Grand Cru, monopole historique de Morey-Saint-Denis.",
+    intro:
+      "Clos des Lambrays est un Grand Cru historique produisant des vins complexes, élégants et profonds.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "clos-de-tart": {
+    name: "Clos de Tart",
+    title: "Clos de Tart Grand Cru – Monopole de Morey-Saint-Denis",
+    description:
+      "Découvrez les vins du Clos de Tart Grand Cru, monopole emblématique de Bourgogne.",
+    intro:
+      "Clos de Tart est un Grand Cru monopole historique, reconnu pour la profondeur, la précision et la longévité de ses vins.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  musigny: {
+    name: "Musigny",
+    title: "Musigny Grand Cru – Grand vin de Chambolle-Musigny",
+    description:
+      "Découvrez notre sélection de Musigny Grand Cru, l’un des vins les plus rares et prestigieux de Bourgogne.",
+    intro:
+      "Musigny est un Grand Cru mythique, célèbre pour sa finesse, sa profondeur et son incomparable élégance.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "bonnes-mares": {
+    name: "Bonnes-Mares",
+    title: "Bonnes-Mares Grand Cru – Bourgogne",
+    description:
+      "Découvrez notre sélection de Bonnes-Mares Grand Cru, entre Chambolle-Musigny et Morey-Saint-Denis.",
+    intro:
+      "Bonnes-Mares produit des vins puissants, complexes et de très longue garde.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  chambertin: {
+    name: "Chambertin",
+    title: "Chambertin Grand Cru – Gevrey-Chambertin",
+    description:
+      "Découvrez notre sélection de Chambertin Grand Cru, l’un des vins rouges les plus prestigieux de Bourgogne.",
+    intro:
+      "Chambertin est un Grand Cru mythique, réputé pour sa puissance, sa profondeur et sa longévité.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "chambertin-clos-de-beze": {
+    name: "Chambertin-Clos de Bèze",
+    title: "Chambertin-Clos de Bèze Grand Cru – Bourgogne",
+    description:
+      "Découvrez les vins de Chambertin-Clos de Bèze Grand Cru, grands rouges de Gevrey-Chambertin.",
+    intro:
+      "Chambertin-Clos de Bèze associe puissance, noblesse et raffinement.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "chapelle-chambertin": {
+    name: "Chapelle-Chambertin",
+    title: "Chapelle-Chambertin Grand Cru – Bourgogne",
+    description:
+      "Découvrez notre sélection de Chapelle-Chambertin Grand Cru.",
+    intro:
+      "Chapelle-Chambertin est un Grand Cru élégant et raffiné de Gevrey-Chambertin.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "charmes-chambertin": {
+    name: "Charmes-Chambertin",
+    title: "Charmes-Chambertin Grand Cru – Bourgogne",
+    description:
+      "Découvrez notre sélection de Charmes-Chambertin Grand Cru.",
+    intro:
+      "Charmes-Chambertin produit des vins généreux, soyeux et profonds.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "mazoyeres-chambertin": {
+    name: "Mazoyères-Chambertin",
+    title: "Mazoyères-Chambertin Grand Cru – Bourgogne",
+    description:
+      "Découvrez notre sélection de Mazoyères-Chambertin Grand Cru.",
+    intro:
+      "Mazoyères-Chambertin est un Grand Cru puissant et complexe de Gevrey-Chambertin.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "mazis-chambertin": {
+    name: "Mazis-Chambertin",
+    title: "Mazis-Chambertin Grand Cru – Bourgogne",
+    description:
+      "Découvrez notre sélection de Mazis-Chambertin Grand Cru.",
+    intro:
+      "Mazis-Chambertin est réputé pour ses vins intenses, structurés et profonds.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "griotte-chambertin": {
+    name: "Griotte-Chambertin",
+    title: "Griotte-Chambertin Grand Cru – Bourgogne",
+    description:
+      "Découvrez notre sélection de Griotte-Chambertin Grand Cru.",
+    intro:
+      "Griotte-Chambertin est un Grand Cru rare, recherché pour sa finesse et son expression aromatique.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "latricieres-chambertin": {
+    name: "Latricières-Chambertin",
+    title: "Latricières-Chambertin Grand Cru – Bourgogne",
+    description:
+      "Découvrez notre sélection de Latricières-Chambertin Grand Cru.",
+    intro:
+      "Latricières-Chambertin produit des vins précis, minéraux et de grande garde.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "ruchottes-chambertin": {
+    name: "Ruchottes-Chambertin",
+    title: "Ruchottes-Chambertin Grand Cru – Bourgogne",
+    description:
+      "Découvrez notre sélection de Ruchottes-Chambertin Grand Cru.",
+    intro:
+      "Ruchottes-Chambertin est un Grand Cru rare, élégant et minéral.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  echezeaux: {
+    name: "Échezeaux",
+    title: "Échezeaux Grand Cru – Bourgogne",
+    description:
+      "Découvrez notre sélection d’Échezeaux Grand Cru, grands rouges de la Côte de Nuits.",
+    intro:
+      "Échezeaux est un Grand Cru renommé, capable d’allier charme, ampleur et complexité.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "grands-echezeaux": {
+    name: "Grands-Échezeaux",
+    title: "Grands-Échezeaux Grand Cru – Bourgogne",
+    description:
+      "Découvrez notre sélection de Grands-Échezeaux Grand Cru.",
+    intro:
+      "Grands-Échezeaux produit des vins profonds, structurés et raffinés.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  richebourg: {
+    name: "Richebourg",
+    title: "Richebourg Grand Cru – Vosne-Romanée",
+    description:
+      "Découvrez notre sélection de Richebourg Grand Cru, l’un des vins les plus prestigieux de Bourgogne.",
+    intro:
+      "Richebourg est un Grand Cru monumental, associant puissance, profondeur et raffinement.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "romanee-saint-vivant": {
+    name: "Romanée-Saint-Vivant",
+    title: "Romanée-Saint-Vivant Grand Cru – Vosne-Romanée",
+    description:
+      "Découvrez notre sélection de Romanée-Saint-Vivant Grand Cru.",
+    intro:
+      "Romanée-Saint-Vivant est réputée pour la finesse, la sensualité et la complexité de ses vins.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "la-tache": {
+    name: "La Tâche",
+    title: "La Tâche Grand Cru – Monopole de Vosne-Romanée",
+    description:
+      "Découvrez les vins de La Tâche Grand Cru, monopole mythique de Bourgogne.",
+    intro:
+      "La Tâche est l’un des vins les plus rares et recherchés au monde, connu pour sa profondeur et son intensité.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "romanee-conti": {
+    name: "Romanée-Conti",
+    title: "Romanée-Conti Grand Cru – Vin mythique de Bourgogne",
+    description:
+      "Découvrez Romanée-Conti Grand Cru, l’un des vins les plus rares et prestigieux au monde.",
+    intro:
+      "Romanée-Conti est un Grand Cru monopole mythique, symbole absolu de la Bourgogne.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "la-romanee": {
+    name: "La Romanée",
+    title: "La Romanée Grand Cru – Vosne-Romanée",
+    description:
+      "Découvrez les vins de La Romanée Grand Cru, l’un des plus petits Grands Crus de Bourgogne.",
+    intro:
+      "La Romanée est un Grand Cru minuscule et rare, connu pour sa finesse et sa profondeur.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "la-grande-rue": {
+    name: "La Grande Rue",
+    title: "La Grande Rue Grand Cru – Vosne-Romanée",
+    description:
+      "Découvrez les vins de La Grande Rue Grand Cru, monopole de Vosne-Romanée.",
+    intro:
+      "La Grande Rue est un Grand Cru monopole situé entre La Tâche et Romanée-Conti.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  montrachet: {
+    name: "Montrachet",
+    title: "Montrachet Grand Cru – Grand blanc de Bourgogne",
+    description:
+      "Découvrez notre sélection de Montrachet Grand Cru, référence absolue des grands vins blancs de Bourgogne.",
+    intro:
+      "Montrachet est considéré comme l’un des plus grands terroirs de Chardonnay au monde.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "chevalier-montrachet": {
+    name: "Chevalier-Montrachet",
+    title: "Chevalier-Montrachet Grand Cru – Bourgogne",
+    description:
+      "Découvrez notre sélection de Chevalier-Montrachet Grand Cru.",
+    intro:
+      "Chevalier-Montrachet produit des blancs d’une grande finesse, tendus, complexes et lumineux.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "batard-montrachet": {
+    name: "Bâtard-Montrachet",
+    title: "Bâtard-Montrachet Grand Cru – Bourgogne",
+    description:
+      "Découvrez notre sélection de Bâtard-Montrachet Grand Cru.",
+    intro:
+      "Bâtard-Montrachet est un Grand Cru blanc puissant, ample et de très longue garde.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "bienvenues-batard-montrachet": {
+    name: "Bienvenues-Bâtard-Montrachet",
+    title: "Bienvenues-Bâtard-Montrachet Grand Cru – Bourgogne",
+    description:
+      "Découvrez notre sélection de Bienvenues-Bâtard-Montrachet Grand Cru.",
+    intro:
+      "Bienvenues-Bâtard-Montrachet produit des blancs raffinés, élégants et complexes.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
+  "criots-batard-montrachet": {
+    name: "Criots-Bâtard-Montrachet",
+    title: "Criots-Bâtard-Montrachet Grand Cru – Bourgogne",
+    description:
+      "Découvrez notre sélection de Criots-Bâtard-Montrachet Grand Cru.",
+    intro:
+      "Criots-Bâtard-Montrachet est un Grand Cru rare, produisant des blancs riches et harmonieux.",
     boutiqueHref: "/boutique/bourgogne",
     boutiqueLabel: "Retour à la boutique Bourgogne",
   },
@@ -204,19 +665,13 @@ function slugify(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
-function categoryToSlug(value?: string | null) {
-  if (!value) return "";
-
-  const normalized = slugify(value);
-
-  if (normalized.includes("italie")) return "italie";
-  if (normalized.includes("bourgogne")) return "bourgogne";
-  if (normalized.includes("bordeaux")) return "bordeaux";
-  if (normalized.includes("rhone")) return "rhone";
-  if (normalized.includes("espagne")) return "espagne";
-  if (normalized.includes("primeur")) return "primeurs-2025";
-
-  return normalized;
+function getComparableAppellationSlug(value?: string | null) {
+  return slugify(String(value || ""))
+    .replace(/-grand-cru$/, "")
+    .replace(/-premier-cru$/, "")
+    .replace(/-1er-cru$/, "")
+    .replace(/-aoc$/, "")
+    .replace(/-appellation-d-origine-controlee$/, "");
 }
 
 function getWineHref(wine: AppellationWine) {
@@ -238,7 +693,7 @@ function formatPrice(price?: string | number | null) {
             .toString()
             .replace(/[€\s]/g, "")
             .replace(/\./g, "")
-            .replace(",", "."),
+            .replace(",", ".")
         );
 
   if (Number.isNaN(value) || value <= 0) return "Prix sur demande";
@@ -249,6 +704,17 @@ function formatPrice(price?: string | number | null) {
       maximumFractionDigits: 2,
     }) + " € HT"
   );
+}
+
+function getWineGroupTitle(wine: AppellationWine) {
+  const name = String(wine.name || "Vin sans nom").trim();
+  const vintage = String(wine.vintage || "").trim();
+
+  if (!vintage) return name;
+
+  return name
+    .replace(new RegExp(`\\s*[–—-]?\\s*${vintage}\\s*$`), "")
+    .trim();
 }
 
 export async function generateMetadata({
@@ -294,23 +760,129 @@ export default async function AppellationPage({
     notFound();
   }
 
-  const { data: wines, error } = await supabase
-    .from("wines")
-    .select(
-      "id, slug, name, producer, vintage, price, image, appellation, region, category, classification, bottle_size, packaging, hidden_from_site",
-    )
-    .eq("appellation", appellation.name)
-    .neq("hidden_from_site", true)
-    .order("name", { ascending: true })
-    .order("vintage", { ascending: false });
-
-  const visibleWines = ((wines || []) as AppellationWine[]).filter(
-    (wine) => wine.hidden_from_site !== true,
+  const appellationSearchTerms = Array.from(
+    new Set([
+      appellation.name,
+      `${appellation.name} Grand Cru`,
+      `${appellation.name} Premier Cru`,
+      `${appellation.name} 1er Cru`,
+    ])
   );
 
+  const appellationQueries = await Promise.all(
+    appellationSearchTerms.map((term) =>
+      supabase
+        .from("wines")
+        .select(
+          "id, slug, name, producer, vintage, price, image, appellation, region, category, classification, bottle_size, packaging, hidden_from_site"
+        )
+        .ilike("appellation", term)
+        .neq("hidden_from_site", true)
+    )
+  );
+
+  const nameQuery = await supabase
+    .from("wines")
+    .select(
+      "id, slug, name, producer, vintage, price, image, appellation, region, category, classification, bottle_size, packaging, hidden_from_site"
+    )
+    .ilike("name", `%${appellation.name}%`)
+    .neq("hidden_from_site", true);
+
+  const error =
+    appellationQueries.find((result) => result.error)?.error || nameQuery.error;
+
+  const wineMap = new Map<string, AppellationWine>();
+
+  [...appellationQueries, nameQuery].forEach((result) => {
+    ((result.data || []) as AppellationWine[]).forEach((wine) => {
+      wineMap.set(wine.id, wine);
+    });
+  });
+
+  const visibleWines = Array.from(wineMap.values()).sort((a, b) => {
+    const producerComparison = String(a.producer || "").localeCompare(
+      String(b.producer || ""),
+      "fr"
+    );
+
+    if (producerComparison !== 0) return producerComparison;
+
+    const nameComparison = String(a.name || "").localeCompare(
+      String(b.name || ""),
+      "fr"
+    );
+
+    if (nameComparison !== 0) return nameComparison;
+
+    return Number(b.vintage || 0) - Number(a.vintage || 0);
+  });
+
   const producers = Array.from(
-    new Set(visibleWines.map((wine) => wine.producer).filter(Boolean)),
+    new Set(visibleWines.map((wine) => wine.producer).filter(Boolean))
   ) as string[];
+
+  const producerGroups = Array.from(
+    visibleWines.reduce(
+      (
+        map,
+        wine
+      ): Map<
+        string,
+        {
+          title: string;
+          wineMap: Map<string, { title: string; wines: AppellationWine[] }>;
+        }
+      > => {
+        const producerTitle =
+          String(wine.producer || "").trim() || "Producteur non précisé";
+        const producerKey = slugify(producerTitle);
+        const wineTitle = getWineGroupTitle(wine);
+        const wineKey = slugify(wineTitle);
+
+        if (!map.has(producerKey)) {
+          map.set(producerKey, {
+            title: producerTitle,
+            wineMap: new Map(),
+          });
+        }
+
+        const producerGroup = map.get(producerKey)!;
+
+        if (!producerGroup.wineMap.has(wineKey)) {
+          producerGroup.wineMap.set(wineKey, {
+            title: wineTitle,
+            wines: [],
+          });
+        }
+
+        producerGroup.wineMap.get(wineKey)!.wines.push(wine);
+
+        return map;
+      },
+      new Map()
+    ).values()
+  )
+    .sort((a, b) => a.title.localeCompare(b.title, "fr"))
+    .map((producerGroup) => ({
+      title: producerGroup.title,
+      wineGroups: Array.from(producerGroup.wineMap.values())
+        .sort((a, b) => a.title.localeCompare(b.title, "fr"))
+        .map((wineGroup) => ({
+          ...wineGroup,
+          wines: [...wineGroup.wines].sort((a, b) => {
+            const vintageA = Number(a.vintage || 0);
+            const vintageB = Number(b.vintage || 0);
+
+            if (vintageA !== vintageB) return vintageB - vintageA;
+
+            return String(a.name || "").localeCompare(
+              String(b.name || ""),
+              "fr"
+            );
+          }),
+        })),
+    }));
 
   const itemListJsonLd = {
     "@context": "https://schema.org",
@@ -435,80 +1007,119 @@ export default async function AppellationPage({
             Aucun vin disponible actuellement pour cette appellation.
           </div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {visibleWines.map((wine) => {
-              const regionValue = wine.region || wine.category;
-              const regionSlug = categoryToSlug(regionValue);
-
-              return (
-                <article
-                  key={wine.id}
-                  className="group overflow-hidden rounded-[1.7rem] border border-[#dfcfb8] bg-[#fffaf3] shadow-sm transition hover:-translate-y-1 hover:border-[#d8b56d] hover:shadow-xl"
-                >
-                  <Link href={getWineHref(wine)} className="block">
-                    <div className="flex h-[245px] items-center justify-center bg-[#efe3d2] p-6">
-                      {wine.image ? (
-                        <img
-                          src={wine.image}
-                          alt={`Bouteille de ${wine.name || "vin"} - ${appellation.name}`}
-                          className="max-h-[205px] w-auto object-contain transition group-hover:scale-105"
-                        />
-                      ) : (
-                        <span className="text-sm text-[#8a6a2f]">
-                          Image non disponible
-                        </span>
-                      )}
-                    </div>
-                  </Link>
-
-                  <div className="p-5">
-                    {wine.producer && (
-                      <Link
-                        href={`/producteur/${slugify(wine.producer)}`}
-                        className="mb-3 block rounded-full bg-[#24110d]/90 px-3 py-1.5 text-center text-[10px] uppercase tracking-[0.16em] text-[#d8b56d] transition hover:bg-[#8a1f1f]"
-                      >
-                        {wine.producer}
-                      </Link>
-                    )}
-
-                    <Link href={getWineHref(wine)} className="block">
-                      <h3 className="min-h-[64px] font-serif text-sm leading-tight text-[#24110d] group-hover:text-[#8a1f1f]">
-                        {wine.name}
-                      </h3>
-                    </Link>
-
-                    <div className="mt-3 space-y-1 text-sm text-[#6d5b50]">
-                      {wine.vintage && <p>Millésime {wine.vintage}</p>}
-                      {wine.classification && <p>{wine.classification}</p>}
-                      {wine.bottle_size && (
-                        <p>Flaconnage : {wine.bottle_size}</p>
-                      )}
-                      {wine.packaging && <p>Caissage : {wine.packaging}</p>}
-
-                      {regionValue && regionSlug && (
-                        <Link
-                          href={appellation.boutiqueHref}
-                          className="inline-block underline underline-offset-4 transition hover:text-[#8a1f1f]"
-                        >
-                          {regionValue}
-                        </Link>
-                      )}
-                    </div>
-
-                    <p className="mt-4 font-serif text-2xl text-[#8a1f1f]">
-                      {formatPrice(wine.price)}
+          <div className="space-y-9">
+            {producerGroups.map((producerGroup) => (
+              <section key={producerGroup.title} className="space-y-5">
+                <div className="rounded-xl border border-[#d8b56d]/40 bg-[#24110d] px-5 py-2.5 shadow-sm">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.24em] text-white/50">
+                      Producteur
                     </p>
 
-                    <Link
-                      href={getWineHref(wine)}
-                      className="mt-5 inline-flex w-full justify-center rounded-full bg-[#8a1f1f] px-5 py-3 text-center text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#641313]"
-                    >
-                      Voir le vin
-                    </Link>
+                    <h3 className="font-serif text-2xl text-[#d8b56d]">
+                      {producerGroup.title}
+                    </h3>
                   </div>
-                </article>
-              );
-            })}
+                </div>
+
+                <div className="space-y-6">
+                  {producerGroup.wineGroups.map((wineGroup) => (
+                    <section
+                      key={`${producerGroup.title}-${wineGroup.title}`}
+                    >
+                      <div className="mb-4 rounded-xl border border-[#d8c6ae] bg-[#fffaf3] px-5 py-2.5 shadow-sm">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                            <p className="text-[9px] font-semibold uppercase tracking-[0.22em] text-[#8a6a2f]">
+                              Vin
+                            </p>
+
+                            <h4 className="font-serif text-xl leading-tight text-[#24110d]">
+                              {wineGroup.title}
+                            </h4>
+                          </div>
+
+                          <p className="text-xs text-[#7d6b5e]">
+                            {wineGroup.wines.length} millésime
+                            {wineGroup.wines.length > 1 ? "s" : ""}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                        {wineGroup.wines.map((wine) => (
+                          <article
+                            key={wine.id}
+                            className="group overflow-hidden rounded-[1.7rem] border border-[#dfcfb8] bg-[#fffaf3] shadow-sm transition hover:-translate-y-1 hover:border-[#d8b56d] hover:shadow-xl"
+                          >
+                            <Link href={getWineHref(wine)} className="block">
+                              <div className="flex h-[245px] items-center justify-center bg-[#efe3d2] p-6">
+                                {wine.image ? (
+                                  <img
+                                    src={wine.image}
+                                    alt={`Bouteille de ${
+                                      wine.name || "vin"
+                                    } - ${appellation.name}`}
+                                    className="max-h-[205px] w-auto object-contain transition group-hover:scale-105"
+                                  />
+                                ) : (
+                                  <span className="text-sm text-[#8a6a2f]">
+                                    Image non disponible
+                                  </span>
+                                )}
+                              </div>
+                            </Link>
+
+                            <div className="p-5">
+                              {wine.producer && (
+                                <Link
+                                  href={`/producteur/${slugify(wine.producer)}`}
+                                  className="mb-3 block rounded-full bg-[#24110d]/90 px-3 py-1.5 text-center text-[10px] uppercase tracking-[0.16em] text-[#d8b56d] transition hover:bg-[#8a1f1f]"
+                                >
+                                  {wine.producer}
+                                </Link>
+                              )}
+
+                              <Link href={getWineHref(wine)} className="block">
+                                <h3 className="min-h-[64px] font-serif text-sm leading-tight text-[#24110d] group-hover:text-[#8a1f1f]">
+                                  {wine.name}
+                                </h3>
+                              </Link>
+
+                              <div className="mt-3 space-y-1 text-sm text-[#6d5b50]">
+                                {wine.vintage && (
+                                  <p>Millésime {wine.vintage}</p>
+                                )}
+                                {wine.classification && (
+                                  <p>{wine.classification}</p>
+                                )}
+                                {wine.bottle_size && (
+                                  <p>Flaconnage : {wine.bottle_size}</p>
+                                )}
+                                {wine.packaging && (
+                                  <p>Caissage : {wine.packaging}</p>
+                                )}
+                              </div>
+
+                              <p className="mt-4 font-serif text-2xl text-[#8a1f1f]">
+                                {formatPrice(wine.price)}
+                              </p>
+
+                              <Link
+                                href={getWineHref(wine)}
+                                className="mt-5 inline-flex w-full justify-center rounded-full bg-[#8a1f1f] px-5 py-3 text-center text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#641313]"
+                              >
+                                Voir le vin
+                              </Link>
+                            </div>
+                          </article>
+                        ))}
+                      </div>
+                    </section>
+                  ))}
+                </div>
+              </section>
+            ))}
           </div>
         )}
       </section>
