@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import { PRODUCER_EDITORIAL_LIBRARY } from "@/lib/producer-editorial";
 
 type Wine = {
   id: string;
@@ -22,7 +23,6 @@ type WineGroup = {
 };
 
 const SITE_URL = "https://www.thewinewatchers.com";
-
 function slugify(value: string) {
   return value
     .toLowerCase()
@@ -66,60 +66,36 @@ function getAbsoluteWineUrl(wine: Wine) {
   return `${SITE_URL}${getWineUrl(wine)}`;
 }
 
-function normalizeForComparison(value?: string | number | null) {
-  return String(value ?? "")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[’']/g, " ")
-    .replace(/[^a-z0-9]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
 function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function getWineGroupTitle(wine: Wine) {
   const originalName = String(wine.name || "Vin sans nom").trim();
-  const producer = String(wine.producer || "").trim();
+  const vintage = String(wine.vintage || "").trim();
 
-  let title = originalName
-    .replace(/\b(?:en\s+)?primeurs?\b/gi, " ")
-    .replace(/\b(?:19|20)\d{2}\b/g, " ")
-    .replace(/\b(?:cbo|owc)\s*\/?\s*\d+\b/gi, " ")
-    .replace(/\b(?:75\s*cl|150\s*cl|1[.,]5\s*l|magnum)\b/gi, " ")
-    .replace(/\s*[–—-]\s*(?:e\.?\s*guigal|domaine\s+guigal|maison\s+guigal)\s*$/gi, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  if (vintage) {
+    const titleBeforeVintage = originalName
+      .replace(
+        new RegExp(
+          `\\s+${escapeRegExp(vintage)}(?:\\s*[–—-]\\s*.*)?$`,
+          "i"
+        ),
+        ""
+      )
+      .trim();
 
-  if (producer) {
-    const normalizedTitle = normalizeForComparison(title);
-    const normalizedProducer = normalizeForComparison(producer);
-
-    if (
-      normalizedTitle !== normalizedProducer &&
-      normalizedTitle.includes(normalizedProducer)
-    ) {
-      title = title
-        .replace(new RegExp(escapeRegExp(producer), "gi"), " ")
-        .replace(/\b(?:du|de|des|d|la|le)\b\s*$/gi, " ")
-        .replace(/\s+/g, " ")
-        .trim();
+    if (titleBeforeVintage) {
+      return titleBeforeVintage;
     }
   }
 
-  title = title
-    .replace(
-      /\b(?:cote rotie|côte rotie|côte-rôtie|côtes? du rhone|vallée du rhône|vallee du rhone)\b/gi,
-      " "
-    )
-    .replace(/\s*[–—-]\s*$/g, " ")
+  const titleWithoutYear = originalName
+    .replace(/\s+(?:19|20)\d{2}(?:\s*[–—-]\s*.*)?$/i, "")
     .replace(/\s+/g, " ")
     .trim();
 
-  return title || originalName;
+  return titleWithoutYear || originalName;
 }
 
 export async function generateMetadata({
@@ -150,9 +126,15 @@ export async function generateMetadata({
     };
   }
 
+  const editorialContent = PRODUCER_EDITORIAL_LIBRARY[slug];
+
   return {
-    title: `${producer} – Vins disponibles | The Wine Watchers`,
-    description: `Découvrez les vins disponibles de ${producer} chez The Wine Watchers : grands crus, millésimes recherchés et bouteilles de collection.`,
+    title: editorialContent
+      ? `${producer} – Histoire, terroir et vins | The Wine Watchers`
+      : `${producer} – Vins disponibles | The Wine Watchers`,
+    description: editorialContent
+      ? editorialContent.introduction
+      : `Découvrez les vins disponibles de ${producer} chez The Wine Watchers : grands crus, millésimes recherchés et bouteilles de collection.`,
     alternates: {
       canonical: `${SITE_URL}/producteur/${slug}`,
     },
@@ -242,6 +224,8 @@ export default async function ProducteurPage({
       }),
     }));
 
+  const editorialContent = PRODUCER_EDITORIAL_LIBRARY[slug];
+
   const itemListJsonLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
@@ -324,6 +308,48 @@ export default async function ProducteurPage({
           </div>
         )}
 
+        {editorialContent && (
+          <article className="mb-14 overflow-hidden rounded-[2rem] border border-[#dfcfb8] bg-[#fffaf3] shadow-sm">
+            <div className="border-b border-[#dfcfb8] bg-[#24110d] px-6 py-10 text-white md:px-10">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#d8b56d]">
+                {editorialContent.eyebrow}
+              </p>
+
+              <h2 className="mt-4 max-w-4xl font-serif text-3xl leading-tight md:text-5xl">
+                {editorialContent.title}
+              </h2>
+
+              <p className="mt-6 max-w-4xl text-base leading-8 text-white/80 md:text-lg">
+                {editorialContent.introduction}
+              </p>
+            </div>
+
+            <div className="grid gap-10 px-6 py-10 md:px-10 lg:grid-cols-2">
+              {editorialContent.sections.map((section) => (
+                <section key={section.title}>
+                  <h3 className="font-serif text-2xl leading-tight text-[#24110d]">
+                    {section.title}
+                  </h3>
+
+                  <div className="mt-4 space-y-4 text-sm leading-7 text-[#6d5b50] md:text-base md:leading-8">
+                    {section.paragraphs.map((paragraph) => (
+                      <p key={paragraph}>{paragraph}</p>
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
+
+            {editorialContent.conclusion && (
+              <div className="border-t border-[#dfcfb8] bg-white px-6 py-8 md:px-10">
+                <p className="max-w-5xl font-serif text-xl leading-9 text-[#6f1717] md:text-2xl">
+                  {editorialContent.conclusion}
+                </p>
+              </div>
+            )}
+          </article>
+        )}
+
         <div className="mb-8">
           <p className="text-sm uppercase tracking-[0.28em] text-[#8a6a2f]">
             Sélection disponible
@@ -368,7 +394,13 @@ export default async function ProducteurPage({
                   </div>
                 </div>
 
-                <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+                <div
+                  className="grid gap-6"
+                  style={{
+                    gridTemplateColumns:
+                      "repeat(auto-fit, minmax(260px, 1fr))",
+                  }}
+                >
                   {wineGroup.wines.map((wine) => (
                     <article
                       key={wine.id}
