@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import Menu from "./components/Menu";
 import Footer from "./components/Footer";
@@ -193,6 +194,8 @@ export default function RootLayout({
         <Footer />
 
         <CookieBanner />
+
+        <Analytics />
       </body>
     </html>
   );
