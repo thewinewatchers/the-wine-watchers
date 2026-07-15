@@ -635,6 +635,147 @@ const appellations: Record<
     boutiqueHref: "/boutique/bourgogne",
     boutiqueLabel: "Retour à la boutique Bourgogne",
   },
+  bolgheri: {
+    name: "Bolgheri",
+    title: "Vins de Bolgheri – Grands vins de Toscane",
+    description:
+      "Découvrez notre sélection de vins de Bolgheri : Sassicaia, Ornellaia, Masseto et grandes cuvées de la côte toscane.",
+    intro:
+      "Bolgheri est l’un des terroirs les plus prestigieux d’Italie. Située sur la côte toscane, l’appellation est devenue célèbre pour ses grands vins rouges d’inspiration bordelaise, capables d’allier profondeur, élégance et remarquable potentiel de garde.",
+    boutiqueHref: "/boutique/italie",
+    boutiqueLabel: "Retour à la boutique Italie",
+  },
+  "bolgheri-doc": {
+    name: "Bolgheri DOC",
+    title: "Vins de Bolgheri DOC – Grandes cuvées de Toscane",
+    description:
+      "Découvrez notre sélection de vins de Bolgheri DOC : rouges toscans prestigieux, domaines emblématiques et millésimes recherchés.",
+    intro:
+      "Bolgheri DOC rassemble certaines des cuvées les plus réputées de Toscane. Le terroir maritime, les sols variés et l’usage de cépages internationaux donnent naissance à des vins puissants, raffinés et taillés pour la garde.",
+    boutiqueHref: "/boutique/italie",
+    boutiqueLabel: "Retour à la boutique Italie",
+  },
+  "bolgheri-superiore": {
+    name: "Bolgheri Superiore",
+    title: "Bolgheri Superiore – Grands vins rouges de Toscane",
+    description:
+      "Découvrez notre sélection de Bolgheri Superiore : cuvées de prestige, domaines réputés et grands millésimes.",
+    intro:
+      "Bolgheri Superiore représente le sommet qualitatif de l’appellation Bolgheri. Ces vins rouges concentrés, complexes et structurés bénéficient d’élevages ambitieux et d’un grand potentiel de vieillissement.",
+    boutiqueHref: "/boutique/italie",
+    boutiqueLabel: "Retour à la boutique Italie",
+  },
+  "bolgheri-sassicaia": {
+    name: "Bolgheri Sassicaia",
+    title: "Bolgheri Sassicaia DOC – Vin iconique de Toscane",
+    description:
+      "Découvrez notre sélection de Bolgheri Sassicaia DOC, l’un des vins les plus prestigieux et recherchés d’Italie.",
+    intro:
+      "Bolgheri Sassicaia DOC est une appellation unique, créée autour du vin Sassicaia. Elle consacre l’identité d’un terroir exceptionnel de la côte toscane et un style devenu une référence internationale.",
+    boutiqueHref: "/boutique/italie",
+    boutiqueLabel: "Retour à la boutique Italie",
+  },
+  "bolgheri-sassicaia-doc": {
+    name: "Bolgheri Sassicaia DOC",
+    title: "Bolgheri Sassicaia DOC – Grand vin de Toscane",
+    description:
+      "Découvrez les millésimes de Bolgheri Sassicaia DOC disponibles chez The Wine Watchers.",
+    intro:
+      "Bolgheri Sassicaia DOC distingue l’un des vins les plus emblématiques d’Italie. Issu principalement de Cabernet Sauvignon, Sassicaia séduit par sa précision, son élégance et sa longévité.",
+    boutiqueHref: "/boutique/italie",
+    boutiqueLabel: "Retour à la boutique Italie",
+  },
+  toscana: {
+    name: "Toscana",
+    title: "Vins de Toscane – Grands vins italiens",
+    description:
+      "Découvrez notre sélection de vins de Toscane : Super Toscans, Bolgheri, Montalcino et domaines emblématiques.",
+    intro:
+      "La Toscane est l’une des régions viticoles les plus célèbres d’Italie. Elle produit aussi bien des vins issus du Sangiovese que de grandes cuvées modernes fondées sur des cépages internationaux.",
+    boutiqueHref: "/boutique/italie",
+    boutiqueLabel: "Retour à la boutique Italie",
+  },
+  "toscana-igt": {
+    name: "Toscana IGT",
+    title: "Vins Toscana IGT – Super Toscans et grandes cuvées",
+    description:
+      "Découvrez notre sélection de Toscana IGT : Super Toscans, domaines prestigieux et millésimes recherchés.",
+    intro:
+      "Toscana IGT a permis l’émergence de nombreux vins italiens de légende. Cette indication géographique offre une grande liberté d’assemblage et rassemble certaines des cuvées les plus recherchées de Toscane.",
+    boutiqueHref: "/boutique/italie",
+    boutiqueLabel: "Retour à la boutique Italie",
+  },
+  "brunello-di-montalcino": {
+    name: "Brunello di Montalcino",
+    title: "Brunello di Montalcino DOCG – Grands vins de Toscane",
+    description:
+      "Découvrez notre sélection de Brunello di Montalcino DOCG : grands domaines, millésimes de garde et cuvées prestigieuses.",
+    intro:
+      "Brunello di Montalcino est l’une des appellations les plus prestigieuses d’Italie. Produit à partir de Sangiovese, ce grand vin toscan associe puissance, complexité et remarquable aptitude au vieillissement.",
+    boutiqueHref: "/boutique/italie",
+    boutiqueLabel: "Retour à la boutique Italie",
+  },
+  "brunello-di-montalcino-docg": {
+    name: "Brunello di Montalcino DOCG",
+    title: "Brunello di Montalcino DOCG – Vins de garde italiens",
+    description:
+      "Découvrez les Brunello di Montalcino DOCG disponibles chez The Wine Watchers.",
+    intro:
+      "Brunello di Montalcino DOCG figure parmi les appellations majeures d’Italie. Ses vins profonds et structurés gagnent en finesse et en complexité au fil du temps.",
+    boutiqueHref: "/boutique/italie",
+    boutiqueLabel: "Retour à la boutique Italie",
+  },
+  montalcino: {
+    name: "Montalcino",
+    title: "Vins de Montalcino – Grands vins de Toscane",
+    description:
+      "Découvrez notre sélection de vins de Montalcino : Brunello, Rosso et grandes cuvées toscanes.",
+    intro:
+      "Montalcino est un territoire viticole emblématique du sud de la Toscane. Ses collines, son climat et son Sangiovese donnent naissance à des vins de grande personnalité.",
+    boutiqueHref: "/boutique/italie",
+    boutiqueLabel: "Retour à la boutique Italie",
+  },
+  barolo: {
+    name: "Barolo",
+    title: "Vins de Barolo DOCG – Grands Nebbiolo du Piémont",
+    description:
+      "Découvrez notre sélection de Barolo DOCG : grands domaines, crus prestigieux et millésimes de garde.",
+    intro:
+      "Barolo est l’une des appellations les plus prestigieuses du Piémont. Issus du Nebbiolo, ses vins associent puissance, finesse aromatique et immense potentiel de vieillissement.",
+    boutiqueHref: "/boutique/italie",
+    boutiqueLabel: "Retour à la boutique Italie",
+  },
+  "barolo-docg": {
+    name: "Barolo DOCG",
+    title: "Barolo DOCG – Grands vins rouges du Piémont",
+    description:
+      "Découvrez les Barolo DOCG disponibles chez The Wine Watchers.",
+    intro:
+      "Barolo DOCG produit certains des vins rouges les plus nobles d’Italie. Leur structure tannique, leur complexité et leur capacité de garde en font des références pour les collectionneurs.",
+    boutiqueHref: "/boutique/italie",
+    boutiqueLabel: "Retour à la boutique Italie",
+  },
+  barbaresco: {
+    name: "Barbaresco",
+    title: "Vins de Barbaresco DOCG – Élégance du Piémont",
+    description:
+      "Découvrez notre sélection de Barbaresco DOCG : grands Nebbiolo, domaines réputés et millésimes recherchés.",
+    intro:
+      "Barbaresco est une grande appellation du Piémont, également fondée sur le Nebbiolo. Ses vins sont réputés pour leur élégance, leur finesse et leur expression aromatique.",
+    boutiqueHref: "/boutique/italie",
+    boutiqueLabel: "Retour à la boutique Italie",
+  },
+  "barbaresco-docg": {
+    name: "Barbaresco DOCG",
+    title: "Barbaresco DOCG – Grands vins du Piémont",
+    description:
+      "Découvrez les Barbaresco DOCG disponibles chez The Wine Watchers.",
+    intro:
+      "Barbaresco DOCG donne naissance à des Nebbiolo raffinés et complexes, souvent plus accessibles dans leur jeunesse que les Barolo tout en conservant un excellent potentiel de garde.",
+    boutiqueHref: "/boutique/italie",
+    boutiqueLabel: "Retour à la boutique Italie",
+  },
+
 };
 
 type AppellationWine = {
@@ -671,6 +812,12 @@ function getComparableAppellationSlug(value?: string | null) {
     .replace(/-premier-cru$/, "")
     .replace(/-1er-cru$/, "")
     .replace(/-aoc$/, "")
+    .replace(/-docg$/, "")
+    .replace(/-doc$/, "")
+    .replace(/-igt$/, "")
+    .replace(/-denominazione-di-origine-controllata-e-garantita$/, "")
+    .replace(/-denominazione-di-origine-controllata$/, "")
+    .replace(/-indicazione-geografica-tipica$/, "")
     .replace(/-appellation-d-origine-controlee$/, "");
 }
 
@@ -709,6 +856,15 @@ function formatPrice(price?: string | number | null) {
 function getWineGroupTitle(wine: AppellationWine) {
   const name = String(wine.name || "Vin sans nom").trim();
   const vintage = String(wine.vintage || "").trim();
+  const appellationSlug = slugify(wine.appellation || "");
+
+  if (
+    appellationSlug === "bolgheri" ||
+    appellationSlug === "bolgheri-doc" ||
+    appellationSlug === "bolgheri-superiore"
+  ) {
+    return "Vins de Bolgheri";
+  }
 
   if (!vintage) return name;
 
@@ -766,6 +922,9 @@ export default async function AppellationPage({
       `${appellation.name} Grand Cru`,
       `${appellation.name} Premier Cru`,
       `${appellation.name} 1er Cru`,
+      `${appellation.name} DOC`,
+      `${appellation.name} DOCG`,
+      `${appellation.name} IGT`,
     ])
   );
 
@@ -936,7 +1095,9 @@ export default async function AppellationPage({
           >
             {appellation.boutiqueHref.includes("bourgogne")
               ? "Bourgogne"
-              : "Bordeaux"}
+              : appellation.boutiqueHref.includes("italie")
+                ? "Italie"
+                : "Bordeaux"}
           </Link>
           <span>/</span>
           <span className="font-medium text-[#3b1f1f]">{appellation.name}</span>
