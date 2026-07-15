@@ -776,6 +776,137 @@ const appellations: Record<
     boutiqueLabel: "Retour à la boutique Italie",
   },
 
+  "ribera-del-duero": {
+    name: "Ribera del Duero",
+    title: "Vins de Ribera del Duero – Grands vins d’Espagne",
+    description:
+      "Découvrez notre sélection de vins de Ribera del Duero : grands Tempranillo, domaines prestigieux et millésimes recherchés.",
+    intro:
+      "Ribera del Duero est l’une des appellations les plus prestigieuses d’Espagne. Implantée le long du Duero, elle produit des rouges profonds, structurés et élégants, principalement issus du Tempranillo.",
+    boutiqueHref: "/boutique/espagne",
+    boutiqueLabel: "Retour à la boutique Espagne",
+  },
+  "ribera-del-duero-do": {
+    name: "Ribera del Duero DO",
+    title: "Ribera del Duero DO – Grands Tempranillo espagnols",
+    description:
+      "Découvrez les vins de Ribera del Duero DO disponibles chez The Wine Watchers.",
+    intro:
+      "Ribera del Duero DO rassemble certains des domaines les plus recherchés d’Espagne. L’altitude, les amplitudes thermiques et les sols variés donnent naissance à des vins concentrés, précis et aptes à une longue garde.",
+    boutiqueHref: "/boutique/espagne",
+    boutiqueLabel: "Retour à la boutique Espagne",
+  },
+  rioja: {
+    name: "Rioja",
+    title: "Vins de Rioja – Grandes cuvées espagnoles",
+    description:
+      "Découvrez notre sélection de vins de Rioja : Gran Reserva, Reserva, domaines historiques et millésimes de garde.",
+    intro:
+      "Rioja est l’appellation espagnole la plus célèbre. Elle est reconnue pour ses vins élégants, complexes et harmonieux, souvent élevés longuement en fût puis en bouteille.",
+    boutiqueHref: "/boutique/espagne",
+    boutiqueLabel: "Retour à la boutique Espagne",
+  },
+  "rioja-doca": {
+    name: "Rioja DOCa",
+    title: "Rioja DOCa – Grands vins rouges d’Espagne",
+    description:
+      "Découvrez les vins de Rioja DOCa disponibles chez The Wine Watchers.",
+    intro:
+      "Rioja DOCa bénéficie du plus haut niveau de reconnaissance réglementaire en Espagne. Ses vins associent tradition, finesse et remarquable capacité de vieillissement.",
+    boutiqueHref: "/boutique/espagne",
+    boutiqueLabel: "Retour à la boutique Espagne",
+  },
+  priorat: {
+    name: "Priorat",
+    title: "Vins du Priorat – Grands vins de Catalogne",
+    description:
+      "Découvrez notre sélection de vins du Priorat : cuvées puissantes, domaines prestigieux et terroirs de llicorella.",
+    intro:
+      "Le Priorat est une appellation spectaculaire de Catalogne, célèbre pour ses coteaux escarpés et ses sols de schiste appelés llicorella. Ses vins sont profonds, minéraux et intensément méditerranéens.",
+    boutiqueHref: "/boutique/espagne",
+    boutiqueLabel: "Retour à la boutique Espagne",
+  },
+  "priorat-doca": {
+    name: "Priorat DOCa",
+    title: "Priorat DOCa – Grands vins de Catalogne",
+    description:
+      "Découvrez les vins de Priorat DOCa disponibles chez The Wine Watchers.",
+    intro:
+      "Priorat DOCa est l’une des deux appellations espagnoles bénéficiant du plus haut niveau de classification. Elle produit des vins puissants, complexes et recherchés.",
+    boutiqueHref: "/boutique/espagne",
+    boutiqueLabel: "Retour à la boutique Espagne",
+  },
+  "castille-et-leon": {
+    name: "Castille et León",
+    title: "Vins de Castille et León – Grandes cuvées espagnoles",
+    description:
+      "Découvrez notre sélection de vins de Castille et León : domaines emblématiques, cuvées rares et grands millésimes.",
+    intro:
+      "Castille et León est une vaste région viticole du nord-ouest de l’Espagne. Elle abrite plusieurs terroirs prestigieux et certaines des cuvées les plus recherchées du pays.",
+    boutiqueHref: "/boutique/espagne",
+    boutiqueLabel: "Retour à la boutique Espagne",
+  },
+  "castilla-y-leon": {
+    name: "Castilla y León",
+    title: "Vins de Castilla y León – Grands vins d’Espagne",
+    description:
+      "Découvrez les vins de Castilla y León disponibles chez The Wine Watchers.",
+    intro:
+      "Castilla y León rassemble une mosaïque de terroirs d’altitude, où naissent des vins rouges de caractère, souvent issus du Tempranillo.",
+    boutiqueHref: "/boutique/espagne",
+    boutiqueLabel: "Retour à la boutique Espagne",
+  },
+  "castilla-y-leon-vt": {
+    name: "Castilla y León VT",
+    title: "Castilla y León VT – Grandes cuvées espagnoles",
+    description:
+      "Découvrez notre sélection de vins Castilla y León VT, dont des cuvées emblématiques et confidentielles.",
+    intro:
+      "La mention Castilla y León VT offre aux producteurs une grande liberté de création. Elle accueille plusieurs vins de renommée internationale élaborés hors du cadre d’une appellation classique.",
+    boutiqueHref: "/boutique/espagne",
+    boutiqueLabel: "Retour à la boutique Espagne",
+  },
+  "toro": {
+    name: "Toro",
+    title: "Vins de Toro – Rouges puissants d’Espagne",
+    description:
+      "Découvrez notre sélection de vins de Toro : Tinta de Toro, domaines prestigieux et millésimes recherchés.",
+    intro:
+      "Toro produit des vins rouges puissants et généreux, issus principalement de la Tinta de Toro, une adaptation locale du Tempranillo.",
+    boutiqueHref: "/boutique/espagne",
+    boutiqueLabel: "Retour à la boutique Espagne",
+  },
+  "toro-do": {
+    name: "Toro DO",
+    title: "Toro DO – Grands vins rouges espagnols",
+    description:
+      "Découvrez les vins de Toro DO disponibles chez The Wine Watchers.",
+    intro:
+      "Toro DO est reconnue pour ses rouges intenses, structurés et aptes au vieillissement, produits sur les hauts plateaux de Castille et León.",
+    boutiqueHref: "/boutique/espagne",
+    boutiqueLabel: "Retour à la boutique Espagne",
+  },
+  "rias-baixas": {
+    name: "Rías Baixas",
+    title: "Vins de Rías Baixas – Grands blancs d’Espagne",
+    description:
+      "Découvrez notre sélection de vins de Rías Baixas : Albariño frais, précis et minéraux.",
+    intro:
+      "Rías Baixas est l’appellation emblématique de l’Albariño. Proche de l’Atlantique, elle produit des blancs frais, aromatiques et élégants.",
+    boutiqueHref: "/boutique/espagne",
+    boutiqueLabel: "Retour à la boutique Espagne",
+  },
+  "rias-baixas-do": {
+    name: "Rías Baixas DO",
+    title: "Rías Baixas DO – Grands Albariño espagnols",
+    description:
+      "Découvrez les vins de Rías Baixas DO disponibles chez The Wine Watchers.",
+    intro:
+      "Rías Baixas DO est mondialement réputée pour ses Albariño vifs, salins et expressifs.",
+    boutiqueHref: "/boutique/espagne",
+    boutiqueLabel: "Retour à la boutique Espagne",
+  },
+
 };
 
 type AppellationWine = {
@@ -815,6 +946,12 @@ function getComparableAppellationSlug(value?: string | null) {
     .replace(/-docg$/, "")
     .replace(/-doc$/, "")
     .replace(/-igt$/, "")
+    .replace(/-doca$/, "")
+    .replace(/-do$/, "")
+    .replace(/-vt$/, "")
+    .replace(/-vino-de-la-tierra$/, "")
+    .replace(/-denominacion-de-origen-calificada$/, "")
+    .replace(/-denominacion-de-origen$/, "")
     .replace(/-denominazione-di-origine-controllata-e-garantita$/, "")
     .replace(/-denominazione-di-origine-controllata$/, "")
     .replace(/-indicazione-geografica-tipica$/, "")
@@ -864,6 +1001,21 @@ function getWineGroupTitle(wine: AppellationWine) {
     appellationSlug === "bolgheri-superiore"
   ) {
     return "Vins de Bolgheri";
+  }
+
+  if (
+    appellationSlug === "castille-et-leon" ||
+    appellationSlug === "castilla-y-leon" ||
+    appellationSlug === "castilla-y-leon-vt"
+  ) {
+    return "Vins de Castille et León";
+  }
+
+  if (
+    appellationSlug === "ribera-del-duero" ||
+    appellationSlug === "ribera-del-duero-do"
+  ) {
+    return "Vins de Ribera del Duero";
   }
 
   if (!vintage) return name;
@@ -925,6 +1077,9 @@ export default async function AppellationPage({
       `${appellation.name} DOC`,
       `${appellation.name} DOCG`,
       `${appellation.name} IGT`,
+      `${appellation.name} DO`,
+      `${appellation.name} DOCa`,
+      `${appellation.name} VT`,
     ])
   );
 
@@ -1097,7 +1252,9 @@ export default async function AppellationPage({
               ? "Bourgogne"
               : appellation.boutiqueHref.includes("italie")
                 ? "Italie"
-                : "Bordeaux"}
+                : appellation.boutiqueHref.includes("espagne")
+                  ? "Espagne"
+                  : "Bordeaux"}
           </Link>
           <span>/</span>
           <span className="font-medium text-[#3b1f1f]">{appellation.name}</span>
