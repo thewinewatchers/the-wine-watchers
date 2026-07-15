@@ -204,6 +204,7 @@ function getWineGroupTitle(wine: Wine) {
 
   const producerSlug = slugify(producerName);
   const wineNameSlug = slugify(originalName);
+  const wineSlug = slugify(String(wine.slug || ""));
 
   if (
     producerSlug.includes("opus-one") ||
@@ -217,6 +218,35 @@ function getWineGroupTitle(wine: Wine) {
     wineNameSlug.includes("sassicaia")
   ) {
     return "Tenuta San Guido";
+  }
+
+  if (
+    producerSlug.includes("dominio-de-pingus") ||
+    producerSlug.includes("dominio-pingus") ||
+    wineNameSlug.includes("pingus")
+  ) {
+    const searchableWineData = slugify(
+      [
+        wine.name,
+        wine.slug,
+        wine.image,
+        wine.appellation,
+        wine.region,
+        wine.category,
+      ]
+        .filter(Boolean)
+        .join(" ")
+    );
+
+    const isFlorDePingus =
+      searchableWineData.includes("flor") ||
+      searchableWineData.includes("flor-de-pingus");
+
+    if (isFlorDePingus) {
+      return "Flor de Pingus";
+    }
+
+    return "Pingus";
   }
 
   if (vintage) {
