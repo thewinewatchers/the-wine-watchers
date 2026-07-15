@@ -907,6 +907,147 @@ const appellations: Record<
     boutiqueLabel: "Retour à la boutique Espagne",
   },
 
+  "napa-valley": {
+    name: "Napa Valley",
+    title: "Vins de Napa Valley – Grands vins de Californie",
+    description:
+      "Découvrez notre sélection de vins de Napa Valley : grandes cuvées californiennes, domaines emblématiques et millésimes recherchés.",
+    intro:
+      "Napa Valley est l’une des régions viticoles les plus prestigieuses des États-Unis. Son climat, la diversité de ses sols et son savoir-faire ont donné naissance à des Cabernet Sauvignon de renommée mondiale.",
+    boutiqueHref: "/boutique/usa",
+    boutiqueLabel: "Retour à la boutique États-Unis",
+  },
+  "napa-valley-ava": {
+    name: "Napa Valley AVA",
+    title: "Napa Valley AVA – Grands vins de Californie",
+    description:
+      "Découvrez les vins de Napa Valley AVA disponibles chez The Wine Watchers.",
+    intro:
+      "Napa Valley AVA rassemble certains des domaines les plus réputés de Californie. Ses vins combinent maturité, précision, richesse et remarquable potentiel de garde.",
+    boutiqueHref: "/boutique/usa",
+    boutiqueLabel: "Retour à la boutique États-Unis",
+  },
+  oakville: {
+    name: "Oakville",
+    title: "Vins d’Oakville – Grands Cabernet Sauvignon de Napa",
+    description:
+      "Découvrez notre sélection de vins d’Oakville : Cabernet Sauvignon prestigieux et domaines emblématiques de Napa Valley.",
+    intro:
+      "Oakville est l’une des sous-régions les plus renommées de Napa Valley. Elle produit des Cabernet Sauvignon profonds, structurés et particulièrement recherchés.",
+    boutiqueHref: "/boutique/usa",
+    boutiqueLabel: "Retour à la boutique États-Unis",
+  },
+  "oakville-ava": {
+    name: "Oakville AVA",
+    title: "Oakville AVA – Grands vins de Napa Valley",
+    description:
+      "Découvrez les vins d’Oakville AVA disponibles chez The Wine Watchers.",
+    intro:
+      "Oakville AVA occupe une position centrale dans Napa Valley et abrite plusieurs propriétés iconiques. Ses Cabernet Sauvignon sont réputés pour leur concentration et leur équilibre.",
+    boutiqueHref: "/boutique/usa",
+    boutiqueLabel: "Retour à la boutique États-Unis",
+  },
+  rutherford: {
+    name: "Rutherford",
+    title: "Vins de Rutherford – Napa Valley",
+    description:
+      "Découvrez notre sélection de vins de Rutherford : grands Cabernet Sauvignon, domaines historiques et millésimes de garde.",
+    intro:
+      "Rutherford est une appellation historique de Napa Valley. Elle est célèbre pour ses Cabernet Sauvignon à la fois structurés, élégants et marqués par une texture distinctive.",
+    boutiqueHref: "/boutique/usa",
+    boutiqueLabel: "Retour à la boutique États-Unis",
+  },
+  "rutherford-ava": {
+    name: "Rutherford AVA",
+    title: "Rutherford AVA – Grands Cabernet Sauvignon californiens",
+    description:
+      "Découvrez les vins de Rutherford AVA disponibles chez The Wine Watchers.",
+    intro:
+      "Rutherford AVA bénéficie d’un climat chaud et de sols graveleux favorables au Cabernet Sauvignon. Ses vins associent richesse, profondeur et complexité.",
+    boutiqueHref: "/boutique/usa",
+    boutiqueLabel: "Retour à la boutique États-Unis",
+  },
+  yountville: {
+    name: "Yountville",
+    title: "Vins de Yountville – Napa Valley",
+    description:
+      "Découvrez notre sélection de vins de Yountville, au cœur de Napa Valley.",
+    intro:
+      "Yountville est une sous-région importante de Napa Valley, bénéficiant d’influences fraîches qui apportent équilibre et finesse aux vins.",
+    boutiqueHref: "/boutique/usa",
+    boutiqueLabel: "Retour à la boutique États-Unis",
+  },
+  "yountville-ava": {
+    name: "Yountville AVA",
+    title: "Yountville AVA – Vins de Napa Valley",
+    description:
+      "Découvrez les vins de Yountville AVA disponibles chez The Wine Watchers.",
+    intro:
+      "Yountville AVA produit des vins élégants et équilibrés grâce à son climat tempéré et à la diversité de ses sols.",
+    boutiqueHref: "/boutique/usa",
+    boutiqueLabel: "Retour à la boutique États-Unis",
+  },
+  "st-helena": {
+    name: "St. Helena",
+    title: "Vins de St. Helena – Napa Valley",
+    description:
+      "Découvrez notre sélection de vins de St. Helena : Cabernet Sauvignon prestigieux et domaines réputés.",
+    intro:
+      "St. Helena est l’un des secteurs historiques de Napa Valley. Son climat chaud favorise des vins riches, mûrs et structurés.",
+    boutiqueHref: "/boutique/usa",
+    boutiqueLabel: "Retour à la boutique États-Unis",
+  },
+  "st-helena-ava": {
+    name: "St. Helena AVA",
+    title: "St. Helena AVA – Grands vins de Californie",
+    description:
+      "Découvrez les vins de St. Helena AVA disponibles chez The Wine Watchers.",
+    intro:
+      "St. Helena AVA est réputée pour ses Cabernet Sauvignon généreux, profonds et aptes au vieillissement.",
+    boutiqueHref: "/boutique/usa",
+    boutiqueLabel: "Retour à la boutique États-Unis",
+  },
+  "stags-leap-district": {
+    name: "Stags Leap District",
+    title: "Stags Leap District – Grands Cabernet Sauvignon de Napa",
+    description:
+      "Découvrez notre sélection de vins de Stags Leap District, l’une des appellations les plus prestigieuses de Napa Valley.",
+    intro:
+      "Stags Leap District est célèbre pour ses Cabernet Sauvignon combinant puissance, finesse et texture soyeuse.",
+    boutiqueHref: "/boutique/usa",
+    boutiqueLabel: "Retour à la boutique États-Unis",
+  },
+  "stags-leap-district-ava": {
+    name: "Stags Leap District AVA",
+    title: "Stags Leap District AVA – Napa Valley",
+    description:
+      "Découvrez les vins de Stags Leap District AVA disponibles chez The Wine Watchers.",
+    intro:
+      "Stags Leap District AVA bénéficie d’un terroir unique qui produit des Cabernet Sauvignon raffinés, structurés et élégants.",
+    boutiqueHref: "/boutique/usa",
+    boutiqueLabel: "Retour à la boutique États-Unis",
+  },
+  californie: {
+    name: "Californie",
+    title: "Vins de Californie – Grands vins des États-Unis",
+    description:
+      "Découvrez notre sélection de vins de Californie : Napa Valley, Sonoma et grandes cuvées américaines.",
+    intro:
+      "La Californie est la région viticole la plus importante des États-Unis. Elle rassemble une grande diversité de climats et de terroirs, capables de produire des vins de très haut niveau.",
+    boutiqueHref: "/boutique/usa",
+    boutiqueLabel: "Retour à la boutique États-Unis",
+  },
+  california: {
+    name: "California",
+    title: "California Wines – Grandes cuvées américaines",
+    description:
+      "Découvrez les vins de Californie disponibles chez The Wine Watchers.",
+    intro:
+      "La Californie produit certaines des cuvées les plus prestigieuses des États-Unis, notamment à Napa Valley et Sonoma.",
+    boutiqueHref: "/boutique/usa",
+    boutiqueLabel: "Retour à la boutique États-Unis",
+  },
+
 };
 
 type AppellationWine = {
@@ -949,6 +1090,8 @@ function getComparableAppellationSlug(value?: string | null) {
     .replace(/-doca$/, "")
     .replace(/-do$/, "")
     .replace(/-vt$/, "")
+    .replace(/-ava$/, "")
+    .replace(/-american-viticultural-area$/, "")
     .replace(/-vino-de-la-tierra$/, "")
     .replace(/-denominacion-de-origen-calificada$/, "")
     .replace(/-denominacion-de-origen$/, "")
@@ -1018,6 +1161,19 @@ function getWineGroupTitle(wine: AppellationWine) {
     return "Vins de Ribera del Duero";
   }
 
+  if (
+    appellationSlug === "napa-valley" ||
+    appellationSlug === "napa-valley-ava" ||
+    appellationSlug === "oakville" ||
+    appellationSlug === "oakville-ava" ||
+    appellationSlug === "rutherford" ||
+    appellationSlug === "rutherford-ava" ||
+    appellationSlug === "yountville" ||
+    appellationSlug === "yountville-ava"
+  ) {
+    return "Vins de Napa Valley";
+  }
+
   if (!vintage) return name;
 
   return name
@@ -1080,6 +1236,7 @@ export default async function AppellationPage({
       `${appellation.name} DO`,
       `${appellation.name} DOCa`,
       `${appellation.name} VT`,
+      `${appellation.name} AVA`,
     ])
   );
 
@@ -1151,7 +1308,12 @@ export default async function AppellationPage({
         const producerTitle =
           String(wine.producer || "").trim() || "Producteur non précisé";
         const producerKey = slugify(producerTitle);
-        const wineTitle = getWineGroupTitle(wine);
+
+        const wineTitle =
+          slug === "napa-valley" || slug === "napa-valley-ava"
+            ? "Vins de Napa Valley"
+            : getWineGroupTitle(wine);
+
         const wineKey = slugify(wineTitle);
 
         if (!map.has(producerKey)) {
@@ -1254,7 +1416,9 @@ export default async function AppellationPage({
                 ? "Italie"
                 : appellation.boutiqueHref.includes("espagne")
                   ? "Espagne"
-                  : "Bordeaux"}
+                  : appellation.boutiqueHref.includes("usa")
+                    ? "États-Unis"
+                    : "Bordeaux"}
           </Link>
           <span>/</span>
           <span className="font-medium text-[#3b1f1f]">{appellation.name}</span>
