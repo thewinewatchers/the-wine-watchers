@@ -202,11 +202,21 @@ function getWineGroupTitle(wine: Wine) {
   const producerName = String(wine.producer || "").trim();
   const vintage = String(wine.vintage || "").trim();
 
+  const producerSlug = slugify(producerName);
+  const wineNameSlug = slugify(originalName);
+
   if (
-    slugify(producerName).includes("opus-one") ||
-    slugify(originalName).startsWith("opus-one")
+    producerSlug.includes("opus-one") ||
+    wineNameSlug.startsWith("opus-one")
   ) {
     return "Opus One";
+  }
+
+  if (
+    producerSlug.includes("tenuta-san-guido") ||
+    wineNameSlug.includes("sassicaia")
+  ) {
+    return "Tenuta San Guido";
   }
 
   if (vintage) {
