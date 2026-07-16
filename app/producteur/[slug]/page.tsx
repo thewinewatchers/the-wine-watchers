@@ -206,6 +206,16 @@ function getWineGroupTitle(wine: Wine) {
   const wineNameSlug = slugify(originalName);
   const wineSlug = slugify(String(wine.slug || ""));
 
+  if (producerSlug.includes("romanee-conti")) {
+    const drcTitle = originalName
+      .replace(/\s+(?:19|20)\d{2}(?:\s+DRC)?$/i, "")
+      .replace(/\s+DRC$/i, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    return drcTitle || originalName;
+  }
+
   if (
     producerSlug.includes("opus-one") ||
     wineNameSlug.startsWith("opus-one")
