@@ -953,24 +953,51 @@ export default function WinePage() {
 )}
             </div>
 
-            <div className="mt-7 grid gap-3 sm:grid-cols-4">
-              {wine.bottle_size && (
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <p className="text-xs uppercase tracking-[0.22em] text-[#d8b56d]">
-                    Flaconnage
-                  </p>
-                  <p className="mt-2 text-white">{wine.bottle_size}</p>
-                </div>
-              )}
+            <div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <p className="text-xs uppercase tracking-[0.22em] text-[#d8b56d]">
+                  Millésime
+                </p>
+                <p className="mt-2 text-white">
+                  {vintage ? (
+                    <Link
+                      href={`/millesime/${vintage}`}
+                      className="underline underline-offset-4 transition hover:text-[#d8b56d]"
+                    >
+                      {vintage}
+                    </Link>
+                  ) : (
+                    "Non renseigné"
+                  )}
+                </p>
+              </div>
 
-              {wine.packaging && (
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <p className="text-xs uppercase tracking-[0.22em] text-[#d8b56d]">
-                    Caissage
-                  </p>
-                  <p className="mt-2 text-white">{wine.packaging}</p>
-                </div>
-              )}
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <p className="text-xs uppercase tracking-[0.22em] text-[#d8b56d]">
+                  Classification
+                </p>
+                <p className="mt-2 text-white">
+                  {wine.classification || "Non renseignée"}
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <p className="text-xs uppercase tracking-[0.22em] text-[#d8b56d]">
+                  Flaconnage
+                </p>
+                <p className="mt-2 text-white">
+                  {wine.bottle_size || "Non renseigné"}
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <p className="text-xs uppercase tracking-[0.22em] text-[#d8b56d]">
+                  Caissage
+                </p>
+                <p className="mt-2 text-white">
+                  {wine.packaging || "Non renseigné"}
+                </p>
+              </div>
 
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                 <p className="text-xs uppercase tracking-[0.22em] text-[#d8b56d]">

@@ -13,7 +13,14 @@ type Wine = {
   category: string | null;
   vintage: string | number | null;
   price: string | number | null;
+  compare_at_price: string | number | null;
   image: string | null;
+  image_url: string | null;
+  imageUrl: string | null;
+  classification: string | null;
+  bottle_size: string | null;
+  packaging: string | null;
+  rating: string | number | null;
   hidden_from_site?: boolean | null;
 };
 
@@ -45,7 +52,7 @@ function formatPrice(price?: string | number | null) {
             .toString()
             .replace(/[€\s]/g, "")
             .replace(/\./g, "")
-            .replace(",", ".")
+            .replace(",", "."),
         );
 
   if (Number.isNaN(value) || value <= 0) return "Prix sur demande";
@@ -56,6 +63,39 @@ function formatPrice(price?: string | number | null) {
       maximumFractionDigits: 2,
     }) + " € HT"
   );
+}
+
+function parsePrice(price?: string | number | null) {
+  if (price === undefined || price === null || price === "") return 0;
+  if (typeof price === "number") return price;
+
+  const cleaned = price
+    .toString()
+    .replace(/[€\s]/g, "")
+    .replace(/\./g, "")
+    .replace(",", ".");
+
+  const value = Number(cleaned);
+  return Number.isNaN(value) ? 0 : value;
+}
+
+function getDiscountInfo(
+  priceValue?: string | number | null,
+  compareAtPriceValue?: string | number | null,
+) {
+  const price = parsePrice(priceValue);
+  const compareAtPrice = parsePrice(compareAtPriceValue);
+
+  if (price <= 0 || compareAtPrice <= price) return null;
+
+  const saving = compareAtPrice - price;
+  const percent = Math.round((saving / compareAtPrice) * 100);
+
+  return { saving, percent };
+}
+
+function getWineImage(wine: Wine) {
+  return wine.image_url || wine.imageUrl || wine.image || "";
 }
 
 function getWineUrl(wine: Wine) {
@@ -117,7 +157,7 @@ function getBoutiqueRegionUrl(region: string) {
 function getAppellationUrl(
   appellation: string,
   region?: string | null,
-  category?: string | null
+  category?: string | null,
 ) {
   const geographicValue = slugify(region || category || "");
 
@@ -168,14 +208,13 @@ function getAppellationUrl(
   return `/appellation/${slugify(appellation)}`;
 }
 
-
 function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function resolveProducer(producers: string[], requestedSlug: string) {
   const exactProducer = producers.find(
-    (name) => slugify(name) === requestedSlug
+    (name) => slugify(name) === requestedSlug,
   );
 
   if (exactProducer) {
@@ -245,7 +284,7 @@ function getWineGroupTitle(wine: Wine) {
         wine.category,
       ]
         .filter(Boolean)
-        .join(" ")
+        .join(" "),
     );
 
     const isFlorDePingus =
@@ -262,11 +301,8 @@ function getWineGroupTitle(wine: Wine) {
   if (vintage) {
     const titleBeforeVintage = originalName
       .replace(
-        new RegExp(
-          `\\s+${escapeRegExp(vintage)}(?:\\s*[–—-]\\s*.*)?$`,
-          "i"
-        ),
-        ""
+        new RegExp(`\\s+${escapeRegExp(vintage)}(?:\\s*[–—-]\\s*.*)?$`, "i"),
+        "",
       )
       .trim();
 
@@ -296,7 +332,7 @@ export async function generateMetadata({
     .neq("hidden_from_site", true);
 
   const producers = Array.from(
-    new Set((data || []).map((wine) => wine.producer).filter(Boolean))
+    new Set((data || []).map((wine) => wine.producer).filter(Boolean)),
   ) as string[];
 
   const producer = resolveProducer(producers, slug);
@@ -343,7 +379,7 @@ export default async function ProducteurPage({
     .neq("hidden_from_site", true);
 
   const producers = Array.from(
-    new Set((producerData || []).map((wine) => wine.producer).filter(Boolean))
+    new Set((producerData || []).map((wine) => wine.producer).filter(Boolean)),
   ) as string[];
 
   const producer = resolveProducer(producers, slug);
@@ -355,7 +391,7 @@ export default async function ProducteurPage({
   const { data: wines } = await supabase
     .from("wines")
     .select(
-      "id, slug, name, producer, appellation, region, category, vintage, price, image, hidden_from_site"
+      "id, slug, name, producer, appellation, region, category, vintage, price, compare_at_price, image, classification, bottle_size, packaging, rating, hidden_from_site",
     )
     .eq("producer", producer)
     .neq("hidden_from_site", true)
@@ -363,17 +399,17 @@ export default async function ProducteurPage({
     .order("vintage", { ascending: false });
 
   const visibleWines = ((wines || []) as Wine[]).filter(
-    (wine) => wine.hidden_from_site !== true
+    (wine) => wine.hidden_from_site !== true,
   );
 
   const appellations = Array.from(
-    new Set(visibleWines.map((wine) => wine.appellation).filter(Boolean))
+    new Set(visibleWines.map((wine) => wine.appellation).filter(Boolean)),
   ) as string[];
 
   const regions = Array.from(
     new Set(
-      visibleWines.map((wine) => wine.region || wine.category).filter(Boolean)
-    )
+      visibleWines.map((wine) => wine.region || wine.category).filter(Boolean),
+    ),
   ) as string[];
 
   const wineGroupMap = visibleWines.reduce<Map<string, WineGroup>>(
@@ -392,7 +428,7 @@ export default async function ProducteurPage({
 
       return map;
     },
-    new Map<string, WineGroup>()
+    new Map<string, WineGroup>(),
   );
 
   const wineGroups: WineGroup[] = Array.from(wineGroupMap.values())
@@ -453,8 +489,8 @@ export default async function ProducteurPage({
           </h1>
 
           <p className="mt-6 max-w-3xl text-base leading-8 text-white/75 md:text-lg">
-            Découvrez les vins disponibles de {producer} chez The Wine Watchers :
-            grands crus, millésimes recherchés, appellations prestigieuses et
+            Découvrez les vins disponibles de {producer} chez The Wine Watchers
+            : grands crus, millésimes recherchés, appellations prestigieuses et
             références de collection.
           </p>
 
@@ -486,7 +522,7 @@ export default async function ProducteurPage({
                   href={getAppellationUrl(
                     appellation,
                     visibleWines[0]?.region,
-                    visibleWines[0]?.category
+                    visibleWines[0]?.category,
                   )}
                   className="rounded-full border border-[#d8b56d]/50 bg-[#fffaf3] px-5 py-2 text-sm text-[#6d5b50] transition hover:border-[#8a1f1f] hover:text-[#8a1f1f]"
                 >
@@ -584,81 +620,139 @@ export default async function ProducteurPage({
                 </div>
 
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {wineGroup.wines.map((wine) => (
-                    <article
-                      key={wine.id}
-                      className="group overflow-hidden rounded-[1.7rem] border border-[#dfcfb8] bg-[#fffaf3] shadow-sm transition hover:-translate-y-1 hover:border-[#d8b56d] hover:shadow-xl"
-                    >
-                      <Link href={getWineUrl(wine)} className="block">
-                        <div className="flex h-[245px] items-center justify-center bg-[#efe3d2] p-6">
-                          {wine.image ? (
-                            <img
-                              src={wine.image}
-                              alt={`Bouteille de ${
-                                wine.name || "vin"
-                              } - ${producer}`}
-                              className="max-h-[205px] w-auto object-contain transition group-hover:scale-105"
-                            />
-                          ) : (
-                            <span className="text-sm text-[#8a6a2f]">
-                              Image non disponible
-                            </span>
-                          )}
-                        </div>
-                      </Link>
+                  {wineGroup.wines.map((wine) => {
+                    const image = getWineImage(wine);
+                    const discountInfo = getDiscountInfo(
+                      wine.price,
+                      wine.compare_at_price,
+                    );
 
-                      <div className="p-5">
-                        {wine.appellation ? (
-                          <Link
-                            href={getAppellationUrl(
-                              wine.appellation,
-                              wine.region,
-                              wine.category
-                            )}
-                            className="mb-3 block rounded-full bg-[#24110d]/90 px-3 py-1.5 text-center text-[10px] uppercase tracking-[0.16em] text-[#d8b56d] transition hover:bg-[#8a1f1f]"
-                          >
-                            {wine.appellation}
-                          </Link>
-                        ) : (
-                          <p className="mb-3 rounded-full bg-[#24110d]/90 px-3 py-1.5 text-center text-[10px] uppercase tracking-[0.16em] text-[#d8b56d]">
-                            {wine.region || "Grand vin"}
-                          </p>
-                        )}
-
+                    return (
+                      <article
+                        key={wine.id}
+                        className="group overflow-hidden rounded-[1.7rem] border border-[#dfcfb8] bg-[#fffaf3] shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#d8b56d] hover:shadow-xl"
+                      >
                         <Link href={getWineUrl(wine)} className="block">
-                          <h3 className="min-h-[64px] font-serif text-sm leading-tight text-[#24110d] group-hover:text-[#8a1f1f]">
-                            {wine.name}
-                          </h3>
+                          <div className="relative flex h-[245px] items-center justify-center overflow-hidden bg-[#efe3d2] p-6">
+                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(216,181,109,0.24),transparent_38%)]" />
+
+                            {discountInfo && (
+                              <div className="absolute left-4 top-4 z-20 rounded-full bg-[#8a1f1f] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-white shadow-sm">
+                                -{discountInfo.percent} %
+                              </div>
+                            )}
+
+                            {wine.rating && (
+                              <div className="absolute right-4 top-4 z-20 rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-semibold text-[#8a1f1f] shadow-sm">
+                                {wine.rating}
+                              </div>
+                            )}
+
+                            {image ? (
+                              <img
+                                src={image}
+                                alt={`Bouteille de ${
+                                  wine.name || "vin"
+                                } - ${producer}`}
+                                className="relative z-10 max-h-[205px] w-auto object-contain transition duration-500 group-hover:scale-105"
+                              />
+                            ) : (
+                              <div className="relative z-10 flex h-full w-full items-center justify-center rounded-2xl border border-dashed border-[#cdbb9f] text-sm text-[#8a6a2f]">
+                                Image non disponible
+                              </div>
+                            )}
+                          </div>
                         </Link>
 
-                        <div className="mt-3 space-y-1 text-sm text-[#6d5b50]">
-                          {wine.vintage && <p>Millésime {wine.vintage}</p>}
-
-                          {(wine.region || wine.category) && (
+                        <div className="p-5">
+                          {wine.appellation ? (
                             <Link
-                              href={getBoutiqueRegionUrl(
-                                wine.region || wine.category || ""
+                              href={getAppellationUrl(
+                                wine.appellation,
+                                wine.region,
+                                wine.category,
                               )}
-                              className="inline-block underline underline-offset-4 transition hover:text-[#8a1f1f]"
+                              className="mb-3 block rounded-full bg-[#24110d]/90 px-3 py-1.5 text-center text-[10px] uppercase tracking-[0.16em] text-[#d8b56d] transition hover:bg-[#8a1f1f]"
                             >
-                              {wine.region || wine.category}
+                              {wine.appellation}
                             </Link>
+                          ) : (
+                            <p className="mb-3 rounded-full bg-[#24110d]/90 px-3 py-1.5 text-center text-[10px] uppercase tracking-[0.16em] text-[#d8b56d]">
+                              {wine.region || "Grand vin"}
+                            </p>
                           )}
+
+                          <div className="mb-3 flex flex-wrap items-center gap-2">
+                            
+                            {wine.classification && (
+                              <span className="rounded-full border border-[#dfcfb8] bg-white px-3 py-1 text-[11px] text-[#6d5b50]">
+                                {wine.classification}
+                              </span>
+                            )}
+
+                            {(wine.region || wine.category) && (
+                              <span className="rounded-full border border-[#dfcfb8] bg-white px-3 py-1 text-[11px] text-[#6d5b50]">
+                                {wine.region || wine.category}
+                              </span>
+                            )}
+
+                            {wine.bottle_size && (
+                              <span className="rounded-full border border-[#dfcfb8] bg-white px-3 py-1 text-[11px] text-[#6d5b50]">
+                                {wine.bottle_size}
+                              </span>
+                            )}
+
+                            {wine.packaging && (
+                              <span className="rounded-full border border-[#dfcfb8] bg-white px-3 py-1 text-[11px] text-[#6d5b50]">
+                                {wine.packaging}
+                              </span>
+                            )}
+                          </div>
+
+                          <Link href={getWineUrl(wine)} className="block">
+                            <h3 className="min-h-[64px] font-serif text-sm leading-tight text-[#24110d] transition group-hover:text-[#8a1f1f]">
+                              {wine.name}
+                            </h3>
+                          </Link>
+
+                          <p className="mt-3 truncate text-[11px] uppercase tracking-[0.18em] text-[#b08a43]">
+                            {wine.producer || producer}
+                          </p>
+
+                          <div className="mt-5 flex items-end justify-between gap-4 border-t border-[#eadfce] pt-4">
+                            <div>
+                              <p className="text-[10px] uppercase tracking-[0.2em] text-[#8a6a2f]">
+                                Prix
+                              </p>
+
+                              {discountInfo ? (
+                                <div className="mt-1">
+                                  <p className="text-sm text-[#9b8c7d] line-through">
+                                    {formatPrice(wine.compare_at_price)}
+                                  </p>
+
+                                  <p className="font-serif text-2xl text-[#8a1f1f]">
+                                    {formatPrice(wine.price)}
+                                  </p>
+                                </div>
+                              ) : (
+                                <p className="mt-1 font-serif text-2xl text-[#8a1f1f]">
+                                  {formatPrice(wine.price)}
+                                </p>
+                              )}
+                            </div>
+
+                            <Link
+                              href={getWineUrl(wine)}
+                              className="rounded-full bg-[#8a1f1f] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#641313]"
+                            >
+                              Détails
+                            </Link>
+                          </div>
                         </div>
-
-                        <p className="mt-4 font-serif text-2xl text-[#8a1f1f]">
-                          {formatPrice(wine.price)}
-                        </p>
-
-                        <Link
-                          href={getWineUrl(wine)}
-                          className="mt-5 inline-flex w-full justify-center rounded-full bg-[#8a1f1f] px-5 py-3 text-center text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#641313]"
-                        >
-                          Voir le vin
-                        </Link>
-                      </div>
-                    </article>
-                  ))}
+                      </article>
+                    );
+                  })}
                 </div>
               </section>
             ))}

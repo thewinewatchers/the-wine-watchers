@@ -362,12 +362,7 @@ function WineCard({
         </p>
 
         <div className="mb-3 flex flex-wrap items-center gap-2">
-          {vintage && (
-            <span className="rounded-full border border-[#dfcfb8] bg-white px-3 py-1 text-[11px] text-[#6d5b50]">
-              {vintage}
-            </span>
-          )}
-
+         
           {wine.classification && (
             <span className="rounded-full border border-[#dfcfb8] bg-white px-3 py-1 text-[11px] text-[#6d5b50]">
               {wine.classification}

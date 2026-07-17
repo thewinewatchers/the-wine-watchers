@@ -1580,18 +1580,29 @@ export default async function AppellationPage({
                                 </h3>
                               </Link>
 
-                              <div className="mt-3 space-y-1 text-sm text-[#6d5b50]">
-                                {wine.vintage && (
-                                  <p>Millésime {wine.vintage}</p>
-                                )}
+                              <div className="mb-3 mt-3 flex flex-wrap items-center gap-2">
                                 {wine.classification && (
-                                  <p>{wine.classification}</p>
+                                  <span className="rounded-full border border-[#dfcfb8] bg-white px-3 py-1 text-[11px] text-[#6d5b50]">
+                                    {wine.classification}
+                                  </span>
                                 )}
+
+                                {(wine.appellation || wine.region) && (
+                                  <span className="rounded-full border border-[#dfcfb8] bg-white px-3 py-1 text-[11px] text-[#6d5b50]">
+                                    {wine.appellation || wine.region}
+                                  </span>
+                                )}
+
                                 {wine.bottle_size && (
-                                  <p>Flaconnage : {wine.bottle_size}</p>
+                                  <span className="rounded-full border border-[#dfcfb8] bg-white px-3 py-1 text-[11px] text-[#6d5b50]">
+                                    {wine.bottle_size}
+                                  </span>
                                 )}
+
                                 {wine.packaging && (
-                                  <p>Caissage : {wine.packaging}</p>
+                                  <span className="rounded-full border border-[#dfcfb8] bg-white px-3 py-1 text-[11px] text-[#6d5b50]">
+                                    {wine.packaging}
+                                  </span>
                                 )}
                               </div>
 
