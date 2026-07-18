@@ -80,6 +80,52 @@ const emptyForm: WineForm = {
   external_links: "",
 };
 
+
+const packagingOptions = [
+  { value: "BT/1", label: "1 bouteille" },
+  { value: "BT/3", label: "Lot de 3 bouteilles" },
+  { value: "BT/6", label: "Lot de 6 bouteilles" },
+  { value: "BT/12", label: "Lot de 12 bouteilles" },
+  { value: "CBO/1", label: "Caisse bois de 1 bouteille" },
+  { value: "CBO/3", label: "Caisse bois de 3 bouteilles" },
+  { value: "CBO/6", label: "Caisse bois de 6 bouteilles" },
+  { value: "CBO/12", label: "Caisse bois de 12 bouteilles" },
+];
+
+function getPackagingLabel(value: string) {
+  const normalizedValue = value.trim();
+
+  if (!normalizedValue) return "conditionnement non renseigné";
+
+  return (
+    packagingOptions.find((option) => option.value === normalizedValue)?.label ||
+    normalizedValue
+  );
+}
+
+function getStockLabel(stock: number, packaging: string) {
+  const normalizedPackaging = packaging.trim();
+  const isPlural = stock > 1;
+
+  if (normalizedPackaging === "BT/1") {
+    return `${stock} bouteille${isPlural ? "s" : ""}`;
+  }
+
+  if (normalizedPackaging.startsWith("BT/")) {
+    const bottleCount = normalizedPackaging.replace("BT/", "");
+    return `${stock} lot${isPlural ? "s" : ""} de ${bottleCount} bouteilles`;
+  }
+
+  if (normalizedPackaging.startsWith("CBO/")) {
+    const bottleCount = normalizedPackaging.replace("CBO/", "");
+    return `${stock} caisse${isPlural ? "s" : ""} bois de ${bottleCount} bouteille${
+      bottleCount === "1" ? "" : "s"
+    }`;
+  }
+
+  return `${stock} unité${isPlural ? "s" : ""}`;
+}
+
 const categoryOptions = [
   "Bordeaux",
   "Bourgogne",
@@ -558,10 +604,16 @@ export default function AdminEditWinePage() {
       ),
     }));
 
+    const savedStock = Number(result?.wine?.stock ?? parsedStock);
+    const savedPackaging = String(
+      result?.wine?.packaging ?? form.packaging ?? ""
+    );
+
     setSuccessMessage(
-      `Fiche vin modifiée avec succès. Stock enregistré : ${
-        result?.wine?.stock ?? parsedStock
-      } caisse${Number(result?.wine?.stock ?? parsedStock) > 1 ? "s" : ""}.`
+      `Fiche vin modifiée avec succès. Disponibilité enregistrée : ${getStockLabel(
+        savedStock,
+        savedPackaging
+      )}.`
     );
 
     setSaving(false);
@@ -836,7 +888,7 @@ export default function AdminEditWinePage() {
               name="stock"
               value={form.stock}
               onChange={handleChange}
-              placeholder="Stock disponible (caisses)"
+              placeholder="Nombre de lots disponibles"
               className="rounded-xl border-2 border-green-500 bg-green-50 px-4 py-3 font-semibold"
             />
 
@@ -848,13 +900,29 @@ export default function AdminEditWinePage() {
               className="rounded-xl border border-neutral-300 px-4 py-3"
             />
 
-            <input
+            <select
               name="packaging"
               value={form.packaging}
               onChange={handleChange}
-              placeholder="Caissage ex: CBO/6"
               className="rounded-xl border border-neutral-300 px-4 py-3"
-            />
+            >
+              <option value="">Conditionnement / lot vendu</option>
+
+              {form.packaging &&
+                !packagingOptions.some(
+                  (option) => option.value === form.packaging
+                ) && (
+                  <option value={form.packaging}>
+                    Valeur actuelle : {form.packaging}
+                  </option>
+                )}
+
+              {packagingOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
 
             <input
               name="image"
@@ -1081,9 +1149,14 @@ iDealwine|https://www.idealwine.com`}
             Slug actuel :{" "}
             <strong className="text-black">{previewSlug || "—"}</strong>
             <br />
-            Stock actuellement saisi :{" "}
+            Disponibilité actuellement saisie :{" "}
             <strong className="text-black">
-              {form.stock || "0"} caisse(s)
+              {getStockLabel(Number(form.stock || 0), form.packaging)}
+            </strong>
+            <br />
+            Conditionnement :{" "}
+            <strong className="text-black">
+              {getPackagingLabel(form.packaging)}
             </strong>
             <br />
             Images supplémentaires :{" "}

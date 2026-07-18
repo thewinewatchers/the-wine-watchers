@@ -117,6 +117,97 @@ function parseStock(stock?: string | number) {
   return Number.isNaN(parsed) ? 0 : parsed;
 }
 
+type PackagingInfo = {
+  display: string;
+  stockSingular: string;
+  stockPlural: string;
+};
+
+function getPackagingInfo(packaging?: string): PackagingInfo {
+  const raw = String(packaging || "").trim();
+
+  if (!raw) {
+    return {
+      display: "Non renseigné",
+      stockSingular: "unité",
+      stockPlural: "unités",
+    };
+  }
+
+  const normalized = raw
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const cboMatch = normalized.match(/\bcbo\s*\/?\s*(1|3|6|12)\b/);
+
+  if (cboMatch) {
+    const bottleCount = Number(cboMatch[1]);
+
+    return {
+      display: `CBO/${bottleCount} – caisse bois d’origine de ${bottleCount} bouteille${
+        bottleCount > 1 ? "s" : ""
+      }`,
+      stockSingular: "caisse",
+      stockPlural: "caisses",
+    };
+  }
+
+  const bottleMatch = normalized.match(/\b(1|3|6|12)\s*bouteille(?:s)?\b/);
+
+  if (bottleMatch) {
+    const bottleCount = Number(bottleMatch[1]);
+
+    if (bottleCount === 1) {
+      return {
+        display: "1 bouteille",
+        stockSingular: "bouteille",
+        stockPlural: "bouteilles",
+      };
+    }
+
+    return {
+      display: `${bottleCount} bouteilles`,
+      stockSingular: `lot de ${bottleCount} bouteilles`,
+      stockPlural: `lots de ${bottleCount} bouteilles`,
+    };
+  }
+
+  if (
+    normalized === "bouteille" ||
+    normalized === "bt" ||
+    normalized === "bt/1"
+  ) {
+    return {
+      display: "1 bouteille",
+      stockSingular: "bouteille",
+      stockPlural: "bouteilles",
+    };
+  }
+
+  return {
+    display: raw,
+    stockSingular: "unité",
+    stockPlural: "unités",
+  };
+}
+
+function formatAvailableStock(stock: number, packaging?: string) {
+  const info = getPackagingInfo(packaging);
+  const unit = stock === 1 ? info.stockSingular : info.stockPlural;
+
+  return `${stock} ${unit} disponible${stock > 1 ? "s" : ""}`;
+}
+
+function formatRemainingStock(stock: number, packaging?: string) {
+  const info = getPackagingInfo(packaging);
+  const unit = stock === 1 ? info.stockSingular : info.stockPlural;
+
+  return `${stock} ${unit}`;
+}
+
 function formatPrice(price?: string | number) {
   const parsedPrice = parsePrice(price);
 
@@ -324,29 +415,43 @@ function getCategoryLabel(wine?: Wine | null) {
   const mainCategorySlug = getMainCategorySlug(wine);
   const currentCategorySlug = categoryToSlug(wine.category);
 
-  if (mainCategorySlug === "usa" && (!wine.category || currentCategorySlug === "autres")) {
+  if (
+    mainCategorySlug === "usa" &&
+    (!wine.category || currentCategorySlug === "autres")
+  ) {
     return "USA";
   }
 
-  if (mainCategorySlug === "italie" && (!wine.category || currentCategorySlug === "autres")) {
+  if (
+    mainCategorySlug === "italie" &&
+    (!wine.category || currentCategorySlug === "autres")
+  ) {
     return "Grands vins d’Italie";
   }
 
-  if (mainCategorySlug === "espagne" && (!wine.category || currentCategorySlug === "autres")) {
+  if (
+    mainCategorySlug === "espagne" &&
+    (!wine.category || currentCategorySlug === "autres")
+  ) {
     return "Espagne";
   }
 
-  if (mainCategorySlug === "bourgogne" && (!wine.category || currentCategorySlug === "autres")) {
+  if (
+    mainCategorySlug === "bourgogne" &&
+    (!wine.category || currentCategorySlug === "autres")
+  ) {
     return "Bourgogne";
   }
 
-  if (mainCategorySlug === "bordeaux" && (!wine.category || currentCategorySlug === "autres")) {
+  if (
+    mainCategorySlug === "bordeaux" &&
+    (!wine.category || currentCategorySlug === "autres")
+  ) {
     return "Bordeaux";
   }
 
   return wine.category || wine.country || wine.region || "Grand vin";
 }
-
 
 function producerToSlug(producer?: string) {
   if (!producer) return "";
@@ -619,10 +724,7 @@ export default function WinePage() {
   );
 
   const galleryImages = useMemo(() => {
-    const images = [
-      wine?.image,
-      ...normalizeArray(wine?.additional_images),
-    ]
+    const images = [wine?.image, ...normalizeArray(wine?.additional_images)]
       .map((image) => String(image || "").trim())
       .filter(Boolean);
 
@@ -646,6 +748,7 @@ export default function WinePage() {
   const stock = availableStock;
   const isAvailable = stock > 0;
   const discountInfo = getDiscountInfo(wine?.price, wine?.compare_at_price);
+  const packagingInfo = getPackagingInfo(wine?.packaging);
 
   const addToWishlist = async () => {
     if (!wine?.id || wishlistLoading) return;
@@ -657,7 +760,9 @@ export default function WinePage() {
       const { data: userData } = await supabase.auth.getUser();
 
       if (!userData.user) {
-        setWishlistMessage("Connectez-vous pour ajouter ce vin à votre wishlist.");
+        setWishlistMessage(
+          "Connectez-vous pour ajouter ce vin à votre wishlist."
+        );
         setWishlistLoading(false);
         return;
       }
@@ -735,6 +840,7 @@ export default function WinePage() {
           : 0;
 
       const newQuantity = currentQuantity + 1;
+
       const response = await fetch("/api/stock-reservations", {
         method: "POST",
         headers: {
@@ -752,9 +858,10 @@ export default function WinePage() {
       if (!response.ok) {
         setCartMessage(
           result?.availableStock !== undefined
-            ? `Stock insuffisant. Il reste ${result.availableStock} caisse${
-                Number(result.availableStock) > 1 ? "s" : ""
-              } disponible${Number(result.availableStock) > 1 ? "s" : ""}.`
+            ? `Stock insuffisant. Il reste ${formatRemainingStock(
+                Number(result.availableStock),
+                wine.packaging
+              )}.`
             : result?.error || "Impossible de réserver ce vin."
         );
 
@@ -912,7 +1019,7 @@ export default function WinePage() {
             </h1>
 
             <div className="mt-5 flex flex-wrap gap-3 text-sm text-white/75">
-                          {wine.producer && (
+              {wine.producer && (
                 <Link
                   href={`/producteur/${producerToSlug(wine.producer)}`}
                   className="underline underline-offset-4 transition hover:text-[#d8b56d]"
@@ -943,14 +1050,14 @@ export default function WinePage() {
                 </Link>
               )}
 
-             {vintage && (
-  <Link
-    href={`/millesime/${vintage}`}
-    className="underline underline-offset-4 transition hover:text-[#d8b56d]"
-  >
-    • {vintage}
-  </Link>
-)}
+              {vintage && (
+                <Link
+                  href={`/millesime/${vintage}`}
+                  className="underline underline-offset-4 transition hover:text-[#d8b56d]"
+                >
+                  • {vintage}
+                </Link>
+              )}
             </div>
 
             <div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -992,11 +1099,9 @@ export default function WinePage() {
 
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                 <p className="text-xs uppercase tracking-[0.22em] text-[#d8b56d]">
-                  Caissage
+                  Conditionnement
                 </p>
-                <p className="mt-2 text-white">
-                  {wine.packaging || "Non renseigné"}
-                </p>
+                <p className="mt-2 text-white">{packagingInfo.display}</p>
               </div>
 
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
@@ -1031,9 +1136,7 @@ export default function WinePage() {
                 </p>
                 <p className="mt-2 text-white">
                   {isAvailable
-                    ? `${stock} caisse${stock > 1 ? "s" : ""} disponible${
-                        stock > 1 ? "s" : ""
-                      }`
+                    ? formatAvailableStock(stock, wine.packaging)
                     : "Épuisé"}
                 </p>
               </div>
@@ -1117,29 +1220,36 @@ export default function WinePage() {
 
       <section className="mx-auto max-w-7xl px-6 py-12">
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-         <InfoCard
-  label="Millésime"
-  value={
-    vintage ? (
-      <Link
-        href={`/millesime/${vintage}`}
-        className="underline underline-offset-4 transition hover:text-[#8a1f1f]"
-      >
-        {vintage}
-      </Link>
-    ) : (
-      "-"
-    )
-  }
-/>
+          <InfoCard
+            label="Millésime"
+            value={
+              vintage ? (
+                <Link
+                  href={`/millesime/${vintage}`}
+                  className="underline underline-offset-4 transition hover:text-[#8a1f1f]"
+                >
+                  {vintage}
+                </Link>
+              ) : (
+                "-"
+              )
+            }
+          />
+
           <InfoCard
             label="Stock disponible"
             value={
-              isAvailable ? `${stock} caisse${stock > 1 ? "s" : ""}` : "Épuisé"
+              isAvailable
+                ? formatRemainingStock(stock, wine.packaging)
+                : "Épuisé"
             }
           />
+
           <InfoCard label="Flaconnage" value={wine.bottle_size} />
-          <InfoCard label="Caissage" value={wine.packaging} />
+          <InfoCard
+            label="Conditionnement"
+            value={packagingInfo.display}
+          />
           <InfoCard label="Note" value={wine.rating} />
 
           <InfoCard
@@ -1232,34 +1342,34 @@ export default function WinePage() {
             </section>
           )}
 
-        {tastingNotes.length > 0 && (
-  <section className="rounded-[2rem] border border-[#e1d1bd] bg-[#fffaf3] p-8 shadow-sm">
-    <p className="text-sm uppercase tracking-[0.28em] text-[#8a6a2f]">
-      Notes de dégustation
-    </p>
+          {tastingNotes.length > 0 && (
+            <section className="rounded-[2rem] border border-[#e1d1bd] bg-[#fffaf3] p-8 shadow-sm">
+              <p className="text-sm uppercase tracking-[0.28em] text-[#8a6a2f]">
+                Notes de dégustation
+              </p>
 
-    <div className="mt-7 grid gap-4">
-      {tastingNotes.map((note) => (
-        <p
-          key={note}
-          className="rounded-[1.75rem] border border-[#dfcfb8] bg-white px-6 py-5 text-base leading-8 text-[#6d5b50]"
-        >
-          {note
-            .replace(
-              /(\d{2,3}\/100\s+[A-Z]+)\s+(\d{2,3}(?:-\d{2,3})?\s+[A-Z]+)\s*:/,
-              "$1\n$2 :"
-            )
-            .split("\n")
-            .map((line) => (
-              <span key={line} className="block">
-                {line}
-              </span>
-            ))}
-        </p>
-      ))}
-    </div>
-  </section>
-)}
+              <div className="mt-7 grid gap-4">
+                {tastingNotes.map((note) => (
+                  <p
+                    key={note}
+                    className="rounded-[1.75rem] border border-[#dfcfb8] bg-white px-6 py-5 text-base leading-8 text-[#6d5b50]"
+                  >
+                    {note
+                      .replace(
+                        /(\d{2,3}\/100\s+[A-Z]+)\s+(\d{2,3}(?:-\d{2,3})?\s+[A-Z]+)\s*:/,
+                        "$1\n$2 :"
+                      )
+                      .split("\n")
+                      .map((line) => (
+                        <span key={line} className="block">
+                          {line}
+                        </span>
+                      ))}
+                  </p>
+                ))}
+              </div>
+            </section>
+          )}
 
           {wine.meta_content && (
             <section className="rounded-[2rem] border border-[#e1d1bd] bg-[#fffaf3] p-6 shadow-sm">
@@ -1325,7 +1435,9 @@ export default function WinePage() {
             )}
 
             {wishlistMessage && (
-              <p className="mt-4 text-sm text-[#8a1f1f]">{wishlistMessage}</p>
+              <p className="mt-4 text-sm text-[#8a1f1f]">
+                {wishlistMessage}
+              </p>
             )}
           </section>
         </div>
