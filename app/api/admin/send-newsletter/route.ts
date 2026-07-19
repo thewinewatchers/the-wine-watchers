@@ -17,6 +17,9 @@ type NewsletterRequest = {
   title?: unknown;
   message?: unknown;
   imageUrl?: unknown;
+  imageUrls?: unknown;
+  images?: unknown;
+  additionalImages?: unknown;
   buttonLabel?: unknown;
   buttonUrl?: unknown;
   footerMessage?: unknown;
@@ -27,7 +30,7 @@ type NewsletterContent = {
   preheader: string;
   title: string;
   message: string;
-  imageUrl: string;
+  imageUrls: string[];
   buttonLabel: string;
   buttonUrl: string;
   footerMessage: string;
@@ -45,9 +48,9 @@ type SendResult = {
   resendId?: string;
 };
 
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, "") ||
-  "https://www.thewinewatchers.com";
+const SITE_URL = "https://www.thewinewatchers.com";
+
+const LOGO_URL = `${SITE_URL}/favicon-tww.png`;
 
 const DEFAULT_FOOTER =
   "Vous recevez cet e-mail car vous êtes inscrit à la newsletter The Wine Watchers.";
@@ -92,7 +95,7 @@ function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-function normalizeUrl(value: unknown) {
+function normalizePublicUrl(value: unknown) {
   const url = normalizeText(value);
 
   if (!url) return "";
@@ -101,7 +104,68 @@ function normalizeUrl(value: unknown) {
     return url;
   }
 
+  if (url.startsWith("//")) {
+    return `https:${url}`;
+  }
+
+  if (url.startsWith("/")) {
+    return `${SITE_URL}${url}`;
+  }
+
+  if (/^(images|uploads)\//i.test(url)) {
+    return `${SITE_URL}/${url}`;
+  }
+
   return `https://${url}`;
+}
+
+function normalizeStringArray(value: unknown) {
+  if (Array.isArray(value)) {
+    return value
+      .flatMap((item) => normalizeStringArray(item))
+      .filter(Boolean);
+  }
+
+  if (typeof value !== "string") {
+    return [];
+  }
+
+  const text = value.trim();
+
+  if (!text) {
+    return [];
+  }
+
+  if (text.startsWith("[") && text.endsWith("]")) {
+    try {
+      const parsed = JSON.parse(text);
+      return normalizeStringArray(parsed);
+    } catch {
+      // Continue avec la valeur texte.
+    }
+  }
+
+  return text
+    .split(/\r?\n/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function normalizeImageUrls(body: NewsletterRequest) {
+  const rawImages = [
+    body.imageUrl,
+    ...normalizeStringArray(body.imageUrls),
+    ...normalizeStringArray(body.images),
+    ...normalizeStringArray(body.additionalImages),
+  ];
+
+  return Array.from(
+    new Set(
+      rawImages
+        .map((value) => normalizePublicUrl(value))
+        .filter(Boolean)
+    )
+  );
 }
 
 function isValidPublicUrl(value: string) {
@@ -248,9 +312,9 @@ function parseNewsletterContent(
     preheader: normalizeText(body.preheader),
     title: normalizeText(body.title),
     message: normalizeText(body.message),
-    imageUrl: normalizeUrl(body.imageUrl),
+    imageUrls: normalizeImageUrls(body),
     buttonLabel: normalizeText(body.buttonLabel),
-    buttonUrl: normalizeUrl(body.buttonUrl),
+    buttonUrl: normalizePublicUrl(body.buttonUrl),
     footerMessage:
       normalizeText(body.footerMessage) || DEFAULT_FOOTER,
   };
@@ -271,11 +335,12 @@ function validateNewsletter(
     return "Le contenu de la newsletter est obligatoire.";
   }
 
-  if (
-    content.imageUrl &&
-    !isValidPublicUrl(content.imageUrl)
-  ) {
-    return "L’adresse de l’image principale est invalide.";
+  const invalidImageUrl = content.imageUrls.find(
+    (imageUrl) => !isValidPublicUrl(imageUrl)
+  );
+
+  if (invalidImageUrl) {
+    return "L’adresse d’une image de la newsletter est invalide.";
   }
 
   if (
@@ -376,10 +441,10 @@ function buildNewsletterHtml(
   content: NewsletterContent,
   unsubscribeUrl: string
 ) {
+  const logoUrl = escapeAttribute(LOGO_URL);
   const subject = escapeHtml(content.subject);
   const preheader = escapeHtml(content.preheader);
   const title = escapeHtml(content.title);
-  const imageUrl = escapeAttribute(content.imageUrl);
   const buttonLabel = escapeHtml(content.buttonLabel);
   const buttonUrl = escapeAttribute(content.buttonUrl);
   const footerMessage = escapeHtml(
@@ -388,27 +453,43 @@ function buildNewsletterHtml(
   const safeUnsubscribeUrl =
     escapeAttribute(unsubscribeUrl);
 
-  const imageBlock = content.imageUrl
-    ? `
-      <tr>
-        <td style="padding:0;">
-          <img
-            src="${imageUrl}"
-            alt="${title}"
-            width="680"
+  const imageBlocks = content.imageUrls
+    .map((url, index) => {
+      const safeImageUrl = escapeAttribute(url);
+      const imageAlt =
+        index === 0
+          ? title
+          : `${title} — image ${index + 1}`;
+
+      return `
+        <tr>
+          <td
+            align="center"
             style="
-              display:block;
-              width:100%;
-              max-width:680px;
-              height:auto;
-              border:0;
-              object-fit:cover;
+              padding:${index === 0 ? "0" : "18px 36px 0 36px"};
+              background:#ffffff;
             "
-          />
-        </td>
-      </tr>
-    `
-    : "";
+          >
+            <img
+              src="${safeImageUrl}"
+              alt="${escapeAttribute(imageAlt)}"
+              width="680"
+              style="
+                display:block;
+                width:100%;
+                max-width:${index === 0 ? "680px" : "608px"};
+                height:auto;
+                margin:0 auto;
+                border:0;
+                border-radius:${index === 0 ? "0" : "16px"};
+                object-fit:contain;
+              "
+            />
+          </td>
+        </tr>
+      `;
+    })
+    .join("");
 
   const buttonBlock =
     content.buttonLabel && content.buttonUrl
@@ -515,10 +596,34 @@ function buildNewsletterHtml(
             "
           >
             <tr>
-              <td style="padding:30px 36px 28px 36px;">
+              <td
+                align="center"
+                style="padding:28px 36px 28px 36px;"
+              >
+                <a
+                  href="${SITE_URL}"
+                  target="_blank"
+                  style="display:inline-block;text-decoration:none;"
+                >
+                  <img
+                    src="${logoUrl}"
+                    alt="The Wine Watchers"
+                    width="88"
+                    height="88"
+                    style="
+                      display:block;
+                      width:88px;
+                      height:88px;
+                      margin:0 auto;
+                      border:0;
+                      object-fit:contain;
+                    "
+                  />
+                </a>
+
                 <p
                   style="
-                    margin:0;
+                    margin:14px 0 0 0;
                     color:#8a6a2f;
                     font-family:Arial,Helvetica,sans-serif;
                     font-size:12px;
@@ -545,7 +650,7 @@ function buildNewsletterHtml(
               </td>
             </tr>
 
-            ${imageBlock}
+            ${imageBlocks}
 
             <tr>
               <td style="padding:34px 36px 36px 36px;">
@@ -629,6 +734,16 @@ function buildNewsletterText(
     content.message,
   ];
 
+  if (content.imageUrls.length > 0) {
+    sections.push(
+      "",
+      ...content.imageUrls.map(
+        (imageUrl, index) =>
+          `Image ${index + 1} : ${imageUrl}`
+      )
+    );
+  }
+
   if (content.buttonLabel && content.buttonUrl) {
     sections.push(
       "",
@@ -650,24 +765,20 @@ function buildNewsletterText(
 }
 
 function getSenderAddress() {
-  const sender =
+  return (
     process.env.NEWSLETTER_FROM_EMAIL ||
     process.env.RESEND_FROM_EMAIL ||
-    "";
-
-  if (!sender.trim()) {
-    throw new Error(
-      "La variable NEWSLETTER_FROM_EMAIL est manquante."
-    );
-  }
-
-  return sender.trim();
+    process.env.CONTACT_FROM_EMAIL ||
+    process.env.EMAIL_FROM ||
+    "The Wine Watchers <onboarding@resend.dev>"
+  ).trim();
 }
 
 function getReplyToAddress() {
   return (
     process.env.NEWSLETTER_REPLY_TO ||
     process.env.RESEND_REPLY_TO ||
+    process.env.CONTACT_TO_EMAIL ||
     ""
   ).trim();
 }
@@ -854,7 +965,7 @@ async function sendTestEmail({
   const { data, error } =
     await resend.emails.send({
       from,
-      to: [testEmail],
+      to: testEmail,
       subject: `[TEST] ${content.subject}`,
       html,
       text,

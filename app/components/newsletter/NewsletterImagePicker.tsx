@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  ChangeEvent,
-  DragEvent,
-  useRef,
-  useState,
-} from "react";
-import { supabase } from "@/lib/supabaseClient";
-import NewsletterImageBrowser from "./NewsletterImageBrowser";
+import { useState } from "react";
 
 type Props = {
   images: string[];
@@ -15,22 +8,13 @@ type Props = {
   maxImages?: number;
 };
 
-const BUCKET_NAME = "wine-images";
+function normalizeImagePath(value: string) {
+  const path = value.trim().replace(/\\/g, "/");
 
-function sanitizeFileName(filename: string) {
-  const extension = filename.includes(".")
-    ? `.${filename.split(".").pop()?.toLowerCase()}`
-    : "";
+  if (!path) return "";
+  if (/^https?:\/\//i.test(path)) return path;
 
-  const baseName = filename
-    .replace(/\.[^/.]+$/, "")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-
-  return `${baseName || "newsletter-image"}-${Date.now()}${extension}`;
+  return path.startsWith("/") ? path : `/${path}`;
 }
 
 export default function NewsletterImagePicker({
@@ -38,22 +22,28 @@ export default function NewsletterImagePicker({
   onChange,
   maxImages = 12,
 }: Props) {
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [mainImagePath, setMainImagePath] = useState("");
+  const [additionalImagePath, setAdditionalImagePath] = useState("");
 
-  const [manualImage, setManualImage] = useState("");
-  const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState("");
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(
-    null
-  );
-  const [showLibrary, setShowLibrary] = useState(false);
+  function saveMainImage() {
+    const normalizedPath = normalizeImagePath(mainImagePath);
 
-  function addManualImage() {
-    const image = manualImage.trim();
+    if (!normalizedPath) return;
 
-    if (!image) return;
+    const remainingImages = images.filter(
+      (image) => image !== normalizedPath
+    );
 
-    if (images.includes(image)) {
+    onChange([normalizedPath, ...remainingImages]);
+    setMainImagePath("");
+  }
+
+  function addAdditionalImage() {
+    const normalizedPath = normalizeImagePath(additionalImagePath);
+
+    if (!normalizedPath) return;
+
+    if (images.includes(normalizedPath)) {
       window.alert("Cette image est déjà sélectionnée.");
       return;
     }
@@ -65,8 +55,8 @@ export default function NewsletterImagePicker({
       return;
     }
 
-    onChange([...images, image]);
-    setManualImage("");
+    onChange([...images, normalizedPath]);
+    setAdditionalImagePath("");
   }
 
   function removeImage(index: number) {
@@ -75,158 +65,22 @@ export default function NewsletterImagePicker({
     );
   }
 
-  function moveImage(
-    index: number,
-    direction: "up" | "down"
-  ) {
+  function moveImage(index: number, direction: "up" | "down") {
     const targetIndex =
       direction === "up" ? index - 1 : index + 1;
 
-    if (
-      targetIndex < 0 ||
-      targetIndex >= images.length
-    ) {
+    if (targetIndex < 0 || targetIndex >= images.length) {
       return;
     }
 
     const reorderedImages = [...images];
 
-    [
-      reorderedImages[index],
-      reorderedImages[targetIndex],
-    ] = [
+    [reorderedImages[index], reorderedImages[targetIndex]] = [
       reorderedImages[targetIndex],
       reorderedImages[index],
     ];
 
     onChange(reorderedImages);
-  }
-
-  function handleDragStart(index: number) {
-    setDraggedIndex(index);
-  }
-
-  function handleDragOver(
-    event: DragEvent<HTMLDivElement>
-  ) {
-    event.preventDefault();
-  }
-
-  function handleDrop(
-    event: DragEvent<HTMLDivElement>,
-    targetIndex: number
-  ) {
-    event.preventDefault();
-
-    if (
-      draggedIndex === null ||
-      draggedIndex === targetIndex
-    ) {
-      setDraggedIndex(null);
-      return;
-    }
-
-    const reorderedImages = [...images];
-    const [movedImage] = reorderedImages.splice(
-      draggedIndex,
-      1
-    );
-
-    reorderedImages.splice(
-      targetIndex,
-      0,
-      movedImage
-    );
-
-    onChange(reorderedImages);
-    setDraggedIndex(null);
-  }
-
-  async function uploadImages(
-    event: ChangeEvent<HTMLInputElement>
-  ) {
-    const files = Array.from(
-      event.target.files || []
-    );
-
-    event.target.value = "";
-
-    if (files.length === 0) return;
-
-    const remainingPlaces =
-      maxImages - images.length;
-
-    if (remainingPlaces <= 0) {
-      window.alert(
-        `Vous pouvez ajouter au maximum ${maxImages} images.`
-      );
-      return;
-    }
-
-    const filesToUpload = files.slice(
-      0,
-      remainingPlaces
-    );
-
-    if (files.length > remainingPlaces) {
-      window.alert(
-        `Seules ${remainingPlaces} image(s) peuvent encore être ajoutée(s).`
-      );
-    }
-
-    setUploading(true);
-    setUploadError("");
-
-    try {
-      const uploadedUrls: string[] = [];
-
-      for (const file of filesToUpload) {
-        if (!file.type.startsWith("image/")) {
-          throw new Error(
-            `${file.name} n’est pas un fichier image.`
-          );
-        }
-
-        const filename = sanitizeFileName(file.name);
-        const storagePath = `newsletter/${filename}`;
-
-        const { error } = await supabase.storage
-          .from(BUCKET_NAME)
-          .upload(storagePath, file, {
-            cacheControl: "3600",
-            upsert: false,
-          });
-
-        if (error) {
-          throw error;
-        }
-
-        const {
-          data: { publicUrl },
-        } = supabase.storage
-          .from(BUCKET_NAME)
-          .getPublicUrl(storagePath);
-
-        uploadedUrls.push(publicUrl);
-      }
-
-      onChange([
-        ...images,
-        ...uploadedUrls.filter(
-          (url) => !images.includes(url)
-        ),
-      ]);
-    } catch (error) {
-      console.error(error);
-
-      setUploadError(
-        error instanceof Error
-          ? error.message
-          : "Impossible de téléverser les images."
-      );
-    } finally {
-      setUploading(false);
-    }
   }
 
   return (
@@ -238,9 +92,8 @@ export default function NewsletterImagePicker({
           </h3>
 
           <p className="mt-2 text-sm leading-6 text-[#6d5b50]">
-            La première image sera utilisée comme visuel
-            principal. Les suivantes seront affichées dans
-            la newsletter.
+            Choisissez une image principale puis ajoutez autant d’images
+            supplémentaires que nécessaire.
           </p>
         </div>
 
@@ -249,99 +102,84 @@ export default function NewsletterImagePicker({
         </div>
       </div>
 
-      <div className="mt-5 flex flex-wrap gap-3">
-        <button
-          type="button"
-          onClick={() =>
-            fileInputRef.current?.click()
-          }
-          disabled={
-            uploading || images.length >= maxImages
-          }
-          className="rounded-full bg-[#8a1f1f] px-5 py-3 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {uploading
-            ? "Téléversement..."
-            : "Téléverser des images"}
-        </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            setShowLibrary((current) => !current)
-          }
-          className="rounded-full border border-[#8a6a2f] px-5 py-3 text-sm font-semibold text-[#8a6a2f] transition hover:bg-[#8a6a2f] hover:text-white"
-        >
-          {showLibrary
-            ? "Fermer la bibliothèque"
-            : "Choisir dans la bibliothèque"}
-        </button>
-
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          multiple
-          onChange={uploadImages}
-          className="hidden"
-        />
-      </div>
-
-      {uploadError && (
-        <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {uploadError}
-        </div>
-      )}
-
-      {showLibrary && (
-        <div className="mt-6">
-          <NewsletterImageBrowser
-            images={images}
-            onChange={onChange}
-            maxImages={maxImages}
-          />
-        </div>
-      )}
-
       <div className="mt-6 rounded-2xl border border-[#e1d1bd] bg-white p-5">
         <label
-          htmlFor="manual-newsletter-image"
+          htmlFor="newsletter-main-image"
           className="block text-sm font-semibold text-[#24110d]"
         >
-          Ajouter une image par chemin ou URL
+          Image principale
         </label>
 
         <p className="mt-2 text-xs leading-5 text-[#8b7a6f]">
-          Exemple : `/images/nom-image.jpg` ou une URL
-          complète.
+          Exemple : /images/bonnes-mares-2015-roumier-6-bouteilles.png
         </p>
 
         <div className="mt-4 flex flex-col gap-3 sm:flex-row">
           <input
-            id="manual-newsletter-image"
+            id="newsletter-main-image"
             type="text"
-            value={manualImage}
-            onChange={(event) =>
-              setManualImage(event.target.value)
-            }
+            value={mainImagePath}
+            onChange={(event) => setMainImagePath(event.target.value)}
             onKeyDown={(event) => {
               if (event.key === "Enter") {
                 event.preventDefault();
-                addManualImage();
+                saveMainImage();
               }
             }}
-            placeholder="/images/nom-image.jpg"
+            placeholder="/images/nom-image-principale.png"
             className="flex-1 rounded-xl border border-neutral-300 px-4 py-3 outline-none transition focus:border-[#8a1f1f]"
           />
 
           <button
             type="button"
-            onClick={addManualImage}
+            onClick={saveMainImage}
+            disabled={!mainImagePath.trim()}
+            className="rounded-full bg-[#8a1f1f] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#641313] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Définir comme principale
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-5 rounded-2xl border border-[#e1d1bd] bg-white p-5">
+        <label
+          htmlFor="newsletter-additional-image"
+          className="block text-sm font-semibold text-[#24110d]"
+        >
+          Ajouter une image supplémentaire
+        </label>
+
+        <p className="mt-2 text-xs leading-5 text-[#8b7a6f]">
+          Entrez un nouveau chemin puis cliquez sur « Ajouter ». Vous pouvez
+          répéter l’opération pour chaque image.
+        </p>
+
+        <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+          <input
+            id="newsletter-additional-image"
+            type="text"
+            value={additionalImagePath}
+            onChange={(event) =>
+              setAdditionalImagePath(event.target.value)
+            }
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                addAdditionalImage();
+              }
+            }}
+            placeholder="/images/nom-image-supplementaire.png"
+            className="flex-1 rounded-xl border border-neutral-300 px-4 py-3 outline-none transition focus:border-[#8a6a2f]"
+          />
+
+          <button
+            type="button"
+            onClick={addAdditionalImage}
             disabled={
-              !manualImage.trim() ||
+              !additionalImagePath.trim() ||
               images.length >= maxImages
             }
-            className="rounded-full bg-[#8a6a2f] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#6d4a10] disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-full bg-[#8a6a2f] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#6d4a10] disabled:cursor-not-allowed disabled:opacity-50"
           >
             Ajouter
           </button>
@@ -357,22 +195,7 @@ export default function NewsletterImagePicker({
           {images.map((image, index) => (
             <div
               key={`${image}-${index}`}
-              draggable
-              onDragStart={() =>
-                handleDragStart(index)
-              }
-              onDragOver={handleDragOver}
-              onDrop={(event) =>
-                handleDrop(event, index)
-              }
-              onDragEnd={() =>
-                setDraggedIndex(null)
-              }
-              className={`rounded-2xl border bg-white p-5 transition ${
-                draggedIndex === index
-                  ? "border-[#8a1f1f] opacity-60"
-                  : "border-[#e1d1bd]"
-              }`}
+              className="rounded-2xl border border-[#e1d1bd] bg-white p-5"
             >
               <div className="grid gap-5 md:grid-cols-[180px_1fr]">
                 <div className="flex min-h-[180px] items-center justify-center overflow-hidden rounded-2xl border border-[#eadcca] bg-[#f8f3ea]">
@@ -394,26 +217,22 @@ export default function NewsletterImagePicker({
                         Image principale
                       </span>
                     )}
+
+                    {index > 0 && (
+                      <span className="rounded-full bg-[#f3eadf] px-3 py-1 text-xs font-semibold text-[#8a6a2f]">
+                        Image supplémentaire
+                      </span>
+                    )}
                   </div>
 
-                  <p
-                    title={image}
-                    className="mt-3 break-all text-xs leading-5 text-[#8b7a6f]"
-                  >
+                  <p className="mt-3 break-all text-xs leading-5 text-[#8b7a6f]">
                     {image}
-                  </p>
-
-                  <p className="mt-3 text-xs text-[#8b7a6f]">
-                    Vous pouvez également déplacer cette
-                    carte par glisser-déposer.
                   </p>
 
                   <div className="mt-5 flex flex-wrap gap-3">
                     <button
                       type="button"
-                      onClick={() =>
-                        moveImage(index, "up")
-                      }
+                      onClick={() => moveImage(index, "up")}
                       disabled={index === 0}
                       className="rounded-full border border-[#8a6a2f] px-4 py-2 text-sm text-[#8a6a2f] disabled:cursor-not-allowed disabled:opacity-40"
                     >
@@ -422,12 +241,8 @@ export default function NewsletterImagePicker({
 
                     <button
                       type="button"
-                      onClick={() =>
-                        moveImage(index, "down")
-                      }
-                      disabled={
-                        index === images.length - 1
-                      }
+                      onClick={() => moveImage(index, "down")}
+                      disabled={index === images.length - 1}
                       className="rounded-full border border-[#8a6a2f] px-4 py-2 text-sm text-[#8a6a2f] disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       Descendre
@@ -435,9 +250,7 @@ export default function NewsletterImagePicker({
 
                     <button
                       type="button"
-                      onClick={() =>
-                        removeImage(index)
-                      }
+                      onClick={() => removeImage(index)}
                       className="rounded-full border border-red-300 px-4 py-2 text-sm text-red-700 transition hover:bg-red-50"
                     >
                       Supprimer

@@ -75,6 +75,12 @@ export default function NewsletterEditor({
   }
 
   const normalizedButtonUrl = normalizePublicUrl(form.buttonUrl);
+  const safeSubscriberCount = Number.isFinite(subscriberCount)
+    ? subscriberCount
+    : 0;
+  const isSendingTest = Boolean(sendingTest);
+  const isSendingNewsletter = Boolean(sendingNewsletter);
+  const isBusy = isSendingTest || isSendingNewsletter;
 
   return (
     <div className="rounded-[2rem] border border-[#eadcca] bg-white p-6 shadow-sm">
@@ -97,7 +103,7 @@ export default function NewsletterEditor({
         <button
           type="button"
           onClick={onReset}
-          disabled={sendingTest || sendingNewsletter}
+          disabled={isBusy}
           className="rounded-full border border-[#8a6a2f]/40 px-5 py-3 text-sm font-semibold text-[#6d5b50] transition hover:border-[#8a1f1f] hover:text-[#8a1f1f] disabled:cursor-not-allowed disabled:opacity-50"
         >
           Effacer
@@ -294,10 +300,10 @@ export default function NewsletterEditor({
 
           <button
             type="submit"
-            disabled={sendingTest || sendingNewsletter}
+            disabled={isBusy}
             className="rounded-full bg-[#8a6a2f] px-6 py-3 text-sm font-semibold uppercase tracking-[0.14em] text-white transition hover:bg-[#6d4a10] disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {sendingTest
+            {isSendingTest
               ? "Envoi du test..."
               : "Envoyer le test"}
           </button>
@@ -310,22 +316,22 @@ export default function NewsletterEditor({
         </h3>
 
         <p className="mt-2 text-sm leading-6 text-[#6d5b50]">
-          La campagne sera envoyée à {subscriberCount} abonné(s).
+          La campagne sera envoyée à {safeSubscriberCount} abonné(s).
         </p>
 
         <button
           type="button"
           onClick={() => void onSendNewsletter()}
           disabled={
-            sendingNewsletter ||
-            sendingTest ||
-            subscriberCount === 0
+            isSendingNewsletter ||
+            isSendingTest ||
+            safeSubscriberCount === 0
           }
           className="mt-5 w-full rounded-full bg-[#8a1f1f] px-8 py-4 text-sm font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-[#641313] disabled:cursor-not-allowed disabled:bg-gray-400"
         >
-          {sendingNewsletter
+          {isSendingNewsletter
             ? "Envoi de la campagne..."
-            : `Envoyer à ${subscriberCount} abonné(s)`}
+            : `Envoyer à ${safeSubscriberCount} abonné(s)`}
         </button>
       </div>
     </div>

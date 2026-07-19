@@ -14,6 +14,10 @@ import NewsletterEditor, {
   type NewsletterForm,
 } from "@/app/components/newsletter/NewsletterEditor";
 import NewsletterPreview from "@/app/components/newsletter/NewsletterPreview";
+import {
+  NEWSLETTER_TEMPLATES,
+  type NewsletterTemplate,
+} from "@/lib/newsletter-templates";
 
 type Subscriber = {
   id: string;
@@ -68,6 +72,7 @@ function normalizePublicUrl(value: string) {
 
 export default function AdminNewsletterPage() {
   const csvInputRef = useRef<HTMLInputElement | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [loading, setLoading] = useState(true);
@@ -88,6 +93,10 @@ export default function AdminNewsletterPage() {
 
   const [form, setForm] =
     useState<NewsletterForm>(EMPTY_FORM);
+  const [selectedTemplateId, setSelectedTemplateId] =
+    useState("");
+  const [templateSearch, setTemplateSearch] = useState("");
+  const [templateCategory, setTemplateCategory] = useState("Tous");
 
   const [showPreview, setShowPreview] = useState(true);
   const [testEmail, setTestEmail] = useState("");
@@ -177,6 +186,7 @@ export default function AdminNewsletterPage() {
   }
 
   useEffect(() => {
+    setMounted(true);
     void loadSubscribers();
   }, []);
 
@@ -194,6 +204,44 @@ export default function AdminNewsletterPage() {
       );
     });
   }, [search, subscribers]);
+
+  const templateCategories = useMemo(() => {
+    return [
+      "Tous",
+      ...Array.from(
+        new Set(
+          NEWSLETTER_TEMPLATES.map(
+            (template) => template.category
+          )
+        )
+      ),
+    ];
+  }, []);
+
+  const filteredTemplates = useMemo(() => {
+    const query = templateSearch.trim().toLowerCase();
+
+    return NEWSLETTER_TEMPLATES.filter((template) => {
+      const matchesCategory =
+        templateCategory === "Tous" ||
+        template.category === templateCategory;
+
+      const matchesSearch =
+        !query ||
+        template.name.toLowerCase().includes(query) ||
+        template.category.toLowerCase().includes(query) ||
+        template.description.toLowerCase().includes(query) ||
+        template.subject.toLowerCase().includes(query);
+
+      return matchesCategory && matchesSearch;
+    });
+  }, [templateCategory, templateSearch]);
+
+  const selectedTemplate = useMemo(() => {
+    return NEWSLETTER_TEMPLATES.find(
+      (template) => template.id === selectedTemplateId
+    );
+  }, [selectedTemplateId]);
 
   const csvContent = useMemo(() => {
     const header = [
@@ -227,6 +275,44 @@ export default function AdminNewsletterPage() {
       ...current,
       [key]: value,
     }));
+  }
+
+  function applyTemplate(template: NewsletterTemplate) {
+    const hasContent = Boolean(
+      form.subject.trim() ||
+        form.preheader.trim() ||
+        form.title.trim() ||
+        form.message.trim() ||
+        form.images.some((image) => image.trim()) ||
+        form.buttonLabel.trim() ||
+        form.buttonUrl.trim()
+    );
+
+    if (hasContent) {
+      const confirmed = window.confirm(
+        `Charger le modèle « ${template.name} » et remplacer le contenu actuel ?`
+      );
+
+      if (!confirmed) return;
+    }
+
+    setForm({
+      subject: template.subject,
+      preheader: template.preheader,
+      title: template.title,
+      message: template.message,
+      images: [...template.images],
+      buttonLabel: template.buttonLabel,
+      buttonUrl: template.buttonUrl,
+      footerMessage: template.footerMessage,
+    });
+
+    setSelectedTemplateId(template.id);
+    setPageError("");
+    setSendMessage("");
+    setPageMessage(
+      `Le modèle « ${template.name} » a été chargé. Vous pouvez maintenant personnaliser son contenu.`
+    );
   }
 
   async function addEmail(
@@ -666,10 +752,25 @@ export default function AdminNewsletterPage() {
       ...EMPTY_FORM,
       images: [],
     });
+    setSelectedTemplateId("");
 
     setSendMessage("");
     setPageMessage("");
     setPageError("");
+  }
+
+  if (!mounted) {
+    return (
+      <main className="min-h-screen bg-[#f8f4ee] px-5 py-10 text-[#24110d]">
+        <section className="mx-auto max-w-7xl">
+          <div className="rounded-[2rem] border border-[#eadcca] bg-white p-8 shadow-sm">
+            <p className="text-sm text-[#6d5b50]">
+              Chargement de l’outil newsletter...
+            </p>
+          </div>
+        </section>
+      </main>
+    );
   }
 
   return (
@@ -729,6 +830,211 @@ export default function AdminNewsletterPage() {
             {sendMessage}
           </div>
         )}
+
+        <section className="mb-8 overflow-hidden rounded-[2rem] border border-[#eadcca] bg-white shadow-sm">
+          <div className="border-b border-[#eadcca] bg-gradient-to-r from-[#fffaf3] via-white to-[#fff8ee] p-6 md:p-8">
+            <div className="flex flex-wrap items-end justify-between gap-5">
+              <div>
+                <p className="text-xs uppercase tracking-[0.22em] text-[#8a6a2f]">
+                  Bibliothèque CMS
+                </p>
+
+                <h2 className="mt-2 font-serif text-3xl md:text-4xl">
+                  Modèles de newsletters
+                </h2>
+
+                <p className="mt-3 max-w-3xl text-sm leading-6 text-[#6d5b50]">
+                  Sélectionnez un univers pour préremplir immédiatement tous
+                  les champs de la campagne.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-[#eadcca] bg-white px-6 py-4 text-center shadow-sm">
+                <p className="text-xs uppercase tracking-[0.18em] text-[#8a6a2f]">
+                  Bibliothèque
+                </p>
+                <p className="mt-1 text-3xl font-semibold">
+                  {NEWSLETTER_TEMPLATES.length}
+                </p>
+                <p className="text-xs text-[#6d5b50]">modèles</p>
+              </div>
+            </div>
+
+            <div className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto]">
+              <label className="relative block">
+                <span className="sr-only">Rechercher un modèle</span>
+                <input
+                  type="search"
+                  value={templateSearch}
+                  onChange={(event) =>
+                    setTemplateSearch(event.target.value)
+                  }
+                  placeholder="Rechercher un modèle, une région ou une campagne..."
+                  className="w-full rounded-2xl border border-[#dfcfb8] bg-white px-5 py-4 pr-12 outline-none transition focus:border-[#8a1f1f]"
+                />
+                <span className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2 text-lg text-[#8a6a2f]">
+                  ⌕
+                </span>
+              </label>
+
+              <div className="flex flex-wrap gap-2">
+                {templateCategories.map((category) => {
+                  const isActive = templateCategory === category;
+
+                  return (
+                    <button
+                      key={category}
+                      type="button"
+                      onClick={() => setTemplateCategory(category)}
+                      className={`rounded-full px-4 py-3 text-sm font-semibold transition ${
+                        isActive
+                          ? "bg-[#8a1f1f] text-white shadow-sm"
+                          : "border border-[#dfcfb8] bg-white text-[#6d5b50] hover:border-[#8a1f1f] hover:text-[#8a1f1f]"
+                      }`}
+                    >
+                      {category}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6 md:p-8">
+            {filteredTemplates.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-[#d8b56d] bg-[#fffdf7] p-8 text-center">
+                <p className="font-serif text-2xl">Aucun modèle trouvé</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTemplateSearch("");
+                    setTemplateCategory("Tous");
+                  }}
+                  className="mt-4 text-sm font-semibold text-[#8a1f1f] hover:underline"
+                >
+                  Réinitialiser la recherche
+                </button>
+              </div>
+            ) : (
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {filteredTemplates.map((template) => {
+                  const isSelected =
+                    selectedTemplateId === template.id;
+
+                  const visual =
+                    template.id === "primeurs"
+                      ? "2025"
+                      : template.id === "bordeaux"
+                        ? "BDX"
+                        : template.id === "bourgogne"
+                          ? "BGC"
+                          : template.id === "vallee-du-rhone"
+                            ? "RHO"
+                            : template.id === "italie"
+                              ? "ITA"
+                              : template.id === "espagne"
+                                ? "ESP"
+                                : template.id === "usa"
+                                  ? "USA"
+                                  : template.id === "champagne"
+                                    ? "CHP"
+                                    : template.id === "noel"
+                                      ? "NOËL"
+                                      : template.id === "nouvel-an"
+                                        ? "2027"
+                                        : template.id === "foire-aux-vins"
+                                          ? "FAV"
+                                          : "TWW";
+
+                  return (
+                    <article
+                      key={template.id}
+                      className={`group overflow-hidden rounded-[1.6rem] border bg-white transition duration-200 ${
+                        isSelected
+                          ? "border-[#8a1f1f] shadow-[0_12px_35px_rgba(138,31,31,0.14)]"
+                          : "border-[#eadcca] hover:-translate-y-1 hover:border-[#c5a46a] hover:shadow-lg"
+                      }`}
+                    >
+                      <div className="relative flex h-32 items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_top_left,#f4e5cd,transparent_55%),linear-gradient(135deg,#3a1812,#8a1f1f)]">
+                        <div className="absolute inset-0 opacity-20 [background-image:linear-gradient(45deg,transparent_40%,rgba(255,255,255,.2)_50%,transparent_60%)]" />
+                        <span className="relative font-serif text-4xl tracking-[0.18em] text-white">
+                          {visual}
+                        </span>
+
+                        <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#8a6a2f]">
+                          {template.category}
+                        </span>
+
+                        {isSelected && (
+                          <span className="absolute right-4 top-4 rounded-full bg-[#fff8df] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#8a1f1f]">
+                            Actif
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="p-5">
+                        <h3 className="font-serif text-2xl">
+                          {template.name}
+                        </h3>
+
+                        <p className="mt-2 min-h-[72px] text-sm leading-6 text-[#6d5b50]">
+                          {template.description}
+                        </p>
+
+                        <div className="mt-4 border-t border-[#f0e5d7] pt-4">
+                          <p className="line-clamp-2 text-xs leading-5 text-[#8a6a2f]">
+                            {template.subject}
+                          </p>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => applyTemplate(template)}
+                          className={`mt-5 w-full rounded-full px-5 py-3 text-sm font-semibold transition ${
+                            isSelected
+                              ? "bg-[#8a1f1f] text-white"
+                              : "bg-[#fff4e6] text-[#8a1f1f] group-hover:bg-[#8a1f1f] group-hover:text-white"
+                          }`}
+                        >
+                          {isSelected
+                            ? "Modèle sélectionné"
+                            : "Utiliser ce modèle"}
+                        </button>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-dashed border-[#d8b56d] bg-[#fffdf7] px-5 py-4">
+              <div>
+                <p className="font-semibold text-[#24110d]">
+                  {selectedTemplate
+                    ? `Modèle actif : ${selectedTemplate.name}`
+                    : "Aucun modèle sélectionné"}
+                </p>
+                <p className="mt-1 text-sm text-[#6d5b50]">
+                  Les modèles personnalisés seront ajoutés lors de la prochaine étape.
+                </p>
+              </div>
+
+              {selectedTemplate && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedTemplateId("");
+                    setPageMessage("");
+                  }}
+                  className="rounded-full border border-[#d8b56d] bg-white px-5 py-3 text-sm font-semibold text-[#6d5b50] transition hover:border-[#8a1f1f] hover:text-[#8a1f1f]"
+                >
+                  Désélectionner
+                </button>
+              )}
+            </div>
+          </div>
+        </section>
+
         <div className="grid gap-8 xl:grid-cols-[1.05fr_0.95fr]">
           <NewsletterEditor
             form={form}

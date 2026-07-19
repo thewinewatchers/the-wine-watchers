@@ -12,12 +12,29 @@ type NewsletterPreviewProps = {
   footerMessage?: string;
 };
 
-function normalizePublicUrl(value: string) {
+const SITE_URL = "https://www.thewinewatchers.com";
+const LOGO_URL = `${SITE_URL}/favicon-tww.png`;
+
+function normalizeImageUrl(value: string) {
+  const url = value.trim().replace(/\\/g, "/");
+
+  if (!url) return "";
+
+  if (/^https?:\/\//i.test(url)) return url;
+
+  if (url.startsWith("/")) return url;
+
+  return `/${url}`;
+}
+
+function normalizeButtonUrl(value: string) {
   const url = value.trim();
 
   if (!url) return "";
 
   if (/^https?:\/\//i.test(url)) return url;
+
+  if (url.startsWith("/")) return `${SITE_URL}${url}`;
 
   return `https://${url}`;
 }
@@ -38,9 +55,13 @@ export default function NewsletterPreview({
       .filter(Boolean);
   }, [message]);
 
-  const mainImage = images[0] || "";
-  const additionalImages = images.slice(1);
-  const normalizedButtonUrl = normalizePublicUrl(buttonUrl);
+  const normalizedImages = images
+    .map((image) => normalizeImageUrl(image))
+    .filter(Boolean);
+
+  const mainImage = normalizedImages[0] || "";
+  const additionalImages = normalizedImages.slice(1);
+  const normalizedButtonUrl = normalizeButtonUrl(buttonUrl);
 
   return (
     <div className="overflow-hidden rounded-[1.5rem] border border-[#e1d1bd] bg-[#f8f4ee] p-4">
@@ -58,8 +79,21 @@ export default function NewsletterPreview({
       )}
 
       <div className="mx-auto max-w-[680px] overflow-hidden rounded-[1.3rem] border border-[#e1d1bd] bg-white shadow-sm">
-        <header className="px-7 py-7 sm:px-9">
-          <p className="text-xs uppercase tracking-[0.25em] text-[#8a6a2f]">
+        <header className="px-7 py-7 text-center sm:px-9">
+          <a
+            href={SITE_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-block"
+          >
+            <img
+              src={LOGO_URL}
+              alt="The Wine Watchers"
+              className="mx-auto h-24 w-24 object-contain"
+            />
+          </a>
+
+          <p className="mt-4 text-xs uppercase tracking-[0.25em] text-[#8a6a2f]">
             The Wine Watchers
           </p>
 
