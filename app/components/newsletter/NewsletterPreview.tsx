@@ -13,8 +13,7 @@ type NewsletterPreviewProps = {
 };
 
 const SITE_URL = "https://www.thewinewatchers.com";
-const LOGO_URL = `${SITE_URL}/favicon-tww.png`;
-
+const LOGO_URL = "/images/logo-tww.jpg";
 function normalizeImageUrl(value: string) {
   const url = value.trim().replace(/\\/g, "/");
 
@@ -87,10 +86,10 @@ export default function NewsletterPreview({
             className="inline-block"
           >
             <img
-              src={LOGO_URL}
-              alt="The Wine Watchers"
-              className="mx-auto h-24 w-24 object-contain"
-            />
+  src={LOGO_URL}
+  alt="The Wine Watchers"
+  className="mx-auto h-auto max-h-24 w-auto max-w-[260px] object-contain"
+/>
           </a>
 
           <p className="mt-4 text-xs uppercase tracking-[0.25em] text-[#8a6a2f]">

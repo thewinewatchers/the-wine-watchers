@@ -50,8 +50,7 @@ type SendResult = {
 
 const SITE_URL = "https://www.thewinewatchers.com";
 
-const LOGO_URL = `${SITE_URL}/favicon-tww.png`;
-
+const LOGO_URL = `${SITE_URL}/images/logo-tww.jpg`;
 const DEFAULT_FOOTER =
   "Vous recevez cet e-mail car vous êtes inscrit à la newsletter The Wine Watchers.";
 
