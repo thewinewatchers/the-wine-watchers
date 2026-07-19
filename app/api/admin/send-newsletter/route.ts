@@ -119,7 +119,7 @@ function normalizePublicUrl(value: unknown) {
   return `https://${url}`;
 }
 
-function normalizeStringArray(value: unknown) {
+function normalizeStringArray(value: unknown): string[] {
   if (Array.isArray(value)) {
     return value
       .flatMap((item) => normalizeStringArray(item))
