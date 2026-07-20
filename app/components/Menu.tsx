@@ -84,7 +84,7 @@ export default function Menu() {
     await supabase.auth.signOut();
     setIsLoggedIn(false);
     setOpen(false);
-    window.location.href = "/boutique/bordeaux";
+   window.location.href = "/admin/login";
   };
 
   function handleSearch(event: React.FormEvent<HTMLFormElement>) {
