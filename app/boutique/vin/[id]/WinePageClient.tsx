@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { trackWineView } from "@/lib/analytics";
 
 type Wine = {
   id?: string | number;
@@ -712,6 +713,43 @@ export default function WinePage() {
 
     loadWine();
   }, [routeId]);
+
+  useEffect(() => {
+    if (!wine) return;
+
+    const sendViewEvent = () => {
+      trackWineView({
+        id: wine.id,
+        slug: wine.slug,
+        name: wine.name,
+        producer: wine.producer,
+        appellation: wine.appellation,
+        region: wine.region,
+        country: wine.country,
+        vintage: wine.vintage,
+        classification: wine.classification,
+        price: parsePrice(wine.price),
+        bottleSize: wine.bottle_size,
+        packaging: wine.packaging,
+        stock: availableStock,
+        category: wine.category,
+      });
+    };
+
+    sendViewEvent();
+
+    window.addEventListener(
+      "tww-analytics-consent-accepted",
+      sendViewEvent
+    );
+
+    return () => {
+      window.removeEventListener(
+        "tww-analytics-consent-accepted",
+        sendViewEvent
+      );
+    };
+  }, [wine, availableStock]);
 
   const grapeVarieties = useMemo(
     () => normalizeArray(wine?.grape_varieties),

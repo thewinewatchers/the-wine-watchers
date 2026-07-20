@@ -28,6 +28,12 @@ export default function CookieBanner() {
     localStorage.setItem(CONSENT_KEY, "accepted");
     setConsent("accepted");
     setVisible(false);
+
+    window.setTimeout(() => {
+      window.dispatchEvent(
+        new Event("tww-analytics-consent-accepted")
+      );
+    }, 500);
   }
 
   function refuseCookies() {
