@@ -15,8 +15,6 @@ type Wine = {
   price: string | number | null;
   compare_at_price: string | number | null;
   image: string | null;
-  image_url: string | null;
-  imageUrl: string | null;
   classification: string | null;
   bottle_size: string | null;
   packaging: string | null;
@@ -30,6 +28,7 @@ type WineGroup = {
 };
 
 const SITE_URL = "https://www.thewinewatchers.com";
+
 function slugify(value: string) {
   return value
     .toLowerCase()
@@ -95,15 +94,14 @@ function getDiscountInfo(
 }
 
 function getWineImage(wine: Wine) {
-  return wine.image_url || wine.imageUrl || wine.image || "";
+  return wine.image || "";
 }
 
 function getWineUrl(wine: Wine) {
-  return `/boutique/vin/${wine.slug || wine.id}`;
+  return `/boutique/vin/${wine.id}`;
 }
-
 function getAbsoluteWineUrl(wine: Wine) {
-  return `${SITE_URL}${getWineUrl(wine)}`;
+  return SITE_URL + getWineUrl(wine);
 }
 
 function getBoutiqueRegionUrl(region: string) {
@@ -151,7 +149,7 @@ function getBoutiqueRegionUrl(region: string) {
     return "/boutique/usa";
   }
 
-  return `/boutique/${normalizedRegion}`;
+  return "/boutique/" + normalizedRegion;
 }
 
 function getAppellationUrl(
@@ -205,7 +203,7 @@ function getAppellationUrl(
     return "/boutique/usa";
   }
 
-  return `/appellation/${slugify(appellation)}`;
+  return "/appellation/" + slugify(appellation);
 }
 
 function escapeRegExp(value: string) {
@@ -234,6 +232,30 @@ function resolveProducer(producers: string[], requestedSlug: string) {
   }
 
   return undefined;
+}
+
+function wineBelongsToProducerPage(
+  wine: Wine,
+  producer: string,
+  requestedSlug: string,
+) {
+  if (requestedSlug === "dominio-de-pingus") {
+    const searchableValue = slugify(
+      [wine.producer, wine.name, wine.slug]
+        .filter(Boolean)
+        .join(" "),
+    );
+
+    return (
+      searchableValue.includes("pingus") ||
+      searchableValue === "psi" ||
+      searchableValue.startsWith("psi-") ||
+      searchableValue.includes("-psi-") ||
+      searchableValue.endsWith("-psi")
+    );
+  }
+
+  return wine.producer === producer;
 }
 
 function getWineGroupTitle(wine: Wine) {
@@ -272,7 +294,11 @@ function getWineGroupTitle(wine: Wine) {
   if (
     producerSlug.includes("dominio-de-pingus") ||
     producerSlug.includes("dominio-pingus") ||
-    wineNameSlug.includes("pingus")
+    wineNameSlug.includes("pingus") ||
+    wineNameSlug === "psi" ||
+    wineNameSlug.startsWith("psi-") ||
+    wineSlug === "psi" ||
+    wineSlug.startsWith("psi-")
   ) {
     const searchableWineData = slugify(
       [
@@ -288,6 +314,10 @@ function getWineGroupTitle(wine: Wine) {
     );
 
     const isPsi =
+      wineNameSlug === "psi" ||
+      wineNameSlug.startsWith("psi-") ||
+      wineSlug === "psi" ||
+      wineSlug.startsWith("psi-") ||
       searchableWineData === "psi" ||
       searchableWineData.startsWith("psi-") ||
       searchableWineData.includes("-psi-") ||
@@ -312,7 +342,7 @@ function getWineGroupTitle(wine: Wine) {
   if (vintage) {
     const titleBeforeVintage = originalName
       .replace(
-        new RegExp(`\\s+${escapeRegExp(vintage)}(?:\\s*[–—-]\\s*.*)?$`, "i"),
+        new RegExp("\\s+" + escapeRegExp(vintage) + "(?:\\s*[–—-]\\s*.*)?$", "i"),
         "",
       )
       .trim();
@@ -340,7 +370,7 @@ export async function generateMetadata({
   const { data } = await supabase
     .from("wines")
     .select("producer")
-    .neq("hidden_from_site", true);
+    .or("hidden_from_site.is.null,hidden_from_site.eq.false");
 
   const producers = Array.from(
     new Set((data || []).map((wine) => wine.producer).filter(Boolean)),
@@ -362,13 +392,15 @@ export async function generateMetadata({
 
   return {
     title: editorialContent
-      ? `${producer} – Histoire, terroir et vins | The Wine Watchers`
-      : `${producer} – Vins disponibles | The Wine Watchers`,
+      ? producer + " – Histoire, terroir et vins | The Wine Watchers"
+      : producer + " – Vins disponibles | The Wine Watchers",
     description: editorialContent
       ? editorialContent.introduction
-      : `Découvrez les vins disponibles de ${producer} chez The Wine Watchers : grands crus, millésimes recherchés et bouteilles de collection.`,
+      : "Découvrez les vins disponibles de " +
+        producer +
+        " chez The Wine Watchers : grands crus, millésimes recherchés et bouteilles de collection.",
     alternates: {
-      canonical: `${SITE_URL}/producteur/${slug}`,
+      canonical: SITE_URL + "/producteur/" + slug,
     },
     robots: {
       index: true,
@@ -387,7 +419,7 @@ export default async function ProducteurPage({
   const { data: producerData } = await supabase
     .from("wines")
     .select("producer")
-    .neq("hidden_from_site", true);
+    .or("hidden_from_site.is.null,hidden_from_site.eq.false");
 
   const producers = Array.from(
     new Set((producerData || []).map((wine) => wine.producer).filter(Boolean)),
@@ -404,13 +436,14 @@ export default async function ProducteurPage({
     .select(
       "id, slug, name, producer, appellation, region, category, vintage, price, compare_at_price, image, classification, bottle_size, packaging, rating, hidden_from_site",
     )
-    .eq("producer", producer)
-    .neq("hidden_from_site", true)
+    .or("hidden_from_site.is.null,hidden_from_site.eq.false")
     .order("name", { ascending: true })
     .order("vintage", { ascending: false });
 
   const visibleWines = ((wines || []) as Wine[]).filter(
-    (wine) => wine.hidden_from_site !== true,
+    (wine) =>
+      wine.hidden_from_site !== true &&
+      wineBelongsToProducerPage(wine, producer, slug),
   );
 
   const appellations = Array.from(
@@ -436,7 +469,6 @@ export default async function ProducteurPage({
       }
 
       map.get(key)!.wines.push(wine);
-
       return map;
     },
     new Map<string, WineGroup>(),
@@ -461,15 +493,16 @@ export default async function ProducteurPage({
   const itemListJsonLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    name: `Vins de ${producer}`,
-    description: `Sélection de vins disponibles de ${producer} chez The Wine Watchers.`,
-    url: `${SITE_URL}/producteur/${slug}`,
+    name: "Vins de " + producer,
+    description:
+      "Sélection de vins disponibles de " + producer + " chez The Wine Watchers.",
+    url: SITE_URL + "/producteur/" + slug,
     numberOfItems: visibleWines.length,
     itemListElement: visibleWines.map((wine, index) => ({
       "@type": "ListItem",
       position: index + 1,
       url: getAbsoluteWineUrl(wine),
-      name: wine.name || `${producer} ${wine.vintage || ""}`.trim(),
+      name: wine.name || (producer + " " + (wine.vintage || "")).trim(),
     })),
   };
 
@@ -637,13 +670,14 @@ export default async function ProducteurPage({
                       wine.price,
                       wine.compare_at_price,
                     );
+                    const wineUrl = getWineUrl(wine);
 
                     return (
                       <article
                         key={wine.id}
                         className="group overflow-hidden rounded-[1.7rem] border border-[#dfcfb8] bg-[#fffaf3] shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#d8b56d] hover:shadow-xl"
                       >
-                        <Link href={getWineUrl(wine)} className="block">
+                        <Link href={wineUrl} className="block">
                           <div className="relative flex h-[245px] items-center justify-center overflow-hidden bg-[#efe3d2] p-6">
                             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(216,181,109,0.24),transparent_38%)]" />
 
@@ -662,9 +696,12 @@ export default async function ProducteurPage({
                             {image ? (
                               <img
                                 src={image}
-                                alt={`Bouteille de ${
-                                  wine.name || "vin"
-                                } - ${producer}`}
+                                alt={
+                                  "Bouteille de " +
+                                  (wine.name || "vin") +
+                                  " - " +
+                                  producer
+                                }
                                 className="relative z-10 max-h-[205px] w-auto object-contain transition duration-500 group-hover:scale-105"
                               />
                             ) : (
@@ -676,25 +713,14 @@ export default async function ProducteurPage({
                         </Link>
 
                         <div className="p-5">
-                          {wine.appellation ? (
-                            <Link
-                              href={getAppellationUrl(
-                                wine.appellation,
-                                wine.region,
-                                wine.category,
-                              )}
-                              className="mb-3 block rounded-full bg-[#24110d]/90 px-3 py-1.5 text-center text-[10px] uppercase tracking-[0.16em] text-[#d8b56d] transition hover:bg-[#8a1f1f]"
-                            >
-                              {wine.appellation}
-                            </Link>
-                          ) : (
-                            <p className="mb-3 rounded-full bg-[#24110d]/90 px-3 py-1.5 text-center text-[10px] uppercase tracking-[0.16em] text-[#d8b56d]">
-                              {wine.region || "Grand vin"}
-                            </p>
-                          )}
+                          <Link
+                            href={wineUrl}
+                            className="mb-3 block rounded-full bg-[#24110d]/90 px-3 py-1.5 text-center text-[10px] uppercase tracking-[0.16em] text-[#d8b56d] transition hover:bg-[#8a1f1f]"
+                          >
+                            {wine.appellation || wine.region || "Grand vin"}
+                          </Link>
 
                           <div className="mb-3 flex flex-wrap items-center gap-2">
-                            
                             {wine.classification && (
                               <span className="rounded-full border border-[#dfcfb8] bg-white px-3 py-1 text-[11px] text-[#6d5b50]">
                                 {wine.classification}
@@ -720,7 +746,7 @@ export default async function ProducteurPage({
                             )}
                           </div>
 
-                          <Link href={getWineUrl(wine)} className="block">
+                          <Link href={wineUrl} className="block">
                             <h3 className="min-h-[64px] font-serif text-sm leading-tight text-[#24110d] transition group-hover:text-[#8a1f1f]">
                               {wine.name}
                             </h3>
@@ -754,7 +780,7 @@ export default async function ProducteurPage({
                             </div>
 
                             <Link
-                              href={getWineUrl(wine)}
+                              href={wineUrl}
                               className="rounded-full bg-[#8a1f1f] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#641313]"
                             >
                               Détails
