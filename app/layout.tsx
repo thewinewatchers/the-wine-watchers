@@ -28,10 +28,15 @@ export const metadata: Metadata = {
   },
 
   icons: {
-    icon: "/favicon-tww.png",
-    shortcut: "/favicon-tww.png",
-    apple: "/favicon-tww.png",
-  },
+  icon: [
+    {
+      url: "/favicon-tww.png?v=3",
+      type: "image/png",
+    },
+  ],
+  shortcut: "/favicon-tww.png?v=3",
+  apple: "/favicon-tww.png?v=3",
+},
 
   openGraph: {
     type: "website",
