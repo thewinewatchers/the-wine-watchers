@@ -287,9 +287,20 @@ function getWineGroupTitle(wine: Wine) {
         .join(" "),
     );
 
+    const isPsi =
+      searchableWineData === "psi" ||
+      searchableWineData.startsWith("psi-") ||
+      searchableWineData.includes("-psi-") ||
+      searchableWineData.endsWith("-psi");
+
+    if (isPsi) {
+      return "PSI";
+    }
+
     const isFlorDePingus =
-      searchableWineData.includes("flor") ||
-      searchableWineData.includes("flor-de-pingus");
+      searchableWineData.includes("flor-de-pingus") ||
+      searchableWineData.startsWith("flor-") ||
+      searchableWineData.includes("-flor-");
 
     if (isFlorDePingus) {
       return "Flor de Pingus";
