@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   icons: {
   icon: [
     {
-   ?v=4
+   url: "/favicon-tww.png?v=4",
       type: "image/png",
     },
   ],
