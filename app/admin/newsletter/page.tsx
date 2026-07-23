@@ -70,6 +70,18 @@ function normalizePublicUrl(value: string) {
   return `https://${url}`;
 }
 
+function normalizeTemplateImageUrl(value?: string) {
+  const url = String(value || "")
+    .trim()
+    .replace(/\\/g, "/");
+
+  if (!url) return "";
+  if (/^https?:\/\//i.test(url)) return url;
+  if (url.startsWith("/")) return url;
+
+  return `/${url}`;
+}
+
 export default function AdminNewsletterPage() {
   const csvInputRef = useRef<HTMLInputElement | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -741,6 +753,25 @@ export default function AdminNewsletterPage() {
     }
   }
 
+  function deselectTemplate() {
+    const confirmed = window.confirm(
+      "Désélectionner le modèle actif et revenir à une newsletter vierge ?"
+    );
+
+    if (!confirmed) return;
+
+    setForm({
+      ...EMPTY_FORM,
+      images: [],
+    });
+    setSelectedTemplateId("");
+    setSendMessage("");
+    setPageError("");
+    setPageMessage(
+      "Le modèle a été désélectionné. La newsletter générique est prête."
+    );
+  }
+
   function resetNewsletter() {
     const confirmed = window.confirm(
       "Effacer le contenu actuel de la newsletter ?"
@@ -921,47 +952,33 @@ export default function AdminNewsletterPage() {
                   const isSelected =
                     selectedTemplateId === template.id;
 
-                  const visual =
-                    template.id === "primeurs"
-                      ? "2025"
-                      : template.id === "bordeaux"
-                        ? "BDX"
-                        : template.id === "bourgogne"
-                          ? "BGC"
-                          : template.id === "vallee-du-rhone"
-                            ? "RHO"
-                            : template.id === "italie"
-                              ? "ITA"
-                              : template.id === "espagne"
-                                ? "ESP"
-                                : template.id === "usa"
-                                  ? "USA"
-                                  : template.id === "champagne"
-                                    ? "CHP"
-                                    : template.id === "noel"
-                                      ? "NOËL"
-                                      : template.id === "nouvel-an"
-                                        ? "2027"
-                                        : template.id === "foire-aux-vins"
-                                          ? "FAV"
-                                          : "TWW";
+                  const coverImage = normalizeTemplateImageUrl(
+                    template.images?.[0]
+                  );
 
                   return (
                     <article
                       key={template.id}
-                      className={`group overflow-hidden rounded-[1.6rem] border bg-white transition duration-200 ${
+                      className={`group overflow-hidden rounded-[1.7rem] border bg-white transition duration-300 ${
                         isSelected
-                          ? "border-[#8a1f1f] shadow-[0_12px_35px_rgba(138,31,31,0.14)]"
-                          : "border-[#eadcca] hover:-translate-y-1 hover:border-[#c5a46a] hover:shadow-lg"
+                          ? "border-[#8a1f1f] shadow-[0_16px_42px_rgba(138,31,31,0.18)]"
+                          : "border-[#eadcca] hover:-translate-y-1 hover:border-[#c5a46a] hover:shadow-xl"
                       }`}
                     >
-                      <div className="relative flex h-32 items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_top_left,#f4e5cd,transparent_55%),linear-gradient(135deg,#3a1812,#8a1f1f)]">
-                        <div className="absolute inset-0 opacity-20 [background-image:linear-gradient(45deg,transparent_40%,rgba(255,255,255,.2)_50%,transparent_60%)]" />
-                        <span className="relative font-serif text-4xl tracking-[0.18em] text-white">
-                          {visual}
-                        </span>
+                      <div className="relative h-56 overflow-hidden bg-[linear-gradient(135deg,#2f1712,#8a1f1f)]">
+                        {coverImage ? (
+                          <img
+                            src={coverImage}
+                            alt={template.name}
+                            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                          />
+                        ) : (
+                          <div className="h-full w-full bg-[radial-gradient(circle_at_top_left,#d9bd8c,transparent_42%),linear-gradient(135deg,#2f1712,#8a1f1f)]" />
+                        )}
 
-                        <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#8a6a2f]">
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/5" />
+
+                        <span className="absolute left-4 top-4 rounded-full border border-white/30 bg-black/35 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-white backdrop-blur-sm">
                           {template.category}
                         </span>
 
@@ -970,14 +987,20 @@ export default function AdminNewsletterPage() {
                             Actif
                           </span>
                         )}
+
+                        <div className="absolute inset-x-0 bottom-0 p-5">
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#ead4a9]">
+                            The Wine Watchers
+                          </p>
+
+                          <h3 className="mt-2 font-serif text-3xl leading-tight text-white">
+                            {template.name}
+                          </h3>
+                        </div>
                       </div>
 
                       <div className="p-5">
-                        <h3 className="font-serif text-2xl">
-                          {template.name}
-                        </h3>
-
-                        <p className="mt-2 min-h-[72px] text-sm leading-6 text-[#6d5b50]">
+                        <p className="min-h-[72px] text-sm leading-6 text-[#6d5b50]">
                           {template.description}
                         </p>
 
@@ -1022,10 +1045,7 @@ export default function AdminNewsletterPage() {
               {selectedTemplate && (
                 <button
                   type="button"
-                  onClick={() => {
-                    setSelectedTemplateId("");
-                    setPageMessage("");
-                  }}
+                  onClick={deselectTemplate}
                   className="rounded-full border border-[#d8b56d] bg-white px-5 py-3 text-sm font-semibold text-[#6d5b50] transition hover:border-[#8a1f1f] hover:text-[#8a1f1f]"
                 >
                   Désélectionner
