@@ -185,8 +185,8 @@ export const NEWSLETTER_TEMPLATES: NewsletterTemplate[] = [
     message:
       "Pour célébrer un événement ou enrichir une cave, découvrez une sélection de champagnes choisis pour leur finesse, leur précision et la réputation de leur maison. Une invitation à partager les grandes occasions avec élégance.",
   
-     images: [
-  "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=1400&q=85",
+    images: [
+  "/images/champagne-generique.jpg",
 ],
     buttonLabel: "Découvrir les champagnes",
     buttonUrl: `${SITE_URL}/boutique`,
