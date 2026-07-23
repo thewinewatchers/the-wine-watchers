@@ -460,28 +460,82 @@ function buildNewsletterHtml(
           ? title
           : `${title} — image ${index + 1}`;
 
+      if (index === 0) {
+        return `
+          <tr>
+            <td
+              align="center"
+              valign="middle"
+              background="${safeImageUrl}"
+              style="
+                height:420px;
+                background-color:#ffffff;
+                background-image:url('${safeImageUrl}');
+                background-position:center center;
+                background-repeat:no-repeat;
+                background-size:cover;
+              "
+            >
+              <!--[if gte mso 9]>
+              <v:rect
+                xmlns:v="urn:schemas-microsoft-com:vml"
+                fill="true"
+                stroke="false"
+                style="width:680px;height:420px;"
+              >
+                <v:fill
+                  type="frame"
+                  src="${safeImageUrl}"
+                  color="#ffffff"
+                />
+                <v:textbox inset="0,0,0,0">
+                  <div>
+              <![endif]-->
+
+              <div
+                role="img"
+                aria-label="${escapeAttribute(imageAlt)}"
+                style="
+                  width:100%;
+                  height:420px;
+                  line-height:420px;
+                  font-size:1px;
+                "
+              >
+                &nbsp;
+              </div>
+
+              <!--[if gte mso 9]>
+                  </div>
+                </v:textbox>
+              </v:rect>
+              <![endif]-->
+            </td>
+          </tr>
+        `;
+      }
+
       return `
         <tr>
           <td
             align="center"
             style="
-              padding:${index === 0 ? "0" : "18px 36px 0 36px"};
+              padding:18px 36px 0 36px;
               background:#ffffff;
             "
           >
             <img
               src="${safeImageUrl}"
               alt="${escapeAttribute(imageAlt)}"
-              width="680"
+              width="608"
               style="
                 display:block;
                 width:100%;
-                max-width:${index === 0 ? "680px" : "608px"};
+                max-width:608px;
                 height:auto;
                 margin:0 auto;
                 border:0;
-                border-radius:${index === 0 ? "0" : "16px"};
-                object-fit:contain;
+                border-radius:16px;
               "
             />
           </td>
@@ -607,15 +661,14 @@ function buildNewsletterHtml(
                   <img
                     src="${logoUrl}"
                     alt="The Wine Watchers"
-                    width="88"
-                    height="88"
+                    width="180"
                     style="
                       display:block;
-                      width:88px;
-                      height:88px;
+                      width:180px;
+                      max-width:100%;
+                      height:auto;
                       margin:0 auto;
                       border:0;
-                      object-fit:contain;
                     "
                   />
                 </a>
