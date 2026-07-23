@@ -127,9 +127,9 @@ export const NEWSLETTER_TEMPLATES: NewsletterTemplate[] = [
     title: "Les grands vins d’Italie",
     message:
       "La richesse viticole italienne s’exprime à travers des domaines de renommée internationale et des terroirs au caractère affirmé. Découvrez notre sélection de grandes cuvées italiennes, choisies pour leur identité et leur potentiel de garde.",
-    images: [
-      "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1400&q=85",
-    ],
+   images: [
+  "/images/cave-vin-italie.jpg",
+],
     buttonLabel: "Explorer l’Italie",
     buttonUrl: `${SITE_URL}/boutique/italie`,
     footerMessage: DEFAULT_FOOTER,
