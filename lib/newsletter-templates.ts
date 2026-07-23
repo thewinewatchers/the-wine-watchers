@@ -88,8 +88,8 @@ export const NEWSLETTER_TEMPLATES: NewsletterTemplate[] = [
     title: "La Bourgogne dans toute sa singularité",
     message:
       "De la Côte de Nuits à la Côte de Beaune, découvrez des vins façonnés par des climats uniques et des domaines de référence. Une sélection destinée aux amateurs de pinot noir, de chardonnay et de grands terroirs bourguignons.",
-    images: [
-  "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?auto=format&fit=crop&w=1400&q=85",
+ images: [
+  "/modeles/route-des-grands-crus.jpg",
 ],
     buttonLabel: "Explorer la Bourgogne",
     buttonUrl: `${SITE_URL}/boutique/bourgogne`,
@@ -108,9 +108,9 @@ export const NEWSLETTER_TEMPLATES: NewsletterTemplate[] = [
     title: "Les grands vins de la Vallée du Rhône",
     message:
       "Découvrez une sélection de cuvées emblématiques de la Vallée du Rhône. Syrah, terroirs escarpés et savoir-faire de maisons historiques composent des vins profonds, précis et recherchés par les collectionneurs.",
-    images: [
-      "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?auto=format&fit=crop&w=1400&q=85&sat=-15",
-    ],
+   images: [
+  "/images/vin-rhone.jpg",
+],
     buttonLabel: "Explorer le Rhône",
     buttonUrl: `${SITE_URL}/boutique/rhone`,
     footerMessage: DEFAULT_FOOTER,
