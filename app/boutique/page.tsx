@@ -43,6 +43,12 @@ const categories = [
     image: "/images/boutique-hero.png",
     text: "Napa Valley, grandes cuvées californiennes et domaines emblématiques comme Opus One.",
   },
+  {
+    title: "Champagne",
+    slug: "champagne",
+    image: "/images/champagne.jpg",
+    text: "Grandes maisons, cuvées de prestige, champagnes millésimés et vignerons d’exception.",
+  },
 ];
 
 export default function BoutiquePage() {

@@ -63,7 +63,13 @@ const categories = {
     title: "Espagne",
     description:
       "Une sélection de grandes bouteilles espagnoles issues des régions les plus réputées.",
-    appellations: ["Ribera del Duero", "Rioja", "Priorat", "Toro", "Rías Baixas"],
+    appellations: [
+      "Ribera del Duero",
+      "Rioja",
+      "Priorat",
+      "Toro",
+      "Rías Baixas",
+    ],
   },
   usa: {
     title: "USA",
@@ -75,6 +81,18 @@ const categories = {
       "Oakville",
       "Rutherford",
       "Stags Leap District",
+    ],
+  },
+  champagne: {
+    title: "Champagne",
+    description:
+      "Grandes maisons, cuvées de prestige, champagnes millésimés et vignerons d’exception.",
+    appellations: [
+      "Montagne de Reims",
+      "Vallée de la Marne",
+      "Côte des Blancs",
+      "Côte des Bar",
+      "Champagne",
     ],
   },
   "primeurs-2025": {
@@ -100,7 +118,7 @@ const popularAppellations: Record<string, { name: string; href: string }[]> = {
     { name: "Saint-Estèphe", href: "/appellation/saint-estephe" },
     { name: "Saint-Émilion", href: "/appellation/saint-emilion" },
     { name: "Pomerol", href: "/appellation/pomerol" },
-{ name: "Pessac-Léognan", href: "/appellation/pessac-leognan" },
+    { name: "Pessac-Léognan", href: "/appellation/pessac-leognan" },
     { name: "Sauternes", href: "/appellation/sauternes" },
   ],
   bourgogne: [
