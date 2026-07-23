@@ -51,8 +51,8 @@ export const NEWSLETTER_TEMPLATES: NewsletterTemplate[] = [
     message:
       "Découvrez notre sélection de grands vins de Bordeaux proposés en Primeurs. Nous retenons des propriétés reconnues ainsi que des cuvées à fort potentiel, avec une attention particulière portée à la provenance et aux conditions de conservation futures.",
     images: [
-      "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?auto=format&fit=crop&w=1400&q=85",
-    ],
+  "/images/bordeaux-degustation-primeur.jpg",
+],
     buttonLabel: "Voir les Primeurs",
     buttonUrl: `${SITE_URL}/boutique/primeurs-2025`,
     footerMessage: DEFAULT_FOOTER,
@@ -146,8 +146,8 @@ export const NEWSLETTER_TEMPLATES: NewsletterTemplate[] = [
     title: "Les grands vins d’Espagne",
     message:
       "Découvrez une sélection de vins espagnols issus de domaines devenus incontournables. Des cuvées puissantes, raffinées et produites en quantités limitées, représentatives des grands terroirs de la péninsule ibérique.",
-        images: [
-  "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?auto=format&fit=crop&w=1400&q=85",
+       images: [
+  "/images/vin-rouge-jambon-espagne.jpg",
 ],
     buttonLabel: "Explorer l’Espagne",
     buttonUrl: `${SITE_URL}/boutique/espagne`,
