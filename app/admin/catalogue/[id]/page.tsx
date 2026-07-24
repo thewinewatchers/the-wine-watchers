@@ -134,8 +134,8 @@ const categoryOptions = [
   "Grands vins d’Italie",
   "Espagne",
   "USA",
+  "Champagne",
 ];
-
 const bordeauxAppellations = [
   "Pauillac",
   "Margaux",
