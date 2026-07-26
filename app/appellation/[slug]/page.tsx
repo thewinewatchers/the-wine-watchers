@@ -906,6 +906,17 @@ const appellations: Record<
     boutiqueHref: "/boutique/espagne",
     boutiqueLabel: "Retour à la boutique Espagne",
   },
+  champagne: {
+    name: "Champagne",
+    title: "Champagnes – Grandes maisons et cuvées prestigieuses",
+    description:
+      "Découvrez notre sélection de champagnes : grandes maisons, cuvées prestigieuses, millésimes rares et bouteilles de collection.",
+    intro:
+      "La Champagne est l’une des régions viticoles les plus prestigieuses au monde. Elle donne naissance à des vins effervescents d’exception, issus de terroirs uniques et du savoir-faire de maisons et de vignerons emblématiques.",
+    boutiqueHref: "/boutique/champagne",
+    boutiqueLabel: "Retour à la boutique Champagne",
+  },
+
 
   "napa-valley": {
     name: "Napa Valley",

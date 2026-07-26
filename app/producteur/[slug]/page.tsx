@@ -203,7 +203,16 @@ function getAppellationUrl(
     return "/boutique/usa";
   }
 
-  return "/appellation/" + slugify(appellation);
+  const appellationSlug = slugify(appellation);
+
+if (
+  appellationSlug === "aoc-champagne" ||
+  appellationSlug === "champagne"
+) {
+  return "/appellation/champagne";
+}
+
+return "/appellation/" + appellationSlug;
 }
 
 function escapeRegExp(value: string) {
