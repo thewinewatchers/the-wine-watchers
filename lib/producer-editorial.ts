@@ -3335,6 +3335,52 @@ export const PRODUCER_EDITORIAL_LIBRARY: Record<
     conclusion:
       "Aujourd'hui, Vega Sicilia Único demeure la référence absolue des grands vins espagnols. Héritier d'une histoire de plus de cent cinquante ans, élaboré avec une exigence rarement égalée et élevé selon une tradition unique, il incarne l'excellence de la Ribera del Duero. Plus qu'une cuvée emblématique, Único est devenu un monument du patrimoine viticole mondial, démontrant que les plus grands vins naissent de la rencontre entre un terroir exceptionnel, le temps et une quête permanente de perfection.",
   },
+
+  "domaine-jacques-selosse": {
+    eyebrow: "Histoire, terroir et identité",
+    title: "Domaine Jacques Selosse, une vision singulière du champagne",
+    introduction:
+      "Installé à Avize, au cœur de la Côte des Blancs, le Domaine Jacques Selosse occupe une place unique dans l’univers du champagne. Sous l’impulsion d’Anselme Selosse, la maison a profondément renouvelé la lecture du terroir champenois en privilégiant une approche parcellaire, des rendements maîtrisés, des vinifications ambitieuses et une recherche constante de l’expression du lieu.",
+    sections: [
+      {
+        title: "Une vision révolutionnaire du champagne",
+        paragraphs: [
+          "Depuis les années 1980, Anselme Selosse défend une conception du champagne inspirée des grands vins de terroir. Chaque parcelle est travaillée comme une entité propre, avec une attention particulière portée à la vie des sols, à la maturité des raisins et à l’identité de chaque cru.",
+          "Cette philosophie a contribué à faire évoluer la perception du champagne, non plus seulement comme un vin d’assemblage et de marque, mais comme l’expression précise d’un vignoble, d’un sol et d’un climat.",
+        ],
+      },
+      {
+        title: "Avize et les grands terroirs de la Côte des Blancs",
+        paragraphs: [
+          "Le domaine est historiquement implanté à Avize et exploite également des parcelles remarquables à Cramant, Oger, Le Mesnil-sur-Oger, Aÿ, Ambonnay et Mareuil-sur-Aÿ.",
+          "Le Chardonnay occupe une place centrale dans l’identité du domaine, mais le Pinot Noir intervient également dans plusieurs cuvées parcellaires. Chaque terroir est vinifié de manière à préserver sa personnalité, sa tension et sa profondeur.",
+        ],
+      },
+      {
+        title: "Une vinification libre et exigeante",
+        paragraphs: [
+          "Les vins sont majoritairement vinifiés en fûts, souvent avec des fermentations spontanées et des élevages prolongés. Les interventions sont limitées afin de laisser le vin évoluer naturellement et révéler toute la complexité du raisin.",
+          "Les dosages sont généralement faibles et les vins se distinguent par leur matière, leur vinosité, leur énergie et leur remarquable persistance.",
+        ],
+      },
+      {
+        title: "Des cuvées devenues mythiques",
+        paragraphs: [
+          "Substance, Initial, Version Originale, Millésime, Exquise et la collection des Lieux-Dits figurent parmi les cuvées les plus recherchées de Champagne.",
+          "Chacune possède une identité forte, mais toutes partagent une profondeur exceptionnelle, une texture ample, une grande intensité aromatique et une capacité rare à évoluer avec le temps.",
+        ],
+      },
+      {
+        title: "Une référence mondiale",
+        paragraphs: [
+          "Jacques Selosse est aujourd’hui considéré comme l’un des domaines les plus influents de Champagne. Sa production confidentielle et la forte demande internationale ont fait de ses bouteilles des références recherchées par les collectionneurs et les amateurs de grands vins.",
+          "Au-delà de leur rareté, les champagnes Selosse séduisent par leur singularité, leur précision et leur aptitude à exprimer le terroir avec une profondeur inhabituelle.",
+        ],
+      },
+    ],
+    conclusion:
+      "Aujourd’hui, le Domaine Jacques Selosse incarne une vision profondément personnelle et exigeante du champagne. Par son travail parcellaire, ses vinifications ambitieuses et sa volonté de traduire fidèlement chaque terroir, il a contribué à redéfinir les standards de la région. Plus que de simples champagnes, les vins de Jacques Selosse sont devenus de véritables vins de lieu, recherchés pour leur intensité, leur complexité et leur caractère unique.",
+  },
 };
 
 PRODUCER_EDITORIAL_LIBRARY["vega-sicilia"] =
