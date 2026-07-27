@@ -3381,7 +3381,179 @@ export const PRODUCER_EDITORIAL_LIBRARY: Record<
     conclusion:
       "Aujourd’hui, le Domaine Jacques Selosse incarne une vision profondément personnelle et exigeante du champagne. Par son travail parcellaire, ses vinifications ambitieuses et sa volonté de traduire fidèlement chaque terroir, il a contribué à redéfinir les standards de la région. Plus que de simples champagnes, les vins de Jacques Selosse sont devenus de véritables vins de lieu, recherchés pour leur intensité, leur complexité et leur caractère unique.",
   },
+
+  "maison-roederer": {
+    eyebrow: "Histoire, terroir et identité",
+    title: "Maison Louis Roederer, l’élégance et la précision champenoises",
+    introduction:
+      "Fondée à Reims au XVIIIe siècle, la Maison Louis Roederer figure parmi les grandes signatures historiques de la Champagne. Restée indépendante et familiale, elle a construit son identité autour d’un vaste patrimoine viticole, d’une maîtrise exigeante des assemblages et d’une recherche constante d’équilibre entre maturité, fraîcheur et profondeur.",
+    sections: [
+      {
+        title: "Une maison historique et indépendante",
+        paragraphs: [
+          "L’histoire de Louis Roederer s’inscrit dans la longue tradition des grandes maisons rémoises. Son développement repose sur une vision singulière : renforcer progressivement la maîtrise de l’approvisionnement en raisins afin de préserver un style régulier et une véritable identité de terroir.",
+          "Cette indépendance permet à la maison de conduire ses choix viticoles et œnologiques dans la durée, avec une attention particulière portée à la précision des vins et à leur capacité de vieillissement.",
+        ],
+      },
+      {
+        title: "Un patrimoine viticole exceptionnel",
+        paragraphs: [
+          "Louis Roederer s’appuie sur un important vignoble réparti entre la Montagne de Reims, la Vallée de la Marne et la Côte des Blancs. Cette diversité de crus offre une palette complète de Pinot Noir, de Chardonnay et de Meunier.",
+          "La maison accorde une place essentielle au travail des sols, à la maturité des raisins et à l’expression de chaque parcelle. Cette approche donne naissance à des vins à la fois structurés, lumineux et profondément liés à leur origine.",
+        ],
+      },
+      {
+        title: "Cristal, une cuvée devenue emblématique",
+        paragraphs: [
+          "Créée au XIXe siècle, Cristal est devenue l’une des cuvées de prestige les plus célèbres au monde. Élaborée uniquement dans les années jugées dignes de son style, elle recherche un équilibre entre finesse, intensité, pureté et longévité.",
+          "Cristal Rosé prolonge cette ambition avec une expression plus rare encore, associant profondeur du Pinot Noir, précision du Chardonnay et texture raffinée.",
+        ],
+      },
+      {
+        title: "Un style fondé sur l’équilibre",
+        paragraphs: [
+          "Les champagnes Louis Roederer se distinguent par leur netteté aromatique, leur fraîcheur structurante et leur texture délicate. Les élevages prolongés permettent au vin de gagner en complexité sans perdre son énergie.",
+          "Dans les grandes cuvées, la maturité du fruit s’accompagne de notes d’agrumes, de fleurs blanches, de fruits secs, de craie et de brioche fine, portées par une finale précise et persistante.",
+        ],
+      },
+      {
+        title: "Une référence internationale",
+        paragraphs: [
+          "Louis Roederer occupe aujourd’hui une place majeure parmi les maisons de Champagne. Son indépendance, son patrimoine de vignes et la régularité de ses cuvées lui permettent de conjuguer tradition, innovation et fidélité à son style.",
+          "Des cuvées d’assemblage aux expressions millésimées, la maison propose une lecture cohérente de la Champagne, fondée sur l’élégance, la profondeur et la capacité de garde.",
+        ],
+      },
+    ],
+    conclusion:
+      "Aujourd’hui, la Maison Louis Roederer incarne une vision exigeante et patrimoniale du champagne. Par la maîtrise de son vignoble, la précision de ses assemblages et l’identité de cuvées devenues emblématiques comme Cristal, elle demeure l’une des références majeures de la région et du monde des grands vins.",
+  },
+
+  "maison-salon": {
+    eyebrow: "Histoire, terroir et identité",
+    title: "Maison Salon, l’expression absolue du Mesnil-sur-Oger",
+    introduction:
+      "Installée au Mesnil-sur-Oger, au cœur de la Côte des Blancs, la Maison Salon occupe une place à part dans l’univers du champagne. Sa philosophie repose sur une idée d’une radicale simplicité : élaborer un seul champagne, issu d’un seul cépage, d’un seul cru et d’un seul millésime, uniquement lorsque l’année atteint le niveau d’exigence recherché.",
+    sections: [
+      {
+        title: "Une maison née d’une vision singulière",
+        paragraphs: [
+          "Salon est née de la volonté de créer un champagne d’une pureté extrême, entièrement consacré au Chardonnay du Mesnil-sur-Oger. Dès l’origine, la maison s’est éloignée des usages traditionnels de l’assemblage pour défendre une interprétation strictement millésimée et parcellaire.",
+          "Cette conception sans compromis a façonné l’identité de la maison : aucune cuvée non millésimée, aucun second vin et une production réservée aux seules années capables d’exprimer pleinement le caractère du terroir.",
+        ],
+      },
+      {
+        title: "Le Mesnil-sur-Oger, cœur du style Salon",
+        paragraphs: [
+          "Le Mesnil-sur-Oger est l’un des grands crus les plus réputés de la Côte des Blancs. Ses sols crayeux et son exposition favorisent des Chardonnays d’une grande droiture, marqués par la tension, la finesse et une minéralité persistante.",
+          "Salon puise son identité dans cette combinaison entre profondeur de la craie, fraîcheur naturelle et maturité lente. Le vin se montre souvent réservé dans sa jeunesse avant de gagner progressivement en ampleur et en complexité.",
+        ],
+      },
+      {
+        title: "Une élaboration fondée sur le temps",
+        paragraphs: [
+          "Chaque millésime de Salon bénéficie d’un élevage prolongé en cave avant sa commercialisation. Cette patience permet au vin de développer une texture plus large, une grande précision aromatique et une remarquable cohésion.",
+          "La maison privilégie une expression pure du Chardonnay, sans recherche d’effet immédiat. Le temps devient ainsi un élément essentiel de la construction du vin et de son identité.",
+        ],
+      },
+      {
+        title: "Un champagne rare et recherché",
+        paragraphs: [
+          "Salon n’est produit que lors d’un nombre limité de millésimes. Cette sélection sévère, associée à une production confidentielle, en fait l’un des champagnes les plus rares et les plus recherchés au monde.",
+          "Les bouteilles les plus anciennes sont particulièrement appréciées pour leur capacité à conjuguer fraîcheur, profondeur et complexité, avec des évolutions aromatiques pouvant s’étendre sur plusieurs décennies.",
+        ],
+      },
+      {
+        title: "Une signature de pureté et de longévité",
+        paragraphs: [
+          "Dans sa jeunesse, Salon révèle souvent des notes d’agrumes, de fleurs blanches, de craie et de fruits à chair blanche. Avec l’âge apparaissent des nuances de noisette, de brioche, de cire, de miel fin et d’épices douces.",
+          "La bouche se distingue par sa tension, sa verticalité et sa longueur. L’ensemble reste porté par une fraîcheur remarquable qui confère au vin une capacité de garde exceptionnelle.",
+        ],
+      },
+    ],
+    conclusion:
+      "Aujourd’hui, la Maison Salon demeure l’une des expressions les plus pures et les plus exclusives du Chardonnay champenois. Par son attachement au Mesnil-sur-Oger, son refus du compromis et sa confiance absolue dans le temps, elle a créé un champagne devenu mythique, recherché pour sa rareté, sa précision et son extraordinaire potentiel d’évolution.",
+  },
+
+  "domaine-du-comte-liger-belair": {
+    eyebrow: "Histoire, terroir et identité",
+    title: "Domaine du Comte Liger-Belair, l’excellence de Vosne-Romanée",
+    introduction:
+      "Installé à Vosne-Romanée, le Domaine du Comte Liger-Belair figure parmi les propriétés les plus confidentielles et les plus recherchées de Bourgogne. Héritier d’une longue histoire familiale, il s’est imposé par une viticulture de précision, des élevages mesurés et une lecture particulièrement raffinée des grands terroirs de la Côte de Nuits.",
+    sections: [
+      {
+        title: "Une histoire familiale profondément liée à Vosne-Romanée",
+        paragraphs: [
+          "La famille Liger-Belair est établie à Vosne-Romanée depuis le début du XIXe siècle. Son patrimoine viticole s’est constitué autour de parcelles prestigieuses, dont plusieurs comptent aujourd’hui parmi les terroirs les plus emblématiques de la commune.",
+          "Après une période durant laquelle une partie des vignes était exploitée en métayage, Louis-Michel Liger-Belair a entrepris de reconstituer progressivement le domaine et de reprendre directement la conduite des parcelles et la vinification des vins.",
+        ],
+      },
+      {
+        title: "La Romanée, monopole emblématique",
+        paragraphs: [
+          "Au sommet du domaine se trouve La Romanée, grand cru monopole situé au-dessus de Romanée-Conti. Cette parcelle minuscule produit des vins d’une rare intensité, associant profondeur, finesse aromatique et remarquable persistance.",
+          "La Romanée incarne avec éclat la philosophie du domaine : préserver l’identité du lieu, rechercher l’équilibre plutôt que la puissance et laisser le terroir s’exprimer avec la plus grande précision possible.",
+        ],
+      },
+      {
+        title: "Un patrimoine de climats remarquables",
+        paragraphs: [
+          "Le domaine exploite également plusieurs appellations prestigieuses de Vosne-Romanée et des communes voisines, parmi lesquelles Echezeaux, Clos de Vougeot, Vosne-Romanée Premier Cru Aux Reignots, Les Petits Monts et La Colombière.",
+          "Chaque cuvée est pensée comme une interprétation distincte de son climat. Les différences de sol, d’altitude et d’exposition se traduisent par des profils allant de la délicatesse florale à une structure plus profonde et épicée.",
+        ],
+      },
+      {
+        title: "Une viticulture précise et attentive",
+        paragraphs: [
+          "Le travail à la vigne vise à favoriser l’équilibre naturel des sols et de la plante. Les interventions sont adaptées à chaque parcelle afin d’obtenir des raisins mûrs, sains et capables de traduire fidèlement leur origine.",
+          "Les rendements demeurent maîtrisés et les vendanges sont réalisées avec un soin particulier. Cette exigence constitue le fondement de vins à la fois concentrés, lumineux et profondément liés à leur terroir.",
+        ],
+      },
+      {
+        title: "Un style fondé sur la finesse et l’énergie",
+        paragraphs: [
+          "Les vins du Domaine du Comte Liger-Belair se distinguent par leur texture soyeuse, leur précision aromatique et leur équilibre. Le fruit mûr s’accompagne fréquemment de notes florales, d’épices fines et d’une minéralité persistante.",
+          "Les élevages sont conduits de manière à soutenir le vin sans masquer son identité. Avec le temps, les grandes cuvées gagnent en profondeur et en complexité tout en conservant une remarquable fraîcheur.",
+        ],
+      },
+    ],
+    conclusion:
+      "Aujourd’hui, le Domaine du Comte Liger-Belair s’impose comme l’une des signatures majeures de Vosne-Romanée. Par la qualité exceptionnelle de son patrimoine, la précision de son travail et l’élégance de ses vins, il offre une interprétation parmi les plus recherchées des grands terroirs bourguignons.",
+  },
+
 };
+
+PRODUCER_EDITORIAL_LIBRARY["domaine-comte-liger-belair"] =
+  PRODUCER_EDITORIAL_LIBRARY["domaine-du-comte-liger-belair"];
+
+PRODUCER_EDITORIAL_LIBRARY["comte-liger-belair"] =
+  PRODUCER_EDITORIAL_LIBRARY["domaine-du-comte-liger-belair"];
+
+PRODUCER_EDITORIAL_LIBRARY["liger-belair"] =
+  PRODUCER_EDITORIAL_LIBRARY["domaine-du-comte-liger-belair"];
+
+PRODUCER_EDITORIAL_LIBRARY["louis-michel-liger-belair"] =
+  PRODUCER_EDITORIAL_LIBRARY["domaine-du-comte-liger-belair"];
+
+PRODUCER_EDITORIAL_LIBRARY["louis-roederer"] =
+  PRODUCER_EDITORIAL_LIBRARY["maison-roederer"];
+
+PRODUCER_EDITORIAL_LIBRARY["champagne-louis-roederer"] =
+  PRODUCER_EDITORIAL_LIBRARY["maison-roederer"];
+
+PRODUCER_EDITORIAL_LIBRARY["maison-louis-roederer"] =
+  PRODUCER_EDITORIAL_LIBRARY["maison-roederer"];
+
+PRODUCER_EDITORIAL_LIBRARY["roederer"] =
+  PRODUCER_EDITORIAL_LIBRARY["maison-roederer"];
+
+PRODUCER_EDITORIAL_LIBRARY["salon"] =
+  PRODUCER_EDITORIAL_LIBRARY["maison-salon"];
+
+PRODUCER_EDITORIAL_LIBRARY["champagne-salon"] =
+  PRODUCER_EDITORIAL_LIBRARY["maison-salon"];
+
+PRODUCER_EDITORIAL_LIBRARY["maison-champagne-salon"] =
+  PRODUCER_EDITORIAL_LIBRARY["maison-salon"];
 
 PRODUCER_EDITORIAL_LIBRARY["vega-sicilia"] =
   PRODUCER_EDITORIAL_LIBRARY["bodegas-vega-sicilia"];
