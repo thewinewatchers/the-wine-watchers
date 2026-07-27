@@ -1,6 +1,9 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import BoutiqueClient from "../BoutiqueClient";
+
+const SITE_URL = "https://www.thewinewatchers.com";
 
 const categories = {
   bordeaux: {
@@ -136,6 +139,45 @@ type PageProps = {
     slug: string;
   }>;
 };
+
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const category = categories[slug as CategoryKey];
+
+  if (!category) {
+    return {
+      title: "Catégorie introuvable | The Wine Watchers",
+      robots: {
+        index: false,
+        follow: false,
+      },
+    };
+  }
+
+  const canonicalUrl = `${SITE_URL}/boutique/${slug}`;
+
+  return {
+    title: `${category.title} | The Wine Watchers`,
+    description: category.description,
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
+    openGraph: {
+      title: `${category.title} | The Wine Watchers`,
+      description: category.description,
+      url: canonicalUrl,
+      siteName: "The Wine Watchers",
+      locale: "fr_FR",
+      type: "website",
+    },
+  };
+}
 
 export default async function BoutiqueCategoryPage({ params }: PageProps) {
   const resolvedParams = await params;

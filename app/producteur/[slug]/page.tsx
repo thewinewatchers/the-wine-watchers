@@ -98,7 +98,7 @@ function getWineImage(wine: Wine) {
 }
 
 function getWineUrl(wine: Wine) {
-  return `/boutique/vin/${wine.id}`;
+  return `/boutique/vin/${wine.slug || wine.id}`;
 }
 function getAbsoluteWineUrl(wine: Wine) {
   return SITE_URL + getWineUrl(wine);
@@ -415,6 +415,20 @@ export async function generateMetadata({
       index: true,
       follow: true,
     },
+    openGraph: {
+      title: editorialContent
+        ? producer + " – Histoire, terroir et vins | The Wine Watchers"
+        : producer + " – Vins disponibles | The Wine Watchers",
+      description: editorialContent
+        ? editorialContent.introduction
+        : "Découvrez les vins disponibles de " +
+          producer +
+          " chez The Wine Watchers : grands crus, millésimes recherchés et bouteilles de collection.",
+      url: SITE_URL + "/producteur/" + slug,
+      siteName: "The Wine Watchers",
+      locale: "fr_FR",
+      type: "website",
+    },
   };
 }
 
@@ -515,12 +529,44 @@ export default async function ProducteurPage({
     })),
   };
 
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Accueil",
+        item: SITE_URL,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Boutique",
+        item: SITE_URL + "/boutique",
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: producer,
+        item: SITE_URL + "/producteur/" + slug,
+      },
+    ],
+  };
+
   return (
     <main className="min-h-screen bg-[#f8f3ea] text-[#24110d]">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(itemListJsonLd),
+        }}
+      />
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbJsonLd),
         }}
       />
 
