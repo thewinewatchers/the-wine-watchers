@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { supabase } from "@/lib/supabaseClient";
@@ -556,15 +556,14 @@ function RelatedWineList({
   );
 }
 
-export default function WinePage() {
-  const params = useParams();
+export default function WinePage({ initialWine }: { initialWine: Wine }) {
   const router = useRouter();
 
-  const routeId = String(params?.id || "");
-
-  const [wine, setWine] = useState<Wine | null>(null);
-  const [availableStock, setAvailableStock] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [wine, setWine] = useState<Wine | null>(initialWine);
+  const [availableStock, setAvailableStock] = useState(
+    parseStock(initialWine.stock)
+  );
+  const [loading, setLoading] = useState(false);
   const [addingToCart, setAddingToCart] = useState(false);
   const [wishlistLoading, setWishlistLoading] = useState(false);
   const [isInWishlist, setIsInWishlist] = useState(false);
@@ -577,14 +576,9 @@ export default function WinePage() {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   useEffect(() => {
-    async function loadWine() {
-      if (!routeId) {
-        setErrorMessage("Vin introuvable.");
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
+    async function loadClientData() {
+      setWine(initialWine);
+      setLoading(false);
       setErrorMessage("");
       setCartMessage("");
       setWishlistMessage("");
@@ -593,126 +587,85 @@ export default function WinePage() {
       setSameAppellationWines([]);
       setSameVintageWines([]);
       setSelectedImageIndex(0);
+      setAvailableStock(parseStock(initialWine.stock));
 
       try {
-        let foundWine: Wine | null = null;
-
-        const byId = await supabase
-          .from("wines")
-          .select("*")
-          .eq("id", routeId)
-          .maybeSingle();
-
-        if (byId.data) {
-          foundWine = byId.data as Wine;
-        }
-
-        if (!foundWine) {
-          const bySlug = await supabase
-            .from("wines")
-            .select("*")
-            .eq("slug", routeId)
-            .maybeSingle();
-
-          if (bySlug.data) {
-            foundWine = bySlug.data as Wine;
-          }
-        }
-
-        if (!foundWine) {
-          setErrorMessage("Ce vin est introuvable ou n’est plus disponible.");
-          setWine(null);
-          return;
-        }
-
-        if (foundWine.hidden_from_site === true) {
-          setErrorMessage("Ce vin est actuellement indisponible.");
-          setWine(null);
-          return;
-        }
-
-        setWine(foundWine);
-
         const { data: userData } = await supabase.auth.getUser();
 
-        if (userData.user && foundWine.id) {
+        if (userData.user && initialWine.id) {
           const { data: wishlistData } = await supabase
             .from("wishlist_items")
             .select("id")
             .eq("user_id", userData.user.id)
-            .eq("wine_id", foundWine.id)
+            .eq("wine_id", initialWine.id)
             .maybeSingle();
 
           setIsInWishlist(Boolean(wishlistData));
         }
 
-        if (foundWine.producer && foundWine.id) {
+        if (initialWine.producer && initialWine.id) {
           const { data } = await supabase
             .from("wines")
             .select("id,name,slug,vintage,producer,appellation,category")
-            .eq("producer", foundWine.producer)
-            .neq("id", foundWine.id)
+            .eq("producer", initialWine.producer)
+            .neq("id", initialWine.id)
             .or("hidden_from_site.is.null,hidden_from_site.eq.false")
             .limit(6);
 
           setSameProducerWines((data || []) as Wine[]);
         }
 
-        if (foundWine.appellation && foundWine.id) {
+        if (initialWine.appellation && initialWine.id) {
           const { data } = await supabase
             .from("wines")
             .select("id,name,slug,vintage,producer,appellation,category")
-            .eq("appellation", foundWine.appellation)
-            .neq("id", foundWine.id)
+            .eq("appellation", initialWine.appellation)
+            .neq("id", initialWine.id)
             .or("hidden_from_site.is.null,hidden_from_site.eq.false")
             .limit(6);
 
           setSameAppellationWines((data || []) as Wine[]);
         }
 
-        if (foundWine.vintage && foundWine.id) {
+        if (initialWine.vintage && initialWine.id) {
           const { data } = await supabase
             .from("wines")
             .select("id,name,slug,vintage,producer,appellation,category")
-            .eq("vintage", foundWine.vintage)
-            .neq("id", foundWine.id)
+            .eq("vintage", initialWine.vintage)
+            .neq("id", initialWine.id)
             .or("hidden_from_site.is.null,hidden_from_site.eq.false")
             .limit(6);
 
           setSameVintageWines((data || []) as Wine[]);
         }
 
-        if (foundWine.id) {
+        if (initialWine.id) {
           const { data: stockData, error: stockError } = await supabase.rpc(
             "get_available_stock",
-            { p_wine_id: foundWine.id }
+            { p_wine_id: initialWine.id }
           );
 
           if (stockError) {
             console.error("Erreur stock disponible :", stockError);
-            setAvailableStock(parseStock(foundWine.stock));
+            setAvailableStock(parseStock(initialWine.stock));
           } else {
             const calculatedStock = Number(stockData);
 
-            if (Number.isNaN(calculatedStock)) {
-              setAvailableStock(parseStock(foundWine.stock));
-            } else {
-              setAvailableStock(calculatedStock);
-            }
+            setAvailableStock(
+              Number.isNaN(calculatedStock)
+                ? parseStock(initialWine.stock)
+                : calculatedStock
+            );
           }
-        } else {
-          setAvailableStock(parseStock(foundWine.stock));
         }
       } catch (error) {
-        console.error("Erreur chargement fiche vin :", error);
-        setErrorMessage("Erreur lors du chargement de la fiche vin.");
-      } finally {
-        setLoading(false);
+        console.error("Erreur chargement données client :", error);
+        setAvailableStock(parseStock(initialWine.stock));
       }
     }
 
-    loadWine();
-  }, [routeId]);
+    loadClientData();
+  }, [initialWine]);
 
   useEffect(() => {
     if (!wine) return;

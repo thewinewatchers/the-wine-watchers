@@ -274,7 +274,7 @@ export default async function WinePage({ params }: Props) {
         }}
       />
 
-      <WinePageClient />
+      <WinePageClient initialWine={wine} />
     </>
   );
 }
