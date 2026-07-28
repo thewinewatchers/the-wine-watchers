@@ -3520,7 +3520,59 @@ export const PRODUCER_EDITORIAL_LIBRARY: Record<
       "Aujourd’hui, le Domaine du Comte Liger-Belair s’impose comme l’une des signatures majeures de Vosne-Romanée. Par la qualité exceptionnelle de son patrimoine, la précision de son travail et l’élégance de ses vins, il offre une interprétation parmi les plus recherchées des grands terroirs bourguignons.",
   },
 
+  "domaine-francois-raveneau": {
+    eyebrow: "Histoire, terroir et identité",
+    title: "Domaine François Raveneau, la précision magistrale de Chablis",
+    introduction:
+      "Le Domaine François Raveneau appartient au cercle très restreint des signatures les plus emblématiques de Chablis. Sa réputation repose sur un patrimoine de parcelles exceptionnel, une production confidentielle et une interprétation d’une rare précision des terroirs kimméridgiens. Les vins du domaine associent tension, profondeur et complexité, tout en conservant cette pureté minérale qui constitue l’une des expressions les plus accomplies du Chardonnay à Chablis.",
+    sections: [
+      {
+        title: "Une référence historique de Chablis",
+        paragraphs: [
+          "Fondé au milieu du XXe siècle, le Domaine François Raveneau s’est progressivement imposé comme l’une des références absolues de Chablis. Son développement est resté volontairement mesuré, avec une attention constante portée à la qualité des parcelles, à la précision du travail et à la fidélité au caractère de chaque climat.",
+          "Aujourd’hui, le domaine demeure familial et conserve une production limitée. Cette rareté, associée à une remarquable régularité, explique l’intérêt constant que ses bouteilles suscitent auprès des amateurs et des collectionneurs du monde entier.",
+        ],
+      },
+      {
+        title: "Les grands terroirs du vignoble chablisien",
+        paragraphs: [
+          "Le domaine exploite un ensemble prestigieux de Premiers Crus et de Grands Crus, parmi lesquels Butteaux, Montée de Tonnerre, Forêt, Vaillons, Les Clos, Blanchot et Valmur. Chaque parcelle possède une identité propre, déterminée par son exposition, la profondeur de son sol et sa position dans le vignoble.",
+          "Le sous-sol kimméridgien, composé de marnes calcaires riches en fossiles marins, constitue la colonne vertébrale du style chablisien. Il apporte aux vins leur tension, leur fraîcheur saline et cette impression minérale persistante qui se révèle pleinement avec le temps.",
+        ],
+      },
+      {
+        title: "Une vinification patiente et mesurée",
+        paragraphs: [
+          "Au Domaine François Raveneau, la vinification cherche avant tout à préserver l’identité du raisin et du terroir. Les fermentations sont conduites avec patience, et l’élevage associe traditionnellement cuves et fûts anciens afin d’accompagner le vin sans imposer une marque boisée dominante.",
+          "Cette approche donne naissance à des vins souvent réservés dans leur jeunesse. Leur équilibre se construit lentement, laissant apparaître progressivement la profondeur, la texture et la complexité propres à chaque climat.",
+        ],
+      },
+      {
+        title: "Un style fondé sur la tension et la profondeur",
+        paragraphs: [
+          "Les vins du domaine se distinguent par une alliance rare entre énergie, densité et finesse. Les arômes d’agrumes, de fleurs blanches, de pierre humide et de coquille d’huître s’inscrivent dans une bouche précise, portée par une acidité vive et une matière profondément structurée.",
+          "Avec l’évolution en bouteille, cette austérité initiale laisse place à une palette plus complexe où apparaissent des notes de miel fin, de cire, de fruits secs, d’épices douces et de sous-bois. La fraîcheur demeure cependant toujours présente et prolonge la finale avec une remarquable persistance.",
+        ],
+      },
+      {
+        title: "Des Chablis construits pour le temps",
+        paragraphs: [
+          "Les grandes cuvées du Domaine François Raveneau possèdent un potentiel de garde exceptionnel. Les Premiers Crus peuvent évoluer pendant de longues années, tandis que les Grands Crus atteignent souvent leur pleine expression après une maturation prolongée en bouteille.",
+          "Cette capacité à traverser les décennies sans perdre leur énergie place les vins du domaine parmi les plus grandes expressions de Chardonnay au monde. Chaque millésime révèle une interprétation différente du terroir, mais conserve la précision et la profondeur qui signent l’identité Raveneau.",
+        ],
+      },
+    ],
+    conclusion:
+      "Choisir un Chablis du Domaine François Raveneau, c’est découvrir une expression d’une rare pureté du Chardonnay et du terroir kimméridgien. La tension, la profondeur et la longévité de ses vins en font l’une des références majeures de Bourgogne et une signature incontournable pour les amateurs de grands vins blancs.",
+  },
+
 };
+
+PRODUCER_EDITORIAL_LIBRARY["francois-raveneau"] =
+  PRODUCER_EDITORIAL_LIBRARY["domaine-francois-raveneau"];
+
+PRODUCER_EDITORIAL_LIBRARY["raveneau"] =
+  PRODUCER_EDITORIAL_LIBRARY["domaine-francois-raveneau"];
 
 PRODUCER_EDITORIAL_LIBRARY["domaine-comte-liger-belair"] =
   PRODUCER_EDITORIAL_LIBRARY["domaine-du-comte-liger-belair"];
@@ -3688,6 +3740,14 @@ export function getProducerEditorialContent(
     ) {
       return content;
     }
+  }
+
+  if (
+    searchableValue.includes("raveneau") ||
+    searchableValue.includes("francois-raveneau") ||
+    searchableValue.includes("domaine-francois-raveneau")
+  ) {
+    return PRODUCER_EDITORIAL_LIBRARY["domaine-francois-raveneau"];
   }
 
   if (

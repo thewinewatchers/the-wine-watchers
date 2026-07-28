@@ -125,6 +125,7 @@ const popularAppellations: Record<string, { name: string; href: string }[]> = {
     { name: "Sauternes", href: "/appellation/sauternes" },
   ],
   bourgogne: [
+    { name: "Chablis", href: "/appellation/chablis" },
     { name: "Meursault", href: "/appellation/meursault" },
     { name: "Vosne-Romanée", href: "/appellation/vosne-romanee" },
     { name: "Gevrey-Chambertin", href: "/appellation/gevrey-chambertin" },
