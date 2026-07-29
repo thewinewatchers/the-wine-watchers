@@ -906,6 +906,16 @@ const appellations: Record<
     boutiqueHref: "/boutique/espagne",
     boutiqueLabel: "Retour à la boutique Espagne",
   },
+  "cote-rotie": {
+    name: "Côte-Rôtie",
+    title: "Vins de Côte-Rôtie – Grandes Syrah de la Vallée du Rhône",
+    description:
+      "Découvrez notre sélection de vins de Côte-Rôtie : grandes Syrah, domaines emblématiques, cuvées prestigieuses et millésimes recherchés.",
+    intro:
+      "Côte-Rôtie est l’une des appellations les plus prestigieuses de la Vallée du Rhône septentrionale. Ses coteaux abrupts donnent naissance à des Syrah profondes, élégantes et complexes, capables d’un remarquable vieillissement.",
+    boutiqueHref: "/boutique/rhone",
+    boutiqueLabel: "Retour à la boutique Vallée du Rhône",
+  },
   champagne: {
     name: "Champagne",
     title: "Champagnes – Grandes maisons et cuvées prestigieuses",
@@ -1323,7 +1333,9 @@ export default async function AppellationPage({
         const wineTitle =
           slug === "napa-valley" || slug === "napa-valley-ava"
             ? "Vins de Napa Valley"
-            : getWineGroupTitle(wine);
+            : slug === "cote-rotie"
+              ? "Vins de Côte-Rôtie"
+              : getWineGroupTitle(wine);
 
         const wineKey = slugify(wineTitle);
 
@@ -1429,7 +1441,9 @@ export default async function AppellationPage({
                   ? "Espagne"
                   : appellation.boutiqueHref.includes("usa")
                     ? "États-Unis"
-                    : "Bordeaux"}
+                    : appellation.boutiqueHref.includes("rhone")
+                      ? "Vallée du Rhône"
+                      : "Bordeaux"}
           </Link>
           <span>/</span>
           <span className="font-medium text-[#3b1f1f]">{appellation.name}</span>
