@@ -221,6 +221,13 @@ function getAppellationUrl(
     return "/appellation/chablis";
   }
 
+  if (
+    appellationSlug === "cote-rotie" ||
+    appellationSlug === "cotes-rotie"
+  ) {
+    return "/appellation/cote-rotie";
+  }
+
   return "/appellation/" + appellationSlug;
 }
 
