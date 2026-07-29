@@ -3566,6 +3566,67 @@ export const PRODUCER_EDITORIAL_LIBRARY: Record<
       "Choisir un Chablis du Domaine François Raveneau, c’est découvrir une expression d’une rare pureté du Chardonnay et du terroir kimméridgien. La tension, la profondeur et la longévité de ses vins en font l’une des références majeures de Bourgogne et une signature incontournable pour les amateurs de grands vins blancs.",
   },
 
+
+  "coche-dury": {
+    eyebrow: "Histoire, terroir et identité",
+    title: "Domaine Coche-Dury, la précision légendaire de Meursault",
+    introduction:
+      "Le Domaine Coche-Dury appartient au cercle le plus restreint des grandes signatures de Bourgogne. Installé à Meursault, il est devenu une référence mondiale grâce à des vins blancs d’une profondeur, d’une tension et d’une précision exceptionnelles. Sa production confidentielle, son exigence constante et sa capacité à révéler l’identité de chaque terroir expliquent la place singulière qu’il occupe auprès des amateurs et des collectionneurs.",
+    sections: [
+      {
+        title: "Une histoire familiale profondément liée à Meursault",
+        paragraphs: [
+          "Le domaine trouve ses racines au début du XXe siècle et s’est développé progressivement autour d’un patrimoine de parcelles situées principalement à Meursault et dans les communes voisines. Sous l’impulsion de Jean-François Coche, puis de son fils Raphaël Coche, il a acquis une renommée internationale sans jamais renoncer à une dimension familiale et artisanale.",
+          "Cette continuité a permis de préserver une connaissance intime de chaque vigne. Le travail repose sur l’observation, la précision et une recherche permanente d’équilibre, loin de toute standardisation du style.",
+        ],
+      },
+      {
+        title: "Un patrimoine exceptionnel de terroirs bourguignons",
+        paragraphs: [
+          "Le Domaine Coche-Dury exploite des parcelles dans plusieurs appellations prestigieuses de la Côte de Beaune, parmi lesquelles Meursault, Puligny-Montrachet, Auxey-Duresses, Monthelie et Corton-Charlemagne Grand Cru. Ce patrimoine permet au domaine d’exprimer des nuances très différentes du Chardonnay et, dans une moindre mesure, du Pinot Noir.",
+          "Chaque climat conserve une personnalité distincte. Les terroirs de Meursault apportent ampleur, profondeur et texture, tandis que Puligny-Montrachet affirme davantage de droiture et de finesse. Corton-Charlemagne réunit quant à lui puissance, tension minérale et remarquable aptitude au vieillissement.",
+        ],
+      },
+      {
+        title: "Une viticulture exigeante et des rendements maîtrisés",
+        paragraphs: [
+          "Le travail à la vigne constitue le fondement du style Coche-Dury. Les sols sont entretenus avec soin, les rendements demeurent volontairement limités et les vendanges sont réalisées avec une sélection rigoureuse afin de récolter des raisins sains et parfaitement mûrs.",
+          "Cette exigence vise moins la concentration que l’équilibre. Les raisins doivent posséder à la fois maturité, fraîcheur et intensité aromatique afin de permettre au terroir de s’exprimer pleinement au cours de la vinification et de l’élevage.",
+        ],
+      },
+      {
+        title: "Une vinification précise au service du terroir",
+        paragraphs: [
+          "Les fermentations sont conduites avec patience et les élevages en fûts accompagnent le vin sans jamais chercher à masquer son origine. Le bois participe à la texture et à la complexité, mais demeure intégré à une matière toujours portée par la fraîcheur et l’énergie.",
+          "Le domaine est également reconnu pour la maîtrise de la réduction, qui peut apporter dans la jeunesse des notes fumées, grillées ou de pierre à fusil. Avec l’aération et le temps, ces nuances se fondent dans une palette plus large où apparaissent agrumes, fleurs blanches, fruits secs, épices fines et minéralité saline.",
+        ],
+      },
+      {
+        title: "Le style Coche-Dury : profondeur, tension et longévité",
+        paragraphs: [
+          "Les vins blancs du domaine se distinguent par une alliance remarquable entre richesse de texture et précision minérale. La matière peut être ample, parfois presque crémeuse, mais elle reste toujours soutenue par une tension qui donne au vin son équilibre et sa longueur.",
+          "Avec le vieillissement, les grandes cuvées développent des notes de noisette fraîche, d’amande grillée, de cire, d’agrumes confits et d’épices, tout en conservant une énergie remarquable. Cette capacité à évoluer harmonieusement pendant plusieurs décennies place Coche-Dury parmi les plus grandes références mondiales du Chardonnay.",
+        ],
+      },
+      {
+        title: "Des cuvées devenues emblématiques",
+        paragraphs: [
+          "Le Meursault Village constitue déjà une expression majeure du style du domaine, recherchée pour sa profondeur et sa précision. Les cuvées parcellaires, parmi lesquelles Meursault Les Rougeots, Meursault Perrières et Puligny-Montrachet Les Enseignères, offrent des lectures encore plus précises de leurs terroirs respectifs.",
+          "Au sommet de la gamme, Corton-Charlemagne Grand Cru figure parmi les vins blancs les plus rares et les plus recherchés de Bourgogne. Sa puissance, sa tension et sa capacité de garde en font une cuvée de référence pour les collectionneurs du monde entier.",
+        ],
+      },
+      {
+        title: "L’avis The Wine Watchers",
+        paragraphs: [
+          "Nous sélectionnons les vins du Domaine Coche-Dury pour leur capacité exceptionnelle à exprimer la noblesse des grands terroirs bourguignons avec une précision et une profondeur rarement égalées. Chaque cuvée témoigne d’une maîtrise remarquable, où la richesse naturelle du Chardonnay demeure toujours équilibrée par une tension minérale exemplaire.",
+          "Plus qu’une icône recherchée par les collectionneurs, Coche-Dury représente selon nous l’une des expressions les plus accomplies des grands vins blancs de Bourgogne. Ses vins conjuguent intensité, finesse, énergie et émotion, tout en possédant une capacité de vieillissement qui les place parmi les références absolues du vignoble bourguignon.",
+        ],
+      },
+    ],
+    conclusion:
+      "Choisir un vin du Domaine Coche-Dury, c’est découvrir une interprétation d’une rare précision des grands terroirs de la Côte de Beaune. Derrière leur extrême rareté se trouvent des vins profonds, lumineux et construits pour le temps, devenus des références incontournables pour les amateurs de grands Chardonnay de Bourgogne.",
+  },
+
 };
 
 PRODUCER_EDITORIAL_LIBRARY["francois-raveneau"] =
@@ -3701,6 +3762,13 @@ PRODUCER_EDITORIAL_LIBRARY["robert-mondavi-opus-one"] =
 
 PRODUCER_EDITORIAL_LIBRARY["baron-philippe-de-rothschild-opus-one"] =
   PRODUCER_EDITORIAL_LIBRARY["opus-one"];
+
+
+PRODUCER_EDITORIAL_LIBRARY["domaine-coche-dury"] =
+  PRODUCER_EDITORIAL_LIBRARY["coche-dury"];
+
+PRODUCER_EDITORIAL_LIBRARY["domaine-jean-francois-coche-dury"] =
+  PRODUCER_EDITORIAL_LIBRARY["coche-dury"];
 
 function normalizeProducerKey(value: string) {
   return value
