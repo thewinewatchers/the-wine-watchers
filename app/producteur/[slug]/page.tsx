@@ -205,14 +205,23 @@ function getAppellationUrl(
 
   const appellationSlug = slugify(appellation);
 
-if (
-  appellationSlug === "aoc-champagne" ||
-  appellationSlug === "champagne"
-) {
-  return "/appellation/champagne";
-}
+  if (
+    appellationSlug === "aoc-champagne" ||
+    appellationSlug === "champagne"
+  ) {
+    return "/appellation/champagne";
+  }
 
-return "/appellation/" + appellationSlug;
+  if (
+    appellationSlug === "chablis" ||
+    appellationSlug === "chablis-1er-cru" ||
+    appellationSlug === "chablis-premier-cru" ||
+    appellationSlug === "chablis-grand-cru"
+  ) {
+    return "/appellation/chablis";
+  }
+
+  return "/appellation/" + appellationSlug;
 }
 
 function escapeRegExp(value: string) {
