@@ -1190,10 +1190,10 @@ export default function WinePage({ initialWine }: { initialWine: Wine }) {
 
             <div className="mt-6 flex flex-wrap gap-4 text-sm">
               <Link
-                href={categorySlug ? `/boutique/${categorySlug}` : "/boutique"}
+                href="/boutique"
                 className="text-[#d8b56d] transition hover:text-white"
               >
-                ← Retour boutique
+                ← Retour Boutique
               </Link>
 
               {categorySlug && (
