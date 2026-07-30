@@ -144,10 +144,6 @@ export default function Menu() {
             Boutique
           </Link>
 
-          <Link href="/academie" className="transition hover:text-[#8B1E2D]">
-            Académie
-          </Link>
-
           <Link href="/millesimes" className="transition hover:text-[#8B1E2D]">
             Millésimes
           </Link>
@@ -234,10 +230,6 @@ export default function Menu() {
 
             <Link href="/boutique" onClick={() => setOpen(false)}>
               Boutique
-            </Link>
-
-            <Link href="/academie" onClick={() => setOpen(false)}>
-              Académie
             </Link>
 
             <Link href="/millesimes" onClick={() => setOpen(false)}>
