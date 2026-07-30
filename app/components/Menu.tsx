@@ -84,7 +84,7 @@ export default function Menu() {
     await supabase.auth.signOut();
     setIsLoggedIn(false);
     setOpen(false);
-   window.location.href = "/admin/login";
+    window.location.href = "/admin/login";
   };
 
   function handleSearch(event: React.FormEvent<HTMLFormElement>) {
@@ -142,6 +142,10 @@ export default function Menu() {
 
           <Link href="/boutique" className="transition hover:text-[#8B1E2D]">
             Boutique
+          </Link>
+
+          <Link href="/academie" className="transition hover:text-[#8B1E2D]">
+            Académie
           </Link>
 
           <Link href="/millesimes" className="transition hover:text-[#8B1E2D]">
@@ -230,6 +234,10 @@ export default function Menu() {
 
             <Link href="/boutique" onClick={() => setOpen(false)}>
               Boutique
+            </Link>
+
+            <Link href="/academie" onClick={() => setOpen(false)}>
+              Académie
             </Link>
 
             <Link href="/millesimes" onClick={() => setOpen(false)}>
