@@ -394,8 +394,8 @@ function WineCard({
           </p>
         )}
 
-        <div className="mt-5 flex items-end justify-between gap-4 border-t border-[#eadfce] pt-4">
-          <div>
+        <div className="mt-5 flex items-end justify-between gap-2 border-t border-[#eadfce] pt-4">
+          <div className="min-w-0">
             <p className="text-[10px] uppercase tracking-[0.2em] text-[#8a6a2f]">
               Prix
             </p>
@@ -411,7 +411,7 @@ function WineCard({
                     {formatPrice(wine.compare_at_price)}
                   </p>
 
-                  <p className="font-serif text-2xl text-[#8a1f1f]">
+                  <p className="whitespace-nowrap font-serif text-[1.35rem] text-[#8a1f1f] xl:text-[1.45rem]">
                     {formatPrice(price)}
                   </p>
 
@@ -421,7 +421,7 @@ function WineCard({
                   </p>
                 </div>
               ) : (
-                <p className="mt-1 font-serif text-2xl text-[#8a1f1f]">
+                <p className="mt-1 whitespace-nowrap font-serif text-[1.35rem] text-[#8a1f1f] xl:text-[1.45rem]">
                   {formatPrice(price)}
                 </p>
               )
@@ -432,7 +432,7 @@ function WineCard({
 
           <Link
             href={wineHref}
-            className="rounded-full bg-[#8a1f1f] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#641313]"
+            className="shrink-0 rounded-full bg-[#8a1f1f] px-3.5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#641313]"
           >
             Détails
           </Link>
