@@ -1448,6 +1448,47 @@ export default function WinePage({ initialWine }: { initialWine: Wine }) {
         </div>
       </section>
 
+      <section className="mx-auto max-w-7xl px-6 pb-8">
+        <div className="rounded-[2rem] border border-[#e1d1bd] bg-white p-8 shadow-sm">
+          <p className="text-sm uppercase tracking-[0.28em] text-[#8a6a2f]">
+            Maillage interne
+          </p>
+
+          <h2 className="mt-3 font-serif text-3xl text-[#24110d]">
+            Explorer davantage
+          </h2>
+
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            {wine.producer && (
+              <Link
+                href={`/producteur/${producerToSlug(wine.producer)}`}
+                className="rounded-[1.5rem] border border-[#e1d1bd] bg-[#fffaf3] px-5 py-4 text-sm font-semibold leading-6 text-[#6d5b50] transition hover:border-[#8a1f1f] hover:text-[#8a1f1f]"
+              >
+                Voir tous les vins du domaine {wine.producer}
+              </Link>
+            )}
+
+            {wine.appellation && appellationHref && (
+              <Link
+                href={appellationHref}
+                className="rounded-[1.5rem] border border-[#e1d1bd] bg-[#fffaf3] px-5 py-4 text-sm font-semibold leading-6 text-[#6d5b50] transition hover:border-[#8a1f1f] hover:text-[#8a1f1f]"
+              >
+                Voir tous les vins de l’appellation {wine.appellation}
+              </Link>
+            )}
+
+            {regionSlug && (
+              <Link
+                href={`/boutique/${regionSlug}`}
+                className="rounded-[1.5rem] border border-[#e1d1bd] bg-[#fffaf3] px-5 py-4 text-sm font-semibold leading-6 text-[#6d5b50] transition hover:border-[#8a1f1f] hover:text-[#8a1f1f]"
+              >
+                Voir tous les vins de {categoryLabel}
+              </Link>
+            )}
+          </div>
+        </div>
+      </section>
+
       <section className="mx-auto max-w-7xl px-6 pb-20">
         <div className="rounded-[2.5rem] border border-[#e1d1bd] bg-[#fffaf3] p-8 shadow-sm">
           <p className="text-sm uppercase tracking-[0.28em] text-[#8a6a2f]">
