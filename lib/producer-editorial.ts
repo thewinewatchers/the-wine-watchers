@@ -3627,6 +3627,52 @@ export const PRODUCER_EDITORIAL_LIBRARY: Record<
       "Choisir un vin du Domaine Coche-Dury, c’est découvrir une interprétation d’une rare précision des grands terroirs de la Côte de Beaune. Derrière leur extrême rareté se trouvent des vins profonds, lumineux et construits pour le temps, devenus des références incontournables pour les amateurs de grands Chardonnay de Bourgogne.",
   },
 
+  faiveley: {
+    eyebrow: "Histoire, terroir et identité",
+    title: "Domaine Faiveley, deux siècles d’excellence en Bourgogne",
+    introduction:
+      "Fondé en 1825 à Nuits-Saint-Georges, le Domaine Faiveley figure parmi les maisons historiques les plus prestigieuses de Bourgogne. Resté entre les mains de la même famille depuis sept générations, le domaine s’est imposé comme l’un des plus importants propriétaires de Grands Crus de la Côte de Nuits, de la Côte de Beaune et de la Côte Chalonnaise. Son identité repose sur un patrimoine viticole exceptionnel, une connaissance précise des terroirs et une recherche constante d’équilibre entre tradition et précision contemporaine.",
+    sections: [
+      {
+        title: "Une histoire familiale commencée en 1825",
+        paragraphs: [
+          "Le Domaine Faiveley fut fondé à Nuits-Saint-Georges par Pierre Faiveley au début du XIXᵉ siècle. Depuis cette date, sept générations se sont succédé à la tête de la propriété, assurant une continuité familiale rare dans le vignoble bourguignon.",
+          "Cette longue histoire a permis au domaine de constituer progressivement un patrimoine viticole remarquable. Chaque génération a contribué à développer la propriété, à affiner le travail parcellaire et à renforcer la réputation de Faiveley parmi les grandes signatures de Bourgogne.",
+        ],
+      },
+      {
+        title: "Un patrimoine viticole exceptionnel",
+        paragraphs: [
+          "Le domaine possède des parcelles dans certaines des appellations les plus prestigieuses de Bourgogne. Son vignoble s’étend de la Côte de Nuits à la Côte de Beaune, ainsi qu’en Côte Chalonnaise, avec une proportion importante de Premiers Crus et de Grands Crus.",
+          "Parmi ses cuvées les plus emblématiques figurent le Chambertin-Clos de Bèze, le Musigny Grand Cru, le Clos de Vougeot, les Mazis-Chambertin, les Latricières-Chambertin, le Corton-Charlemagne et le Bâtard-Montrachet. Le domaine est également propriétaire du Corton Clos des Cortons Faiveley, monopole historique devenu l’un des symboles de la maison.",
+        ],
+      },
+      {
+        title: "Une nouvelle génération tournée vers la précision",
+        paragraphs: [
+          "Sous la direction d’Erwan Faiveley, rejoint par sa sœur Eve Faiveley, le domaine a engagé une profonde évolution qualitative. Les investissements réalisés dans les vignes et dans les chais ont permis d’affiner les vinifications et les élevages tout en préservant l’identité de chaque climat.",
+          "Cette recherche de précision s’accompagne d’une attention croissante portée aux sols, à la biodiversité et à l’équilibre naturel des parcelles. L’objectif n’est pas d’imposer un style uniforme, mais de laisser chaque terroir exprimer sa personnalité avec le plus de fidélité possible.",
+        ],
+      },
+      {
+        title: "Des rouges profonds et des blancs lumineux",
+        paragraphs: [
+          "Les vins rouges du Domaine Faiveley associent aujourd’hui pureté du fruit, profondeur et finesse tannique. Les grands terroirs de la Côte de Nuits donnent naissance à des vins structurés, précis et capables d’un long vieillissement, sans jamais sacrifier l’élégance.",
+          "Les vins blancs se distinguent par leur tension, leur éclat et leur profondeur minérale. Du Corton-Charlemagne aux grands terroirs de Puligny-Montrachet, ils expriment avec précision la richesse des sols calcaires et la fraîcheur naturelle des meilleurs climats bourguignons.",
+        ],
+      },
+      {
+        title: "L’avis The Wine Watchers",
+        paragraphs: [
+          "Nous sélectionnons les vins du Domaine Faiveley pour leur remarquable équilibre entre tradition bourguignonne et précision contemporaine. Chaque cuvée traduit avec fidélité l’identité de son terroir, qu’il s’agisse d’un Grand Cru mythique comme le Chambertin-Clos de Bèze, du prestigieux Musigny, de l’emblématique Corton Clos des Cortons Faiveley ou encore du minéral Corton-Charlemagne.",
+          "Ce sont des vins de caractère, d’une grande régularité, capables de séduire dans leur jeunesse tout en possédant un remarquable potentiel de garde. Leur précision, leur profondeur et leur fidélité aux climats de Bourgogne placent naturellement le Domaine Faiveley parmi les références majeures de notre sélection.",
+        ],
+      },
+    ],
+    conclusion:
+      "Choisir un vin du Domaine Faiveley, c’est découvrir l’une des expressions les plus complètes de la Bourgogne. Derrière la diversité exceptionnelle des appellations se trouve une même exigence : révéler chaque terroir avec précision, équilibre et profondeur.",
+  },
+
 };
 
 PRODUCER_EDITORIAL_LIBRARY["francois-raveneau"] =
