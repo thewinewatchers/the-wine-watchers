@@ -1210,7 +1210,7 @@ export default function WinePage({ initialWine }: { initialWine: Wine }) {
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-12">
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid items-start gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <InfoCard
             label="Millésime"
             value={
@@ -1296,50 +1296,76 @@ export default function WinePage({ initialWine }: { initialWine: Wine }) {
           <InfoCard label="Classification" value={wine.classification} />
           <InfoCard label="Style" value={wine.style} />
           <InfoCard label="Sol" value={wine.soil} />
-          <InfoCard label="Température" value={wine.serving_temperature} />
-          <InfoCard label="Potentiel de garde" value={wine.aging_potential} />
         </div>
+
       </section>
 
-      <section className="mx-auto grid max-w-7xl gap-8 px-6 pb-16 lg:grid-cols-[1fr_0.72fr]">
+      <section className="mx-auto max-w-7xl px-6 pb-16">
         <div className="grid gap-8">
           <TextSection title="Description complète">
             {wine.description}
           </TextSection>
 
           <TextSection title="Histoire du vin">{wine.story}</TextSection>
+
           <TextSection title="Nez">{wine.nose}</TextSection>
-          <TextSection title="Bouche">{wine.palate}</TextSection>
+
+          <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_0.45fr]">
+            <TextSection title="Bouche">{wine.palate}</TextSection>
+
+            {grapeVarieties.length > 0 && (
+              <section className="rounded-[2rem] border border-[#e1d1bd] bg-[#fffaf3] p-8 shadow-sm">
+                <p className="text-sm uppercase tracking-[0.28em] text-[#8a6a2f]">
+                  Cépages
+                </p>
+
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {grapeVarieties.map((grape) => (
+                    <span
+                      key={grape}
+                      className="rounded-full border border-[#dfcfb8] bg-white px-4 py-2 text-sm text-[#6d5b50]"
+                    >
+                      {grape}
+                    </span>
+                  ))}
+                </div>
+              </section>
+            )}
+          </div>
+
+          <div className="grid items-start gap-8 lg:grid-cols-2">
+            <TextSection title="Température de service">
+              {wine.serving_temperature}
+            </TextSection>
+
+            <TextSection title="Potentiel de garde">
+              {wine.aging_potential}
+            </TextSection>
+          </div>
+
           <TextSection title="Accords mets-vins">{wine.pairing}</TextSection>
         </div>
 
-        <div className="grid content-start gap-6">
-          {grapeVarieties.length > 0 && (
-            <section className="rounded-[2rem] border border-[#e1d1bd] bg-[#fffaf3] p-6 shadow-sm">
+        <div className="mt-8 grid items-start gap-6 lg:grid-cols-2">
+          {wine.meta_content && (
+            <section className="rounded-[2rem] border border-[#e1d1bd] bg-[#fffaf3] p-8 shadow-sm lg:col-span-2">
               <p className="text-sm uppercase tracking-[0.28em] text-[#8a6a2f]">
-                Cépages
+                Informations complémentaires
               </p>
 
-              <div className="mt-5 flex flex-wrap gap-2">
-                {grapeVarieties.map((grape) => (
-                  <span
-                    key={grape}
-                    className="rounded-full border border-[#dfcfb8] bg-white px-4 py-2 text-sm text-[#6d5b50]"
-                  >
-                    {grape}
-                  </span>
-                ))}
-              </div>
+              <p className="mt-5 whitespace-pre-line text-base leading-8 text-[#6d5b50]">
+                {wine.meta_content}
+              </p>
             </section>
           )}
 
           {tastingNotes.length > 0 && (
-            <section className="rounded-[2rem] border border-[#e1d1bd] bg-[#fffaf3] p-8 shadow-sm">
+            <section className="rounded-[2rem] border border-[#e1d1bd] bg-[#fffaf3] p-8 shadow-sm lg:col-span-2">
               <p className="text-sm uppercase tracking-[0.28em] text-[#8a6a2f]">
                 Notes de dégustation
               </p>
 
-              <div className="mt-7 grid gap-4">
+              <div className="mt-7 grid items-start gap-4">
                 {tastingNotes.map((note) => (
                   <p
                     key={note}
@@ -1362,19 +1388,7 @@ export default function WinePage({ initialWine }: { initialWine: Wine }) {
             </section>
           )}
 
-          {wine.meta_content && (
-            <section className="rounded-[2rem] border border-[#e1d1bd] bg-[#fffaf3] p-6 shadow-sm">
-              <p className="text-sm uppercase tracking-[0.28em] text-[#8a6a2f]">
-                Informations complémentaires
-              </p>
-
-              <p className="mt-5 whitespace-pre-line text-base leading-8 text-[#6d5b50]">
-                {wine.meta_content}
-              </p>
-            </section>
-          )}
-
-          <section className="rounded-[2rem] border border-[#e1d1bd] bg-[#fffaf3] p-6 shadow-sm">
+          <section className="rounded-[2rem] border border-[#e1d1bd] bg-[#fffaf3] p-6 shadow-sm lg:col-span-2">
             <h2 className="font-serif text-2xl text-[#24110d]">
               Commander ce vin
             </h2>
