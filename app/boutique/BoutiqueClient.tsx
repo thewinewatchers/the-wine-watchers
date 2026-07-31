@@ -65,6 +65,19 @@ function normalize(value?: string | number | null) {
     .trim();
 }
 
+function isAllSelectionsPage(slug: string, categoryTitle: string) {
+  const normalizedSlug = normalize(slug);
+  const normalizedTitle = normalize(categoryTitle);
+
+  return (
+    normalizedSlug === "toutes les selections" ||
+    normalizedSlug === "tous les vins" ||
+    normalizedSlug === "all" ||
+    normalizedSlug === "boutique" ||
+    normalizedTitle === "toutes les selections" ||
+    normalizedTitle === "tous les vins"
+  );
+}
 
 const SEARCH_ALIASES: Record<string, string[]> = {
   caisse: ["caisse", "cbo", "owc"],
@@ -138,7 +151,12 @@ function wineMatchesSearch(wine: Wine, search: string) {
       searchesNamedEstate && !isTechnicalWord ? identityWords : allWineWords;
 
     return acceptedWords.some((acceptedWord) =>
-      wordsToSearch.includes(acceptedWord)
+      wordsToSearch.some(
+        (wineWord) =>
+          wineWord === acceptedWord ||
+          wineWord.startsWith(acceptedWord) ||
+          acceptedWord.startsWith(wineWord)
+      )
     );
   });
 }
@@ -506,8 +524,12 @@ export default function BoutiqueClient({
   ]);
 
   const categoryWines = useMemo(() => {
+    const showAllWines = isAllSelectionsPage(slug, categoryTitle);
+
     return wines.filter((wine) => {
       if (!isVisibleWine(wine)) return false;
+
+      if (showAllWines) return true;
 
       const wineCategory = normalize(wine.category);
       const wineCategorie = normalize(wine.categorie);
@@ -519,7 +541,13 @@ export default function BoutiqueClient({
         wineCategorie === normalizedCategoryTitle
       );
     });
-  }, [wines, normalizedSlug, normalizedCategoryTitle]);
+  }, [
+    wines,
+    slug,
+    categoryTitle,
+    normalizedSlug,
+    normalizedCategoryTitle,
+  ]);
 
   const appellationOptions = useMemo(() => {
     return uniqueSorted(
@@ -544,8 +572,13 @@ export default function BoutiqueClient({
   const filteredWines = useMemo(() => {
     const normalizedSearch = normalize(search);
 
-    return (search ? wines.filter(isVisibleWine) : categoryWines)
-      .filter((wine) => {
+    const winesToFilter = isAllSelectionsPage(slug, categoryTitle)
+      ? wines.filter(isVisibleWine)
+      : search
+        ? wines.filter(isVisibleWine)
+        : categoryWines;
+
+    return winesToFilter.filter((wine) => {
         if (!isVisibleWine(wine)) return false;
 
         const wineAppellation = normalize(wine.appellation);
@@ -651,6 +684,7 @@ export default function BoutiqueClient({
     selectedClassification,
     selectedVintage,
     slug,
+    categoryTitle,
   ]);
 
   const groupedFilteredWines = useMemo(() => {
