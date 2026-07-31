@@ -1158,6 +1158,17 @@ function getWineGroupTitle(wine: AppellationWine) {
   const name = String(wine.name || "Vin sans nom").trim();
   const vintage = String(wine.vintage || "").trim();
   const appellationSlug = slugify(wine.appellation || "");
+  const producerSlug = slugify(wine.producer || "");
+
+  if (producerSlug.includes("romanee-conti")) {
+    const drcTitle = name
+      .replace(/\s+(?:19|20)\d{2}(?:\s+DRC)?$/i, "")
+      .replace(/\s+DRC$/i, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    return drcTitle || name;
+  }
 
   if (
     appellationSlug === "bolgheri" ||

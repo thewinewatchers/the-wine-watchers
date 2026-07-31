@@ -866,6 +866,44 @@ export default async function ProducteurPage({
             ))}
           </div>
         )}
+
+        {(regions.length > 0 || appellations.length > 0) && (
+          <section className="mt-14 rounded-[2rem] border border-[#e1d1bd] bg-white p-8 shadow-sm">
+            <p className="text-sm uppercase tracking-[0.28em] text-[#8a6a2f]">
+              Explorer également
+            </p>
+
+            <h2 className="mt-3 font-serif text-3xl text-[#24110d]">
+              Poursuivre la découverte
+            </h2>
+
+            <div className="mt-6 flex flex-wrap gap-3">
+              {regions.map((region) => (
+                <Link
+                  key={"explore-region-" + region}
+                  href={getBoutiqueRegionUrl(region)}
+                  className="rounded-full border border-[#d8b56d]/50 bg-[#fffaf3] px-5 py-2 text-sm text-[#6d5b50] transition hover:border-[#8a1f1f] hover:text-[#8a1f1f]"
+                >
+                  Voir tous les vins de {region}
+                </Link>
+              ))}
+
+              {appellations.map((appellation) => (
+                <Link
+                  key={"explore-appellation-" + appellation}
+                  href={getAppellationUrl(
+                    appellation,
+                    visibleWines[0]?.region,
+                    visibleWines[0]?.category,
+                  )}
+                  className="rounded-full border border-[#d8b56d]/50 bg-[#fffaf3] px-5 py-2 text-sm text-[#6d5b50] transition hover:border-[#8a1f1f] hover:text-[#8a1f1f]"
+                >
+                  Voir tous les vins de l’appellation {appellation}
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
       </section>
     </main>
   );
