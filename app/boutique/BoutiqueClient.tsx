@@ -483,10 +483,9 @@ export default function BoutiqueClient({
 
   const normalizedSlug = normalize(slug);
   const normalizedCategoryTitle = normalize(categoryTitle);
-  const selectedAppellationSlug = normalize(selectedAppellation).replace(
-    /\s+/g,
-    "-"
-  );
+  const selectedAppellationSlug = normalize(selectedAppellation)
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
   const appellationEditorial =
     APPELLATION_EDITORIAL[selectedAppellationSlug];
 
