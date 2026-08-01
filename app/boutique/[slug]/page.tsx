@@ -115,21 +115,42 @@ const categories = {
 
 const popularAppellations: Record<string, { name: string; href: string }[]> = {
   bordeaux: [
-    { name: "Pauillac", href: "/appellation/pauillac" },
-    { name: "Margaux", href: "/appellation/margaux" },
-    { name: "Saint-Julien", href: "/appellation/saint-julien" },
-    { name: "Saint-Estèphe", href: "/appellation/saint-estephe" },
-    { name: "Saint-Émilion", href: "/appellation/saint-emilion" },
-    { name: "Pomerol", href: "/appellation/pomerol" },
-    { name: "Pessac-Léognan", href: "/appellation/pessac-leognan" },
-    { name: "Sauternes", href: "/appellation/sauternes" },
+    { name: "Pauillac", href: "/boutique/bordeaux?appellation=Pauillac" },
+    { name: "Margaux", href: "/boutique/bordeaux?appellation=Margaux" },
+    {
+      name: "Saint-Julien",
+      href: "/boutique/bordeaux?appellation=Saint-Julien",
+    },
+    {
+      name: "Saint-Estèphe",
+      href: "/boutique/bordeaux?appellation=Saint-Estèphe",
+    },
+    {
+      name: "Saint-Émilion",
+      href: "/boutique/bordeaux?appellation=Saint-Émilion",
+    },
+    { name: "Pomerol", href: "/boutique/bordeaux?appellation=Pomerol" },
+    {
+      name: "Pessac-Léognan",
+      href: "/boutique/bordeaux?appellation=Pessac-Léognan",
+    },
+    { name: "Sauternes", href: "/boutique/bordeaux?appellation=Sauternes" },
   ],
   bourgogne: [
-    { name: "Chablis", href: "/appellation/chablis" },
-    { name: "Meursault", href: "/appellation/meursault" },
-    { name: "Vosne-Romanée", href: "/appellation/vosne-romanee" },
-    { name: "Gevrey-Chambertin", href: "/appellation/gevrey-chambertin" },
-    { name: "Chambolle-Musigny", href: "/appellation/chambolle-musigny" },
+    { name: "Chablis", href: "/boutique/bourgogne?appellation=Chablis" },
+    { name: "Meursault", href: "/boutique/bourgogne?appellation=Meursault" },
+    {
+      name: "Vosne-Romanée",
+      href: "/boutique/bourgogne?appellation=Vosne-Romanée",
+    },
+    {
+      name: "Gevrey-Chambertin",
+      href: "/boutique/bourgogne?appellation=Gevrey-Chambertin",
+    },
+    {
+      name: "Chambolle-Musigny",
+      href: "/boutique/bourgogne?appellation=Chambolle-Musigny",
+    },
   ],
 };
 
