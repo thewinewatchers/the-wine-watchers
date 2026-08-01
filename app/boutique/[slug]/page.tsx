@@ -137,7 +137,8 @@ const popularAppellations: Record<string, { name: string; href: string }[]> = {
     { name: "Sauternes", href: "/boutique/bordeaux?appellation=Sauternes" },
   ],
   bourgogne: [
-    { name: "Chablis", href: "/boutique/bourgogne?appellation=Chablis" },
+    { name: "Chablis 1er Cru", href: "/boutique/bourgogne?appellation=Chablis%201er%20Cru" },
+{ name: "Chablis Grand Cru", href: "/boutique/bourgogne?appellation=Chablis%20Grand%20Cru" },
     { name: "Meursault", href: "/boutique/bourgogne?appellation=Meursault" },
     {
       name: "Vosne-Romanée",
