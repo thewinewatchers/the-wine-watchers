@@ -139,9 +139,6 @@ type PageProps = {
   params: Promise<{
     slug: string;
   }>;
-  searchParams: Promise<{
-    appellation?: string;
-  }>;
 };
 
 export async function generateMetadata({
@@ -183,12 +180,8 @@ export async function generateMetadata({
   };
 }
 
-export default async function BoutiqueCategoryPage({
-  params,
-  searchParams,
-}: PageProps) {
+export default async function BoutiqueCategoryPage({ params }: PageProps) {
   const resolvedParams = await params;
-  const resolvedSearchParams = await searchParams;
   const slug = resolvedParams.slug as CategoryKey;
   const category = categories[slug];
 
@@ -197,12 +190,6 @@ export default async function BoutiqueCategoryPage({
   }
 
   const appellationsToShow = popularAppellations[slug] || [];
-  const selectedAppellation = String(
-    resolvedSearchParams.appellation || ""
-  ).trim();
-  const showCortonEditorial =
-    slug === "bourgogne" &&
-    selectedAppellation.toLowerCase() === "corton";
 
   return (
     <main className="min-h-screen bg-[#f8f4ee]">
@@ -249,30 +236,6 @@ export default async function BoutiqueCategoryPage({
                 </Link>
               ))}
             </div>
-          </div>
-        </section>
-      )}
-
-      {showCortonEditorial && (
-        <section className="mx-auto max-w-7xl px-6 pt-10">
-          <div className="rounded-[2rem] border border-[#d8b56d]/45 bg-[#fffaf3] p-6 shadow-sm md:p-8">
-            <p className="text-sm uppercase tracking-[0.28em] text-[#8a6a2f]">
-              ✦ L’avis The Wine Watchers
-            </p>
-
-            <h2 className="mt-3 font-serif text-3xl text-[#24110d]">
-              Pourquoi choisir un Corton Grand Cru ?
-            </h2>
-
-            <p className="mt-5 max-w-5xl text-base leading-8 text-[#6d5b50] md:text-lg md:leading-9">
-              Seul Grand Cru rouge majeur de la Côte de Beaune, Corton offre
-              une interprétation unique du Pinot Noir, alliant puissance,
-              profondeur et remarquable potentiel de garde. Les meilleurs
-              domaines révèlent ici des vins structurés mais précis, capables
-              d’évoluer pendant plusieurs décennies. Chez The Wine Watchers,
-              nous sélectionnons les cuvées qui expriment le plus fidèlement la
-              personnalité de cette appellation emblématique de Bourgogne.
-            </p>
           </div>
         </section>
       )}
