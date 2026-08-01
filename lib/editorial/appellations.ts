@@ -144,6 +144,54 @@ export const APPELLATION_EDITORIAL: Record<
     opinion:
       "Sauternes produit certains des plus grands vins liquoreux au monde grâce à l’action de la pourriture noble et à un savoir-faire d’une précision exceptionnelle. Les meilleures cuvées associent richesse, fraîcheur, complexité aromatique et immense potentiel de garde. Chez The Wine Watchers, nous sélectionnons les Sauternes capables de conserver un équilibre lumineux entre douceur et acidité, afin d’offrir des vins profonds, raffinés et jamais pesants.",
   },
+  "chambertin-clos-de-beze-grand-cru": {
+    title: "Pourquoi choisir un Chambertin Clos de Bèze Grand Cru ?",
+    opinion:
+      "Chambertin Clos de Bèze Grand Cru figure parmi les terroirs les plus prestigieux de Gevrey-Chambertin et de toute la Bourgogne. Les meilleurs vins allient une puissance naturelle à une profondeur aromatique remarquable, tout en conservant une finesse et une précision qui leur permettent d’évoluer harmonieusement pendant plusieurs décennies. Chez The Wine Watchers, nous privilégions les cuvées capables d’exprimer toute la noblesse de ce Grand Cru historique, où la concentration du Pinot Noir s’accompagne toujours d’une élégance exceptionnelle.",
+  },
+
+  "clos-des-lambrays-grand-cru": {
+    title: "Pourquoi choisir un Clos des Lambrays Grand Cru ?",
+    opinion:
+      "Clos des Lambrays Grand Cru est l’un des climats les plus emblématiques de Morey-Saint-Denis. Son monopole historique produit des vins à la fois profonds, raffinés et particulièrement complexes, où la richesse du fruit s’équilibre avec une remarquable fraîcheur. Chez The Wine Watchers, nous apprécions les Clos des Lambrays qui révèlent toute la subtilité de leur terroir, avec une texture soyeuse, une grande longueur et un potentiel de garde exceptionnel.",
+  },
+
+  "clos-de-la-roche-grand-cru": {
+    title: "Pourquoi choisir un Clos de la Roche Grand Cru ?",
+    opinion:
+      "Clos de la Roche Grand Cru est reconnu pour produire certains des Pinot Noir les plus profonds de la Côte de Nuits. Les meilleurs domaines y élaborent des vins concentrés, complexes et parfaitement structurés, capables de traverser les décennies sans perdre leur précision. Chez The Wine Watchers, nous recherchons les Clos de la Roche qui associent puissance, équilibre et élégance, offrant une lecture fidèle de l’un des plus grands terroirs de Morey-Saint-Denis.",
+  },
+
+  "chapelle-chambertin-grand-cru": {
+    title: "Pourquoi choisir un Chapelle-Chambertin Grand Cru ?",
+    opinion:
+      "Chapelle-Chambertin Grand Cru séduit par son équilibre entre finesse, profondeur et expression aromatique. Moins démonstratif que certains Grands Crus voisins, il offre souvent une texture particulièrement élégante et une grande précision du fruit. Chez The Wine Watchers, nous sélectionnons les Chapelle-Chambertin capables de conjuguer raffinement, complexité et potentiel de garde, dans le respect de l’identité unique de ce climat prestigieux.",
+  },
+
+  "charmes-chambertin-grand-cru": {
+    title: "Pourquoi choisir un Charmes-Chambertin Grand Cru ?",
+    opinion:
+      "Charmes-Chambertin Grand Cru est réputé pour la générosité, la profondeur et la sensualité de ses Pinot Noir. Les meilleures cuvées associent une matière ample, des tanins soyeux et une grande richesse aromatique, tout en conservant l’équilibre nécessaire à une longue évolution. Chez The Wine Watchers, nous privilégions les Charmes-Chambertin qui expriment avec précision la noblesse de ce terroir de Gevrey-Chambertin.",
+  },
+
+  "ruchottes-chambertin-grand-cru": {
+    title: "Pourquoi choisir un Ruchottes-Chambertin Grand Cru ?",
+    opinion:
+      "Ruchottes-Chambertin Grand Cru est l’un des climats les plus rares et les plus confidentiels de Gevrey-Chambertin. Ses vins associent finesse, fraîcheur, minéralité et profondeur, avec une précision remarquable dans les meilleurs millésimes. Chez The Wine Watchers, nous apprécions particulièrement les Ruchottes-Chambertin capables de révéler cette identité subtile et élégante, portée par un grand potentiel de garde.",
+  },
+
+  "mazis-chambertin-grand-cru": {
+    title: "Pourquoi choisir un Mazis-Chambertin Grand Cru ?",
+    opinion:
+      "Mazis-Chambertin Grand Cru compte parmi les expressions les plus puissantes et les plus structurées de Gevrey-Chambertin. Les meilleurs vins offrent une matière profonde, une grande intensité aromatique et une capacité remarquable à évoluer avec le temps. Chez The Wine Watchers, nous sélectionnons les Mazis-Chambertin qui associent densité, fraîcheur et précision, sans jamais sacrifier l’élégance à la puissance.",
+  },
+
+  "clos-de-tart-grand-cru-monopole": {
+    title: "Pourquoi choisir un Clos de Tart Grand Cru Monopole ?",
+    opinion:
+      "Clos de Tart Grand Cru Monopole est l’un des terroirs historiques les plus prestigieux de Morey-Saint-Denis. Ce vignoble clos produit des Pinot Noir profonds, complexes et d’une grande longévité, capables d’allier puissance, finesse et remarquable précision. Chez The Wine Watchers, nous recherchons les Clos de Tart qui traduisent pleinement l’identité de ce monopole d’exception et la noblesse de son terroir.",
+  },
+
   "cote-rotie": {
     title: "Pourquoi choisir une Côte-Rôtie ?",
     opinion:
