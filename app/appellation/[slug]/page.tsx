@@ -1486,6 +1486,35 @@ export default async function AppellationPage({
             {appellation.intro}
           </p>
 
+          {slug === "corton" && (
+            <section className="mt-8 rounded-[1.75rem] border border-[#d8b56d]/45 bg-[#fffaf3] p-6 shadow-sm md:p-8">
+              <p className="text-sm uppercase tracking-[0.28em] text-[#8a6a2f]">
+                ✦ L’avis The Wine Watchers
+              </p>
+
+              <p className="mt-5 max-w-5xl text-base leading-8 text-[#6d5b50] md:text-lg md:leading-9">
+                Chez The Wine Watchers, nous considérons Corton comme l’une des
+                expressions les plus singulières et les plus nobles de la
+                Bourgogne. Seul Grand Cru rouge majeur de la Côte de Beaune, il
+                donne naissance à des vins profonds, structurés et capables
+                d’évoluer avec majesté au fil des décennies. Leur puissance
+                naturelle n’exclut jamais la précision : les meilleurs Corton
+                associent une matière ample, une trame minérale affirmée et une
+                fraîcheur qui soutient admirablement leur potentiel de garde.
+                Les domaines de référence, parmi lesquels le Domaine de la
+                Romanée-Conti et le Domaine Faiveley, révèlent ici toute la
+                complexité du Pinot Noir sur la colline de Corton. Nous
+                apprécions particulièrement cette appellation pour son
+                caractère, sa profondeur et sa capacité à offrir une lecture
+                différente des grands rouges bourguignons. Pour les amateurs
+                comme pour les collectionneurs, Corton représente une valeur
+                essentielle, parfois encore sous-estimée face aux crus les plus
+                médiatisés de la Côte de Nuits, mais pleinement digne de leur
+                prestige.
+              </p>
+            </section>
+          )}
+
           {error && (
             <p className="mt-4 text-red-600">
               Erreur Supabase : {error.message}
