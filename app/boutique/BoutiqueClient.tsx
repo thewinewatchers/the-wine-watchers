@@ -999,6 +999,29 @@ export default function BoutiqueClient({
           </div>
         </div>
 
+        {slug === "bourgogne" &&
+          normalize(selectedAppellation) === "corton" && (
+            <section className="mb-10 rounded-[2rem] border border-[#d8b56d]/45 bg-[#fffaf3] p-6 shadow-sm md:p-8">
+              <p className="text-sm uppercase tracking-[0.28em] text-[#8a6a2f]">
+                ✦ L’avis The Wine Watchers
+              </p>
+
+              <h2 className="mt-3 font-serif text-3xl text-[#24110d]">
+                Pourquoi choisir un Corton Grand Cru ?
+              </h2>
+
+              <p className="mt-5 max-w-5xl text-base leading-8 text-[#6d5b50] md:text-lg md:leading-9">
+                Seul Grand Cru rouge majeur de la Côte de Beaune, Corton offre
+                une interprétation unique du Pinot Noir, alliant puissance,
+                profondeur et remarquable potentiel de garde. Les meilleurs
+                domaines révèlent ici des vins structurés mais précis, capables
+                d’évoluer pendant plusieurs décennies. Chez The Wine Watchers,
+                nous sélectionnons les cuvées qui expriment le plus fidèlement la
+                personnalité de cette appellation emblématique de Bourgogne.
+              </p>
+            </section>
+          )}
+
         {loading && (
           <div className="rounded-[2rem] border border-[#e5d8c7] bg-[#fffaf3] p-10 text-center shadow-sm">
             <p className="text-[#6d5b50]">Chargement des vins...</p>
