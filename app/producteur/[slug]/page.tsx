@@ -256,6 +256,18 @@ function resolveProducer(producers: string[], requestedSlug: string) {
     });
   }
 
+  if (requestedSlug === "armand-rousseau") {
+    return producers.find((name) => {
+      const producerSlug = slugify(name);
+
+      return (
+        producerSlug === "domaine-armand-rousseau" ||
+        producerSlug.endsWith("-armand-rousseau") ||
+        producerSlug.includes("armand-rousseau")
+      );
+    });
+  }
+
   return undefined;
 }
 

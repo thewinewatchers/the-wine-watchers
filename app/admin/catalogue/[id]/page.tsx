@@ -147,32 +147,7 @@ const bordeauxAppellations = [
   "Sauternes",
 ];
 
-const bourgogneDomains = [
-  "Domaine de la Romanée-Conti",
-  "Armand Rousseau",
-  "Comte Georges de Vogüé",
-  "Clos de Tart",
-  "Clos des Lambrays",
-  "Georges Roumier",
-  "Mugnier",
-  "Liger-Belair",
-  "Comte Liger-Belair",
-  "Pierre-Yves Colin-Morey",
-  "Ponsot",
-  "Fourrier",
-  "Anne Gros",
-  "Domaine Leroy",
-  "Domaine Leflaive",
-  "Domaine Dujac",
-  "Domaine Trapet",
-  "Louis Jadot",
-  "Bouchard Père & Fils",
-  "Faiveley",
-  "Jacques Prieur",
-  "Méo-Camuzet",
-  "Coche-Dury",
-  "Raveneau",
-];
+
 
 function createSlug(value: string) {
   return value
@@ -376,6 +351,7 @@ export default function AdminEditWinePage() {
   const [saving, setSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [producerOptions, setProducerOptions] = useState<string[]>([]);
 
   const previewSlug = useMemo(() => {
     if (form.slug.trim()) return createSlug(form.slug);
@@ -465,6 +441,39 @@ export default function AdminEditWinePage() {
         external_links: data.external_links || "",
       });
 
+      const { data: producerData, error: producerError } = await supabase
+        .from("wines")
+        .select("producer, category, region")
+        .or("hidden_from_site.is.null,hidden_from_site.eq.false");
+
+      if (producerError) {
+        setErrorMessage(
+          "La fiche est chargée, mais la liste des producteurs n’a pas pu être actualisée."
+        );
+      }
+
+      const dynamicProducerOptions = Array.from(
+        new Set(
+          (producerData || [])
+            .filter((wine) => {
+              const category = String(wine.category || "").trim();
+              const region = String(wine.region || "").trim();
+
+              return category === "Bourgogne" || region === "Bourgogne";
+            })
+            .map((wine) => String(wine.producer || "").trim())
+            .filter(Boolean)
+        )
+      ).sort((a, b) => a.localeCompare(b, "fr"));
+
+      const currentProducer = String(data.producer || "").trim();
+
+      if (currentProducer && !dynamicProducerOptions.includes(currentProducer)) {
+        dynamicProducerOptions.push(currentProducer);
+        dynamicProducerOptions.sort((a, b) => a.localeCompare(b, "fr"));
+      }
+
+      setProducerOptions(dynamicProducerOptions);
       setLoading(false);
     }
 
@@ -828,7 +837,7 @@ export default function AdminEditWinePage() {
               >
                 <option value="">Domaine Bourgogne</option>
 
-                {bourgogneDomains.map((domain) => (
+                {producerOptions.map((domain) => (
                   <option key={domain} value={domain}>
                     {domain}
                   </option>
