@@ -6,6 +6,12 @@ import { useParams, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import ImageGalleryEditor from "@/app/components/ImageGalleryEditor";
 
+type CatalogueReference = {
+  category: string | null;
+  region: string | null;
+  appellation: string | null;
+};
+
 type WineForm = {
   slug: string;
   name: string;
@@ -136,16 +142,7 @@ const categoryOptions = [
   "USA",
   "Champagne",
 ];
-const bordeauxAppellations = [
-  "Pauillac",
-  "Margaux",
-  "Saint-Julien",
-  "Saint-Estèphe",
-  "Pomerol",
-  "Saint-Émilion",
-  "Pessac-Léognan",
-  "Sauternes",
-];
+
 
 
 
@@ -352,6 +349,44 @@ export default function AdminEditWinePage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [producerOptions, setProducerOptions] = useState<string[]>([]);
+  const [catalogueReferences, setCatalogueReferences] = useState<
+    CatalogueReference[]
+  >([]);
+
+  const appellationOptions = useMemo(() => {
+    const selectedCategory = form.category.trim();
+    const selectedRegion = form.region.trim();
+
+    const matchingReferences = catalogueReferences.filter((wine) => {
+      const category = String(wine.category || "").trim();
+      const region = String(wine.region || "").trim();
+
+      if (selectedCategory && category === selectedCategory) return true;
+      if (selectedRegion && region === selectedRegion) return true;
+
+      return !selectedCategory && !selectedRegion;
+    });
+
+    const source =
+      matchingReferences.length > 0 ? matchingReferences : catalogueReferences;
+
+    const appellations = source
+      .map((wine) => String(wine.appellation || "").trim())
+      .filter(Boolean);
+
+    if (form.appellation.trim()) {
+      appellations.push(form.appellation.trim());
+    }
+
+    return Array.from(new Set(appellations)).sort((a, b) =>
+      a.localeCompare(b, "fr")
+    );
+  }, [
+    catalogueReferences,
+    form.appellation,
+    form.category,
+    form.region,
+  ]);
 
   const previewSlug = useMemo(() => {
     if (form.slug.trim()) return createSlug(form.slug);
@@ -443,7 +478,7 @@ export default function AdminEditWinePage() {
 
       const { data: producerData, error: producerError } = await supabase
         .from("wines")
-        .select("producer, category, region")
+        .select("producer, category, region, appellation")
         .or("hidden_from_site.is.null,hidden_from_site.eq.false");
 
       if (producerError) {
@@ -474,6 +509,9 @@ export default function AdminEditWinePage() {
       }
 
       setProducerOptions(dynamicProducerOptions);
+      setCatalogueReferences(
+        ((producerData || []) as CatalogueReference[])
+      );
       setLoading(false);
     }
 
@@ -802,31 +840,20 @@ export default function AdminEditWinePage() {
               className="rounded-xl border border-neutral-300 px-4 py-3"
             />
 
-            {form.category === "Bordeaux" ||
-            form.category === "Primeurs 2025" ? (
-              <select
-                name="appellation"
-                value={form.appellation}
-                onChange={handleChange}
-                className="rounded-xl border border-neutral-300 px-4 py-3"
-              >
-                <option value="">Appellation Bordeaux</option>
+            <select
+              name="appellation"
+              value={form.appellation}
+              onChange={handleChange}
+              className="rounded-xl border border-neutral-300 px-4 py-3"
+            >
+              <option value="">Appellation</option>
 
-                {bordeauxAppellations.map((appellation) => (
-                  <option key={appellation} value={appellation}>
-                    {appellation}
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <input
-                name="appellation"
-                value={form.appellation}
-                onChange={handleChange}
-                placeholder="Appellation"
-                className="rounded-xl border border-neutral-300 px-4 py-3"
-              />
-            )}
+              {appellationOptions.map((appellation) => (
+                <option key={appellation} value={appellation}>
+                  {appellation}
+                </option>
+              ))}
+            </select>
 
             {form.category === "Bourgogne" ? (
               <select
