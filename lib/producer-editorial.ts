@@ -3672,7 +3672,52 @@ export const PRODUCER_EDITORIAL_LIBRARY: Record<
     conclusion:
       "Choisir un vin du Domaine Faiveley, c’est découvrir l’une des expressions les plus complètes de la Bourgogne. Derrière la diversité exceptionnelle des appellations se trouve une même exigence : révéler chaque terroir avec précision, équilibre et profondeur.",
   },
-
+  fourrier: {
+    eyebrow: "Histoire, terroir et identité",
+    title:
+      "Domaine Jean-Marie Fourrier, la pureté et la précision de Gevrey-Chambertin",
+    introduction:
+      "Le Domaine Jean-Marie Fourrier compte parmi les signatures les plus recherchées de Gevrey-Chambertin. Son identité repose sur de vieilles vignes, une connaissance précise des terroirs de la Côte de Nuits et une vinification attentive qui privilégie la pureté du fruit, la finesse des textures et l’expression de chaque climat. Les vins du domaine associent profondeur, fraîcheur et remarquable capacité de vieillissement sans jamais rechercher une puissance excessive.",
+    sections: [
+      {
+        title: "Un domaine familial profondément ancré à Gevrey-Chambertin",
+        paragraphs: [
+          "L’histoire du domaine s’inscrit dans plusieurs générations de viticulture familiale. Autrefois associé à Fernand Pernot puis à Jean-Claude Fourrier, il prend son identité actuelle lorsque Jean-Marie Fourrier rejoint la propriété familiale et en reprend progressivement la direction.",
+          "Depuis Gevrey-Chambertin, le domaine exploite une mosaïque de parcelles situées principalement sur la Côte de Nuits. Cette implantation lui permet de proposer une lecture particulièrement précise de différents villages, Premiers Crus et Grands Crus bourguignons.",
+        ],
+      },
+      {
+        title: "L’influence d’Henri Jayer et de l’expérience américaine",
+        paragraphs: [
+          "Avant de reprendre le domaine familial, Jean-Marie Fourrier complète sa formation auprès d’Henri Jayer, figure majeure de la Bourgogne moderne. Cette expérience contribue à renforcer son attention pour la maturité du raisin, la douceur des extractions et la pureté aromatique du Pinot Noir.",
+          "Son passage au Domaine Drouhin en Oregon lui apporte également une ouverture sur d’autres pratiques viticoles et œnologiques. De retour en Bourgogne, il développe une approche personnelle qui conjugue respect des traditions, observation précise de la vigne et recherche constante d’équilibre.",
+        ],
+      },
+      {
+        title: "Les vieilles vignes au cœur de l’identité Fourrier",
+        paragraphs: [
+          "Le domaine accorde une place essentielle aux vieilles vignes, dont l’enracinement profond favorise une expression nuancée des sols et une maturation régulière. Leur faible rendement naturel contribue à la concentration des raisins sans sacrifier la fraîcheur ni la finesse.",
+          "Cette richesse de matière n’est jamais utilisée pour produire des vins démonstratifs. Elle constitue plutôt le socle d’une texture précise, d’une profondeur progressive et d’une capacité à traduire les différences entre chaque climat.",
+        ],
+      },
+      {
+        title: "Une vinification privilégiant la pureté et la finesse",
+        paragraphs: [
+          "Les vinifications recherchent une extraction mesurée afin de préserver la délicatesse du Pinot Noir. Le fruit reste au centre de l’expression, accompagné par des tanins fins et une fraîcheur qui donne aux vins leur énergie et leur longueur.",
+          "L’élevage est conduit avec retenue pour ne pas masquer l’identité des parcelles. Dans leur jeunesse, les vins séduisent par leur éclat aromatique et leur précision ; avec le temps, ils développent des nuances plus profondes de fruits noirs, d’épices, de fleurs séchées et de sous-bois.",
+        ],
+      },
+      {
+        title: "Des cuvées emblématiques de la Côte de Nuits",
+        paragraphs: [
+          "Le domaine est particulièrement reconnu pour ses Gevrey-Chambertin, parmi lesquels plusieurs Premiers Crus de grande réputation. Le Clos Saint-Jacques occupe une place centrale dans la gamme et illustre parfaitement la capacité du domaine à associer intensité, finesse et longueur.",
+          "Les différentes cuvées permettent de découvrir une hiérarchie complète de terroirs, depuis les appellations régionales et village jusqu’aux expressions les plus rares. Chacune conserve une personnalité propre tout en partageant la signature du domaine : pureté, équilibre et précision.",
+        ],
+      },
+    ],
+    conclusion:
+      "L’avis The Wine Watchers : nous apprécions le Domaine Jean-Marie Fourrier pour la précision de ses interprétations, la qualité remarquable de son fruit et sa capacité à révéler les terroirs de la Côte de Nuits sans artifice. Ses vins associent finesse, profondeur et potentiel de garde, avec une identité particulièrement lisible dans les grandes cuvées de Gevrey-Chambertin.",
+  },
 };
 
 PRODUCER_EDITORIAL_LIBRARY["francois-raveneau"] =
