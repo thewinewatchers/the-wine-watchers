@@ -13,6 +13,7 @@ type Wine = {
   producer: string | null;
   region: string | null;
   appellation: string | null;
+  category: string | null;
   vintage: string | null;
   price: number | string | null;
   compare_at_price: number | string | null;
@@ -257,6 +258,70 @@ function getAutomaticWeightKg(packaging?: string | null) {
   return 11;
 }
 
+
+async function readApiResponse(response: Response) {
+  const rawText = await response.text();
+  const contentType = response.headers.get("content-type") || "";
+
+  if (!rawText.trim()) {
+    return {
+      data: null,
+      rawText: "",
+    };
+  }
+
+  if (contentType.includes("application/json")) {
+    try {
+      return {
+        data: JSON.parse(rawText),
+        rawText,
+      };
+    } catch {
+      return {
+        data: null,
+        rawText,
+      };
+    }
+  }
+
+  try {
+    return {
+      data: JSON.parse(rawText),
+      rawText,
+    };
+  } catch {
+    return {
+      data: null,
+      rawText,
+    };
+  }
+}
+
+function getApiErrorMessage(
+  response: Response,
+  data: Record<string, unknown> | null,
+  rawText: string,
+  fallback: string
+) {
+  const details =
+    typeof data?.details === "string" ? data.details : "";
+  const error = typeof data?.error === "string" ? data.error : "";
+
+  if (details) return details;
+  if (error) return error;
+
+  const cleanedText = rawText
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (cleanedText) {
+    return `${fallback} Réponse serveur : ${cleanedText.slice(0, 300)}`;
+  }
+
+  return `${fallback} Code HTTP : ${response.status}.`;
+}
+
 function AdminCatalogueContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -282,7 +347,7 @@ function AdminCatalogueContent() {
     const { data, error } = await supabase
       .from("wines")
       .select(
-        "id, slug, name, producer, region, appellation, vintage, price, compare_at_price, image, bottle_size, packaging, weight_kg, hidden_from_site, created_at"
+        "id, slug, name, producer, region, appellation, category, vintage, price, compare_at_price, image, bottle_size, packaging, weight_kg, hidden_from_site, created_at"
       )
       .order("created_at", { ascending: false });
 
@@ -335,6 +400,56 @@ function AdminCatalogueContent() {
         .includes(search)
     );
   }, [wines, searchWine]);
+
+  const producerOptions = useMemo(() => {
+    const selectedCategory = form.category.trim();
+    const selectedRegion = form.region.trim();
+
+    const matchingWines = wines.filter((wine) => {
+      const category = String(wine.category || "").trim();
+      const region = String(wine.region || "").trim();
+
+      if (selectedCategory && category === selectedCategory) return true;
+      if (selectedRegion && region === selectedRegion) return true;
+
+      return !selectedCategory && !selectedRegion;
+    });
+
+    const source = matchingWines.length > 0 ? matchingWines : wines;
+
+    return Array.from(
+      new Set(
+        source
+          .map((wine) => String(wine.producer || "").trim())
+          .filter(Boolean)
+      )
+    ).sort((a, b) => a.localeCompare(b, "fr"));
+  }, [wines, form.category, form.region]);
+
+  const appellationOptions = useMemo(() => {
+    const selectedCategory = form.category.trim();
+    const selectedRegion = form.region.trim();
+
+    const matchingWines = wines.filter((wine) => {
+      const category = String(wine.category || "").trim();
+      const region = String(wine.region || "").trim();
+
+      if (selectedCategory && category === selectedCategory) return true;
+      if (selectedRegion && region === selectedRegion) return true;
+
+      return !selectedCategory && !selectedRegion;
+    });
+
+    const source = matchingWines.length > 0 ? matchingWines : wines;
+
+    return Array.from(
+      new Set(
+        source
+          .map((wine) => String(wine.appellation || "").trim())
+          .filter(Boolean)
+      )
+    ).sort((a, b) => a.localeCompare(b, "fr"));
+  }, [wines, form.category, form.region]);
 
   const previewSlug = useMemo(() => {
     return createWineSlug(form.name, form.vintage, form.slug);
@@ -416,29 +531,59 @@ function AdminCatalogueContent() {
     setErrorMessage("");
     setSuccessMessage("");
 
-    const response = await fetch(`/api/admin/wines/${wineId}`, {
-      method: "POST",
-    });
+    try {
+      const response = await fetch(`/api/admin/wines/${wineId}`, {
+        method: "POST",
+        cache: "no-store",
+        headers: {
+          Accept: "application/json",
+        },
+      });
 
-    const result = await response.json();
+      const { data, rawText } = await readApiResponse(response);
+      const result =
+        data && typeof data === "object"
+          ? (data as Record<string, unknown>)
+          : null;
 
-    if (!response.ok) {
+      if (!response.ok) {
+        setErrorMessage(
+          getApiErrorMessage(
+            response,
+            result,
+            rawText,
+            "Erreur lors de la duplication du vin."
+          )
+        );
+        return;
+      }
+
+      const duplicatedWine =
+        result?.wine && typeof result.wine === "object"
+          ? (result.wine as Record<string, unknown>)
+          : null;
+      const duplicatedWineId =
+        typeof duplicatedWine?.id === "string" ? duplicatedWine.id : "";
+
+      if (!duplicatedWineId) {
+        setErrorMessage(
+          "La duplication semble avoir répondu correctement, mais aucun identifiant de fiche n’a été renvoyé."
+        );
+        return;
+      }
+
+      setSuccessMessage("Fiche vin dupliquée avec succès.");
+      await loadWines();
+
+      window.location.href = `/admin/catalogue/${duplicatedWineId}${catalogueSearchQuery}`;
+    } catch (error) {
       setErrorMessage(
-        result?.details ||
-          result?.error ||
-          "Erreur lors de la duplication du vin."
+        error instanceof Error
+          ? `Erreur lors de la duplication : ${error.message}`
+          : "Erreur inconnue lors de la duplication du vin."
       );
+    } finally {
       setDuplicatingId(null);
-      return;
-    }
-
-    setSuccessMessage("Fiche vin dupliquée avec succès.");
-    setDuplicatingId(null);
-
-    await loadWines();
-
-    if (result?.wine?.id) {
-      window.location.href = `/admin/catalogue/${result.wine.id}${catalogueSearchQuery}`;
     }
   }
 
@@ -644,9 +789,41 @@ function AdminCatalogueContent() {
 
             <div className="grid gap-5 md:grid-cols-2">
               <input name="name" value={form.name} onChange={handleChange} placeholder="Nom du vin *" className="rounded-xl border border-neutral-300 px-4 py-3" />
-              <input name="producer" value={form.producer} onChange={handleChange} placeholder="Domaine / Château" className="rounded-xl border border-neutral-300 px-4 py-3" />
+              <div>
+                <input
+                  name="producer"
+                  value={form.producer}
+                  onChange={handleChange}
+                  list="producer-options"
+                  placeholder="Domaine / Château"
+                  autoComplete="off"
+                  className="w-full rounded-xl border border-neutral-300 px-4 py-3"
+                />
+                <datalist id="producer-options">
+                  {producerOptions.map((producer) => (
+                    <option key={producer} value={producer} />
+                  ))}
+                </datalist>
+              </div>
+
               <input name="region" value={form.region} onChange={handleChange} placeholder="Région" className="rounded-xl border border-neutral-300 px-4 py-3" />
-              <input name="appellation" value={form.appellation} onChange={handleChange} placeholder="Appellation" className="rounded-xl border border-neutral-300 px-4 py-3" />
+
+              <div>
+                <input
+                  name="appellation"
+                  value={form.appellation}
+                  onChange={handleChange}
+                  list="appellation-options"
+                  placeholder="Appellation"
+                  autoComplete="off"
+                  className="w-full rounded-xl border border-neutral-300 px-4 py-3"
+                />
+                <datalist id="appellation-options">
+                  {appellationOptions.map((appellation) => (
+                    <option key={appellation} value={appellation} />
+                  ))}
+                </datalist>
+              </div>
               <input name="country" value={form.country} onChange={handleChange} placeholder="Pays" className="rounded-xl border border-neutral-300 px-4 py-3" />
               <input name="color" value={form.color} onChange={handleChange} placeholder="Couleur" className="rounded-xl border border-neutral-300 px-4 py-3" />
               <input name="vintage" value={form.vintage} onChange={handleChange} placeholder="Millésime" className="rounded-xl border border-neutral-300 px-4 py-3" />
