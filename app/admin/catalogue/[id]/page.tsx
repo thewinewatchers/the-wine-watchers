@@ -6,13 +6,6 @@ import { useParams, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import ImageGalleryEditor from "@/app/components/ImageGalleryEditor";
 
-type CatalogueReference = {
-  producer: string | null;
-  category: string | null;
-  region: string | null;
-  appellation: string | null;
-};
-
 type WineForm = {
   slug: string;
   name: string;
@@ -350,23 +343,7 @@ export default function AdminEditWinePage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [producerOptions, setProducerOptions] = useState<string[]>([]);
-  const [catalogueReferences, setCatalogueReferences] = useState<
-    CatalogueReference[]
-  >([]);
-
-  const appellationOptions = useMemo(() => {
-    const appellations = catalogueReferences
-      .map((wine) => String(wine.appellation || "").trim())
-      .filter(Boolean);
-
-    if (form.appellation.trim()) {
-      appellations.push(form.appellation.trim());
-    }
-
-    return Array.from(new Set(appellations)).sort((a, b) =>
-      a.localeCompare(b, "fr")
-    );
-  }, [catalogueReferences, form.appellation]);
+  const [appellationOptions, setAppellationOptions] = useState<string[]>([]);
 
 
   const previewSlug = useMemo(() => {
@@ -457,35 +434,64 @@ export default function AdminEditWinePage() {
         external_links: data.external_links || "",
       });
 
-      const { data: producerData, error: producerError } = await supabase
-        .from("wines")
-        .select("producer, category, region, appellation");
+      const [
+        { data: producerData, error: producerError },
+        { data: appellationData, error: appellationError },
+      ] = await Promise.all([
+        supabase
+          .from("producers")
+          .select("name")
+          .eq("active", true)
+          .order("name", { ascending: true }),
+        supabase
+          .from("appellations")
+          .select("name")
+          .eq("active", true)
+          .order("name", { ascending: true }),
+      ]);
 
-      if (producerError) {
+      if (producerError || appellationError) {
         setErrorMessage(
-          "La fiche est chargée, mais la liste des producteurs n’a pas pu être actualisée."
+          "La fiche est chargée, mais les référentiels n’ont pas pu être actualisés."
         );
       }
 
       const dynamicProducerOptions = Array.from(
         new Set(
           (producerData || [])
-            .map((wine) => String(wine.producer || "").trim())
+            .map((item) => String(item.name || "").trim())
             .filter(Boolean)
         )
-      ).sort((a, b) => a.localeCompare(b, "fr"));
+      );
+
+      const dynamicAppellationOptions = Array.from(
+        new Set(
+          (appellationData || [])
+            .map((item) => String(item.name || "").trim())
+            .filter(Boolean)
+        )
+      );
 
       const currentProducer = String(data.producer || "").trim();
+      const currentAppellation = String(data.appellation || "").trim();
 
       if (currentProducer && !dynamicProducerOptions.includes(currentProducer)) {
         dynamicProducerOptions.push(currentProducer);
         dynamicProducerOptions.sort((a, b) => a.localeCompare(b, "fr"));
       }
 
+      if (
+        currentAppellation &&
+        !dynamicAppellationOptions.includes(currentAppellation)
+      ) {
+        dynamicAppellationOptions.push(currentAppellation);
+        dynamicAppellationOptions.sort((a, b) =>
+          a.localeCompare(b, "fr")
+        );
+      }
+
       setProducerOptions(dynamicProducerOptions);
-      setCatalogueReferences(
-        ((producerData || []) as CatalogueReference[])
-      );
+      setAppellationOptions(dynamicAppellationOptions);
       setLoading(false);
     }
 

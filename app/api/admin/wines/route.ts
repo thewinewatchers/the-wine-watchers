@@ -38,10 +38,80 @@ function normalizeWinePayload(body: Record<string, unknown>) {
   };
 }
 
+function cleanReferenceValue(value: unknown) {
+  if (value === null || value === undefined) return null;
+
+  const cleaned = String(value).trim();
+  return cleaned || null;
+}
+
+async function syncProducerReference(payload: Record<string, unknown>) {
+  const name = cleanReferenceValue(payload.producer);
+
+  if (!name) return;
+
+  const reference: Record<string, unknown> = {
+    name,
+    active: true,
+  };
+
+  const region = cleanReferenceValue(payload.region);
+  const category = cleanReferenceValue(payload.category);
+
+  if (region) reference.region = region;
+  if (category) reference.category = category;
+
+  const { error } = await supabaseAdmin
+    .from("producers")
+    .upsert(reference, { onConflict: "name" });
+
+  if (error) {
+    throw new Error(
+      `Impossible d’enregistrer le producteur "${name}" : ${error.message}`
+    );
+  }
+}
+
+async function syncAppellationReference(payload: Record<string, unknown>) {
+  const name = cleanReferenceValue(payload.appellation);
+
+  if (!name) return;
+
+  const reference: Record<string, unknown> = {
+    name,
+    active: true,
+  };
+
+  const region = cleanReferenceValue(payload.region);
+  const category = cleanReferenceValue(payload.category);
+
+  if (region) reference.region = region;
+  if (category) reference.category = category;
+
+  const { error } = await supabaseAdmin
+    .from("appellations")
+    .upsert(reference, { onConflict: "name" });
+
+  if (error) {
+    throw new Error(
+      `Impossible d’enregistrer l’appellation "${name}" : ${error.message}`
+    );
+  }
+}
+
+async function syncCatalogueReferences(payload: Record<string, unknown>) {
+  await Promise.all([
+    syncProducerReference(payload),
+    syncAppellationReference(payload),
+  ]);
+}
+
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const body = (await request.json()) as Record<string, unknown>;
     const payload = normalizeWinePayload(body);
+
+    await syncCatalogueReferences(payload);
 
     const { data, error } = await supabaseAdmin
       .from("wines")

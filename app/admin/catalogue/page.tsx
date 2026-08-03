@@ -134,7 +134,12 @@ function removeYearsFromName(value: string) {
     .trim();
 }
 
-function createWineSlug(name: string, vintage: string, customSlug?: string) {
+function createWineSlug(
+  name: string,
+  producer: string,
+  vintage: string,
+  customSlug?: string
+) {
   const cleanedVintage = String(vintage || "").trim();
 
   if (customSlug?.trim()) {
@@ -152,12 +157,12 @@ function createWineSlug(name: string, vintage: string, customSlug?: string) {
 
   const baseName = removeYearsFromName(name);
   const baseSlug = removeTechnicalWordsFromSlug(createSlug(baseName));
+  const producerSlug = removeTechnicalWordsFromSlug(createSlug(producer));
   const vintageSlug = createSlug(cleanedVintage);
 
-  if (!baseSlug) return vintageSlug;
-  if (!vintageSlug) return baseSlug;
+  const slugParts = [baseSlug, producerSlug, vintageSlug].filter(Boolean);
 
-  return `${baseSlug}-${vintageSlug}`;
+  return slugParts.join("-");
 }
 
 function getSlugWarning(form: WineForm) {
@@ -362,8 +367,59 @@ function AdminCatalogueContent() {
     setLoading(false);
   }
 
+
+  async function loadCatalogueReferences() {
+    const [
+      { data: producerData, error: producerError },
+      { data: appellationData, error: appellationError },
+    ] = await Promise.all([
+      supabase
+        .from("producers")
+        .select("name")
+        .eq("active", true)
+        .order("name", { ascending: true }),
+      supabase
+        .from("appellations")
+        .select("name")
+        .eq("active", true)
+        .order("name", { ascending: true }),
+    ]);
+
+    if (producerError || appellationError) {
+      console.error(
+        "Erreur chargement référentiels :",
+        producerError || appellationError
+      );
+      setErrorMessage(
+        "Impossible de charger les listes de producteurs et d’appellations."
+      );
+      return;
+    }
+
+    setProducerOptions(
+      Array.from(
+        new Set(
+          (producerData || [])
+            .map((item) => String(item.name || "").trim())
+            .filter(Boolean)
+        )
+      )
+    );
+
+    setAppellationOptions(
+      Array.from(
+        new Set(
+          (appellationData || [])
+            .map((item) => String(item.name || "").trim())
+            .filter(Boolean)
+        )
+      )
+    );
+  }
+
   useEffect(() => {
     loadWines();
+    loadCatalogueReferences();
   }, []);
 
   useEffect(() => {
@@ -401,29 +457,17 @@ function AdminCatalogueContent() {
     );
   }, [wines, searchWine]);
 
-  const producerOptions = useMemo(() => {
-    return Array.from(
-      new Set(
-        wines
-          .map((wine) => String(wine.producer || "").trim())
-          .filter(Boolean)
-      )
-    ).sort((a, b) => a.localeCompare(b, "fr"));
-  }, [wines]);
-
-  const appellationOptions = useMemo(() => {
-    return Array.from(
-      new Set(
-        wines
-          .map((wine) => String(wine.appellation || "").trim())
-          .filter(Boolean)
-      )
-    ).sort((a, b) => a.localeCompare(b, "fr"));
-  }, [wines]);
+  const [producerOptions, setProducerOptions] = useState<string[]>([]);
+  const [appellationOptions, setAppellationOptions] = useState<string[]>([]);
 
   const previewSlug = useMemo(() => {
-    return createWineSlug(form.name, form.vintage, form.slug);
-  }, [form.slug, form.name, form.vintage]);
+    return createWineSlug(
+      form.name,
+      form.producer,
+      form.vintage,
+      form.slug
+    );
+  }, [form.slug, form.name, form.producer, form.vintage]);
 
   const slugWarning = useMemo(() => getSlugWarning(form), [form]);
 
@@ -693,7 +737,7 @@ function AdminCatalogueContent() {
 
     setSuccessMessage("Vin enregistré dans Supabase.");
     setForm(emptyForm);
-    await loadWines();
+    await Promise.all([loadWines(), loadCatalogueReferences()]);
     setSaving(false);
   }
 

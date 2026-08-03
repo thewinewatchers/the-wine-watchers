@@ -118,6 +118,63 @@ function normalizePatchPayload(body: Record<string, unknown>) {
   return payload;
 }
 
+function cleanReferenceValue(value: unknown) {
+  if (value === null || value === undefined) return null;
+  const cleaned = String(value).trim();
+  return cleaned || null;
+}
+
+async function syncProducerReference(payload: Record<string, unknown>) {
+  const name = cleanReferenceValue(payload.producer);
+  if (!name) return;
+
+  const reference: Record<string, unknown> = { name, active: true };
+  const region = cleanReferenceValue(payload.region);
+  const category = cleanReferenceValue(payload.category);
+
+  if (region) reference.region = region;
+  if (category) reference.category = category;
+
+  const { error } = await supabaseAdmin
+    .from("producers")
+    .upsert(reference, { onConflict: "name" });
+
+  if (error) {
+    throw new Error(
+      `Impossible d’enregistrer le producteur "${name}" : ${error.message}`
+    );
+  }
+}
+
+async function syncAppellationReference(payload: Record<string, unknown>) {
+  const name = cleanReferenceValue(payload.appellation);
+  if (!name) return;
+
+  const reference: Record<string, unknown> = { name, active: true };
+  const region = cleanReferenceValue(payload.region);
+  const category = cleanReferenceValue(payload.category);
+
+  if (region) reference.region = region;
+  if (category) reference.category = category;
+
+  const { error } = await supabaseAdmin
+    .from("appellations")
+    .upsert(reference, { onConflict: "name" });
+
+  if (error) {
+    throw new Error(
+      `Impossible d’enregistrer l’appellation "${name}" : ${error.message}`
+    );
+  }
+}
+
+async function syncCatalogueReferences(payload: Record<string, unknown>) {
+  await Promise.all([
+    syncProducerReference(payload),
+    syncAppellationReference(payload),
+  ]);
+}
+
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -125,6 +182,18 @@ export async function PATCH(
   const { id } = await params;
   const body = (await request.json()) as Record<string, unknown>;
   const payload = normalizePatchPayload(body);
+
+  try {
+    await syncCatalogueReferences(payload);
+  } catch (error) {
+    return NextResponse.json(
+      {
+        error: "Erreur mise à jour des référentiels.",
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    );
+  }
 
   const { data, error } = await supabaseAdmin
     .from("wines")
@@ -280,6 +349,18 @@ export async function POST(
 
   if ("quantity" in original) {
     duplicatedWine.quantity = parseFrenchStock(original.quantity);
+  }
+
+  try {
+    await syncCatalogueReferences(duplicatedWine);
+  } catch (error) {
+    return NextResponse.json(
+      {
+        error: "Erreur mise à jour des référentiels.",
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    );
   }
 
   const { data: insertedWine, error: insertError } = await supabaseAdmin
