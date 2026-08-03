@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabaseClient";
 import ImageGalleryEditor from "@/app/components/ImageGalleryEditor";
 
 type CatalogueReference = {
+  producer: string | null;
   category: string | null;
   region: string | null;
   appellation: string | null;
@@ -354,23 +355,7 @@ export default function AdminEditWinePage() {
   >([]);
 
   const appellationOptions = useMemo(() => {
-    const selectedCategory = form.category.trim();
-    const selectedRegion = form.region.trim();
-
-    const matchingReferences = catalogueReferences.filter((wine) => {
-      const category = String(wine.category || "").trim();
-      const region = String(wine.region || "").trim();
-
-      if (selectedCategory && category === selectedCategory) return true;
-      if (selectedRegion && region === selectedRegion) return true;
-
-      return !selectedCategory && !selectedRegion;
-    });
-
-    const source =
-      matchingReferences.length > 0 ? matchingReferences : catalogueReferences;
-
-    const appellations = source
+    const appellations = catalogueReferences
       .map((wine) => String(wine.appellation || "").trim())
       .filter(Boolean);
 
@@ -381,12 +366,8 @@ export default function AdminEditWinePage() {
     return Array.from(new Set(appellations)).sort((a, b) =>
       a.localeCompare(b, "fr")
     );
-  }, [
-    catalogueReferences,
-    form.appellation,
-    form.category,
-    form.region,
-  ]);
+  }, [catalogueReferences, form.appellation]);
+
 
   const previewSlug = useMemo(() => {
     if (form.slug.trim()) return createSlug(form.slug);
@@ -478,8 +459,7 @@ export default function AdminEditWinePage() {
 
       const { data: producerData, error: producerError } = await supabase
         .from("wines")
-        .select("producer, category, region, appellation")
-        .or("hidden_from_site.is.null,hidden_from_site.eq.false");
+        .select("producer, category, region, appellation");
 
       if (producerError) {
         setErrorMessage(
@@ -490,12 +470,6 @@ export default function AdminEditWinePage() {
       const dynamicProducerOptions = Array.from(
         new Set(
           (producerData || [])
-            .filter((wine) => {
-              const category = String(wine.category || "").trim();
-              const region = String(wine.region || "").trim();
-
-              return category === "Bourgogne" || region === "Bourgogne";
-            })
             .map((wine) => String(wine.producer || "").trim())
             .filter(Boolean)
         )

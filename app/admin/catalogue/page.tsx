@@ -402,54 +402,24 @@ function AdminCatalogueContent() {
   }, [wines, searchWine]);
 
   const producerOptions = useMemo(() => {
-    const selectedCategory = form.category.trim();
-    const selectedRegion = form.region.trim();
-
-    const matchingWines = wines.filter((wine) => {
-      const category = String(wine.category || "").trim();
-      const region = String(wine.region || "").trim();
-
-      if (selectedCategory && category === selectedCategory) return true;
-      if (selectedRegion && region === selectedRegion) return true;
-
-      return !selectedCategory && !selectedRegion;
-    });
-
-    const source = matchingWines.length > 0 ? matchingWines : wines;
-
     return Array.from(
       new Set(
-        source
+        wines
           .map((wine) => String(wine.producer || "").trim())
           .filter(Boolean)
       )
     ).sort((a, b) => a.localeCompare(b, "fr"));
-  }, [wines, form.category, form.region]);
+  }, [wines]);
 
   const appellationOptions = useMemo(() => {
-    const selectedCategory = form.category.trim();
-    const selectedRegion = form.region.trim();
-
-    const matchingWines = wines.filter((wine) => {
-      const category = String(wine.category || "").trim();
-      const region = String(wine.region || "").trim();
-
-      if (selectedCategory && category === selectedCategory) return true;
-      if (selectedRegion && region === selectedRegion) return true;
-
-      return !selectedCategory && !selectedRegion;
-    });
-
-    const source = matchingWines.length > 0 ? matchingWines : wines;
-
     return Array.from(
       new Set(
-        source
+        wines
           .map((wine) => String(wine.appellation || "").trim())
           .filter(Boolean)
       )
     ).sort((a, b) => a.localeCompare(b, "fr"));
-  }, [wines, form.category, form.region]);
+  }, [wines]);
 
   const previewSlug = useMemo(() => {
     return createWineSlug(form.name, form.vintage, form.slug);
