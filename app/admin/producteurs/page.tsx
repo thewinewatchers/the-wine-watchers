@@ -34,10 +34,28 @@ type ProducerDialog =
     }
   | null;
 
+type ProducerFilter =
+  | "all"
+  | "used"
+  | "unused"
+  | "duplicates"
+  | "inactive";
+
+function normalizeReferenceName(value: string) {
+  return value
+    .toLocaleLowerCase("fr")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\b(domaine|chateau|château|maison|bodega|bodegas|winery)\b/g, "")
+    .replace(/[^a-z0-9]+/g, "")
+    .trim();
+}
+
 export default function AdminProducteursPage() {
   const [producers, setProducteurs] = useState<ProducerReference[]>([]);
   const [wines, setWines] = useState<WineReference[]>([]);
   const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<ProducerFilter>("all");
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -82,24 +100,6 @@ export default function AdminProducteursPage() {
     loadProducteurs();
   }, []);
 
-  const filteredProducteurs = useMemo(() => {
-    const normalizedSearch = search.trim().toLowerCase();
-
-    if (!normalizedSearch) return producers;
-
-    return producers.filter((producer) =>
-      [
-        producer.name,
-        producer.region,
-        producer.category,
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase()
-        .includes(normalizedSearch)
-    );
-  }, [producers, search]);
-
   const wineCountByProducteur = useMemo(() => {
     const counts = new Map<string, number>();
 
@@ -113,6 +113,59 @@ export default function AdminProducteursPage() {
 
     return counts;
   }, [wines]);
+
+  const duplicateGroups = useMemo(() => {
+    const groups = new Map<string, ProducerReference[]>();
+
+    producers.forEach((producer) => {
+      const normalizedName = normalizeReferenceName(producer.name);
+
+      if (!normalizedName) return;
+
+      const group = groups.get(normalizedName) || [];
+      group.push(producer);
+      groups.set(normalizedName, group);
+    });
+
+    return Array.from(groups.values()).filter((group) => group.length > 1);
+  }, [producers]);
+
+  const duplicateProducerIds = useMemo(() => {
+    return new Set(
+      duplicateGroups.flatMap((group) => group.map((producer) => producer.id))
+    );
+  }, [duplicateGroups]);
+
+  const filteredProducteurs = useMemo(() => {
+    const normalizedSearch = search.trim().toLocaleLowerCase("fr");
+
+    return producers.filter((producer) => {
+      const matchesSearch =
+        !normalizedSearch ||
+        [producer.name, producer.region, producer.category]
+          .filter(Boolean)
+          .join(" ")
+          .toLocaleLowerCase("fr")
+          .includes(normalizedSearch);
+
+      if (!matchesSearch) return false;
+
+      const wineCount = wineCountByProducteur.get(producer.name) || 0;
+
+      if (filter === "used") return wineCount > 0;
+      if (filter === "unused") return wineCount === 0;
+      if (filter === "duplicates") return duplicateProducerIds.has(producer.id);
+      if (filter === "inactive") return !producer.active;
+
+      return true;
+    });
+  }, [
+    producers,
+    search,
+    filter,
+    wineCountByProducteur,
+    duplicateProducerIds,
+  ]);
 
   function formatCreatedAt(value: string | null) {
     if (!value) return "—";
@@ -134,6 +187,27 @@ export default function AdminProducteursPage() {
   );
 
   const inactiveCount = producers.length - activeCount;
+
+  const unusedCount = useMemo(
+    () =>
+      producers.filter(
+        (producer) => (wineCountByProducteur.get(producer.name) || 0) === 0
+      ).length,
+    [producers, wineCountByProducteur]
+  );
+
+  const usedCount = producers.length - unusedCount;
+
+  const topProducers = useMemo(() => {
+    return [...producers]
+      .map((producer) => ({
+        ...producer,
+        wineCount: wineCountByProducteur.get(producer.name) || 0,
+      }))
+      .filter((producer) => producer.wineCount > 0)
+      .sort((a, b) => b.wineCount - a.wineCount)
+      .slice(0, 5);
+  }, [producers, wineCountByProducteur]);
 
   async function runAction(
     producerId: string,
@@ -309,32 +383,93 @@ export default function AdminProducteursPage() {
           momentanément associé.
         </p>
 
-        <section className="mt-8 grid gap-4 sm:grid-cols-3">
-          <div className="rounded-3xl border border-[#e6dcc8] bg-white p-6 shadow-sm">
-            <p className="text-sm uppercase tracking-[0.18em] text-neutral-500">
-              Total
-            </p>
-            <p className="mt-2 font-serif text-4xl text-black">
-              {producers.length}
-            </p>
+        <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          {[
+            ["all", "Total", producers.length, "border-[#e6dcc8] bg-white text-black"],
+            ["used", "Utilisés", usedCount, "border-green-200 bg-green-50 text-green-900"],
+            ["unused", "Inutilisés", unusedCount, "border-red-200 bg-red-50 text-red-900"],
+            ["duplicates", "Doublons possibles", duplicateGroups.length, "border-purple-200 bg-purple-50 text-purple-900"],
+            ["inactive", "Inactifs", inactiveCount, "border-orange-200 bg-orange-50 text-orange-900"],
+          ].map(([value, label, count, className]) => (
+            <button
+              key={String(value)}
+              type="button"
+              onClick={() => setFilter(value as ProducerFilter)}
+              className={`rounded-3xl border p-6 text-left shadow-sm ${className} ${
+                filter === value ? "ring-2 ring-[#8a6a2f]" : ""
+              }`}
+            >
+              <p className="text-sm uppercase tracking-[0.18em] opacity-75">
+                {label}
+              </p>
+              <p className="mt-2 font-serif text-4xl">{count}</p>
+            </button>
+          ))}
+        </section>
+
+        <section className="mt-8 grid gap-6 lg:grid-cols-2">
+          <div className="rounded-3xl border border-[#e6dcc8] bg-white p-6 shadow-sm md:p-8">
+            <h2 className="font-serif text-2xl text-black">
+              Producteurs les plus représentés
+            </h2>
+
+            <div className="mt-5 space-y-4">
+              {topProducers.map((producer, index) => (
+                <div
+                  key={producer.id}
+                  className="flex items-center justify-between gap-4 rounded-2xl bg-[#fffaf3] px-4 py-3"
+                >
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.16em] text-[#8a6a2f]">
+                      #{index + 1}
+                    </p>
+                    <p className="font-serif text-lg text-black">
+                      {producer.name}
+                    </p>
+                  </div>
+
+                  <p className="text-sm font-semibold text-black">
+                    {producer.wineCount} vin
+                    {producer.wineCount > 1 ? "s" : ""}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="rounded-3xl border border-green-200 bg-green-50 p-6 shadow-sm">
-            <p className="text-sm uppercase tracking-[0.18em] text-green-700">
-              Actives
-            </p>
-            <p className="mt-2 font-serif text-4xl text-green-900">
-              {activeCount}
-            </p>
-          </div>
+          <div className="rounded-3xl border border-[#e6dcc8] bg-white p-6 shadow-sm md:p-8">
+            <h2 className="font-serif text-2xl text-black">
+              Nettoyage recommandé
+            </h2>
 
-          <div className="rounded-3xl border border-orange-200 bg-orange-50 p-6 shadow-sm">
-            <p className="text-sm uppercase tracking-[0.18em] text-orange-700">
-              Inactives
-            </p>
-            <p className="mt-2 font-serif text-4xl text-orange-900">
-              {inactiveCount}
-            </p>
+            <div className="mt-5 space-y-4">
+              <button
+                type="button"
+                onClick={() => setFilter("unused")}
+                className="flex w-full items-center justify-between gap-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-left hover:bg-red-100"
+              >
+                <span>Producteurs sans vin associé</span>
+                <strong>{unusedCount}</strong>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setFilter("duplicates")}
+                className="flex w-full items-center justify-between gap-4 rounded-2xl border border-purple-200 bg-purple-50 px-4 py-3 text-left hover:bg-purple-100"
+              >
+                <span>Noms potentiellement en double</span>
+                <strong>{duplicateGroups.length}</strong>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setFilter("inactive")}
+                className="flex w-full items-center justify-between gap-4 rounded-2xl border border-orange-200 bg-orange-50 px-4 py-3 text-left hover:bg-orange-100"
+              >
+                <span>Producteurs désactivés</span>
+                <strong>{inactiveCount}</strong>
+              </button>
+            </div>
           </div>
         </section>
 
@@ -351,13 +486,29 @@ export default function AdminProducteursPage() {
               </p>
             </div>
 
-            <input
-              type="search"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Rechercher un producteur..."
-              className="w-full rounded-xl border border-neutral-300 px-4 py-3 text-sm md:max-w-md"
-            />
+            <div className="flex w-full flex-col gap-3 md:max-w-2xl md:flex-row">
+              <select
+                value={filter}
+                onChange={(event) =>
+                  setFilter(event.target.value as ProducerFilter)
+                }
+                className="rounded-xl border border-neutral-300 px-4 py-3 text-sm"
+              >
+                <option value="all">Tous les producteurs</option>
+                <option value="used">Utilisés</option>
+                <option value="unused">Inutilisés</option>
+                <option value="duplicates">Doublons possibles</option>
+                <option value="inactive">Inactifs</option>
+              </select>
+
+              <input
+                type="search"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Rechercher un producteur..."
+                className="w-full rounded-xl border border-neutral-300 px-4 py-3 text-sm"
+              />
+            </div>
           </div>
 
           {errorMessage && (
@@ -402,6 +553,21 @@ export default function AdminProducteursPage() {
                       <p className="font-serif text-lg text-black">
                         {producer.name}
                       </p>
+
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {(wineCountByProducteur.get(producer.name) || 0) ===
+                          0 && (
+                          <span className="rounded-full bg-red-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-red-800">
+                            Inutilisé
+                          </span>
+                        )}
+
+                        {duplicateProducerIds.has(producer.id) && (
+                          <span className="rounded-full bg-purple-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-purple-800">
+                            Doublon possible
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     <p className="text-sm text-neutral-700">
