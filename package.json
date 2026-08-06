@@ -15,6 +15,7 @@
     "@swc/helpers": "^0.5.23",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
+    "googleapis": "^174.0.1",
     "jspdf": "^4.2.1",
     "next": "16.2.4",
     "react": "19.2.4",
