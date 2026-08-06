@@ -32,6 +32,17 @@ type SeoList = {
   tone: "danger" | "warning" | "good";
 };
 
+type WineSeoAnalysis = {
+  wine: Wine;
+  score: number;
+  imageScore: number;
+  metadataScore: number;
+  contentScore: number;
+  catalogueScore: number;
+  recommendations: string[];
+  estimatedGain: number;
+};
+
 function isEmpty(value: unknown) {
   if (value === null || value === undefined) return true;
   if (Array.isArray(value)) return value.length === 0;
@@ -254,10 +265,172 @@ function getWineScore(wine: Wine) {
   return Math.min(100, score);
 }
 
+function getWineSeoAnalysis(wine: Wine): WineSeoAnalysis {
+  const recommendations: string[] = [];
+  let estimatedGain = 0;
+
+  const imageScore = isEmpty(wine.image) ? 0 : 100;
+
+  let metadataScore = 0;
+
+  if (!isEmpty(wine.slug) && textLength(wine.slug) <= 75) {
+    metadataScore += 30;
+  } else {
+    recommendations.push(
+      isEmpty(wine.slug)
+        ? "Créer un slug unique et descriptif."
+        : "Raccourcir le slug à moins de 75 caractères."
+    );
+    estimatedGain += 10;
+  }
+
+  const seoTitleLength = textLength(wine.seo_title);
+
+  if (seoTitleLength >= 35 && seoTitleLength <= 65) {
+    metadataScore += 35;
+  } else {
+    recommendations.push(
+      isEmpty(wine.seo_title)
+        ? "Ajouter un titre SEO de 35 à 65 caractères."
+        : seoTitleLength < 35
+          ? `Allonger le titre SEO d’environ ${35 - seoTitleLength} caractères.`
+          : `Réduire le titre SEO d’environ ${seoTitleLength - 65} caractères.`
+    );
+    estimatedGain += 10;
+  }
+
+  const seoDescriptionLength = textLength(wine.seo_description);
+
+  if (seoDescriptionLength >= 90 && seoDescriptionLength <= 165) {
+    metadataScore += 35;
+  } else {
+    recommendations.push(
+      isEmpty(wine.seo_description)
+        ? "Ajouter une meta description de 90 à 165 caractères."
+        : seoDescriptionLength < 90
+          ? `Allonger la meta description d’environ ${
+              90 - seoDescriptionLength
+            } caractères.`
+          : `Réduire la meta description d’environ ${
+              seoDescriptionLength - 165
+            } caractères.`
+    );
+    estimatedGain += 10;
+  }
+
+  let contentScore = 0;
+
+  const descriptionLength = textLength(wine.description);
+
+  if (descriptionLength >= 300) {
+    contentScore += 40;
+  } else {
+    recommendations.push(
+      isEmpty(wine.description)
+        ? "Rédiger une description produit complète."
+        : `Enrichir la description d’environ ${
+            300 - descriptionLength
+          } caractères.`
+    );
+    estimatedGain += 15;
+  }
+
+  const storyLength = textLength(wine.story);
+
+  if (storyLength >= 500) {
+    contentScore += 30;
+  } else {
+    recommendations.push(
+      isEmpty(wine.story)
+        ? "Ajouter l’histoire du domaine et du vin."
+        : `Enrichir l’histoire du domaine d’environ ${
+            500 - storyLength
+          } caractères.`
+    );
+    estimatedGain += 10;
+  }
+
+  const tastingLength = Array.isArray(wine.tasting_notes)
+    ? wine.tasting_notes.join(" ").trim().length
+    : textLength(wine.tasting_notes);
+
+  if (tastingLength >= 120) {
+    contentScore += 30;
+  } else {
+    recommendations.push(
+      isEmpty(wine.tasting_notes)
+        ? "Ajouter des notes de dégustation."
+        : `Enrichir les notes de dégustation d’environ ${
+            120 - tastingLength
+          } caractères.`
+    );
+    estimatedGain += 10;
+  }
+
+  let catalogueScore = 0;
+
+  if (!isEmpty(wine.image)) catalogueScore += 20;
+  else {
+    recommendations.push("Ajouter une image principale.");
+    estimatedGain += 10;
+  }
+
+  if (!isEmpty(wine.price)) catalogueScore += 20;
+  else {
+    recommendations.push("Renseigner le prix.");
+    estimatedGain += 10;
+  }
+
+  if (!isEmpty(wine.stock)) catalogueScore += 15;
+  else {
+    recommendations.push("Renseigner le stock.");
+    estimatedGain += 5;
+  }
+
+  if (!isEmpty(wine.producer)) catalogueScore += 15;
+  else {
+    recommendations.push("Renseigner le producteur.");
+    estimatedGain += 3;
+  }
+
+  if (!isEmpty(wine.appellation)) catalogueScore += 15;
+  else {
+    recommendations.push("Renseigner l’appellation.");
+    estimatedGain += 3;
+  }
+
+  if (!isEmpty(wine.region)) catalogueScore += 10;
+  else {
+    recommendations.push("Renseigner la région.");
+    estimatedGain += 2;
+  }
+
+  if (!isEmpty(wine.country)) catalogueScore += 5;
+  else {
+    recommendations.push("Renseigner le pays.");
+    estimatedGain += 2;
+  }
+
+  return {
+    wine,
+    score: getWineScore(wine),
+    imageScore,
+    metadataScore,
+    contentScore,
+    catalogueScore,
+    recommendations,
+    estimatedGain: Math.min(100, estimatedGain),
+  };
+}
+
 export default function AdminSeoPage() {
   const [wines, setWines] = useState<Wine[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [assistantSearch, setAssistantSearch] = useState("");
+  const [assistantFilter, setAssistantFilter] = useState<
+    "all" | "priority" | "improve" | "good"
+  >("priority");
 
   async function loadSeoData() {
     setLoading(true);
@@ -425,12 +598,17 @@ export default function AdminSeoPage() {
         Math.max(0, catalogueScore) * 0.1
     );
 
-    const scoredWines = visibleWines
-      .map((wine) => ({
-        wine,
-        score: getWineScore(wine),
-      }))
-      .sort((a, b) => a.score - b.score);
+    const detailedAnalyses = visibleWines
+      .map((wine) => getWineSeoAnalysis(wine))
+      .sort((a, b) => {
+        if (a.score !== b.score) return a.score - b.score;
+        return b.estimatedGain - a.estimatedGain;
+      });
+
+    const scoredWines = detailedAnalyses.map(({ wine, score }) => ({
+      wine,
+      score,
+    }));
 
     const weakWines = scoredWines.filter((item) => item.score < 80).slice(0, 20);
 
@@ -580,6 +758,7 @@ export default function AdminSeoPage() {
       withoutCountry,
       issueLists,
       scoredWines,
+      detailedAnalyses,
       weakWines,
       imageScore: Math.max(0, imageScore),
       slugScore: Math.max(0, slugScore),
@@ -591,6 +770,35 @@ export default function AdminSeoPage() {
       globalScore: Math.max(0, globalScore),
     };
   }, [wines]);
+
+  const filteredAssistantAnalyses = useMemo(() => {
+    const normalizedSearch = assistantSearch.trim().toLocaleLowerCase("fr");
+
+    return seo.detailedAnalyses.filter((analysis) => {
+      const matchesSearch =
+        !normalizedSearch ||
+        [
+          analysis.wine.name,
+          analysis.wine.producer,
+          analysis.wine.appellation,
+          analysis.wine.region,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLocaleLowerCase("fr")
+          .includes(normalizedSearch);
+
+      if (!matchesSearch) return false;
+
+      if (assistantFilter === "priority") return analysis.score < 70;
+      if (assistantFilter === "improve") {
+        return analysis.score >= 70 && analysis.score < 90;
+      }
+      if (assistantFilter === "good") return analysis.score >= 90;
+
+      return true;
+    });
+  }, [seo.detailedAnalyses, assistantSearch, assistantFilter]);
 
   return (
     <main className="min-h-screen bg-[#f8f3ea] px-6 py-12 text-[#1f1a17]">
@@ -835,6 +1043,161 @@ export default function AdminSeoPage() {
                   tone={seo.weakWines.length === 0 ? "good" : "warning"}
                 />
               </div>
+            </section>
+
+            <section className="mt-8 rounded-3xl border border-[#e6dcc8] bg-white p-6 shadow-sm md:p-8">
+              <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+                <div>
+                  <p className="text-sm uppercase tracking-[0.22em] text-[#8a6a2f]">
+                    Assistant SEO The Wine Watchers
+                  </p>
+
+                  <h2 className="mt-2 text-2xl font-serif text-black">
+                    Plan d’action fiche par fiche
+                  </h2>
+
+                  <p className="mt-3 max-w-3xl text-sm leading-7 text-neutral-700">
+                    Chaque fiche affiche ses points faibles, les corrections
+                    recommandées et le gain potentiel calculé à partir des
+                    éléments manquants ou trop courts.
+                  </p>
+                </div>
+
+                <div className="flex w-full flex-col gap-3 md:flex-row xl:max-w-2xl">
+                  <select
+                    value={assistantFilter}
+                    onChange={(event) =>
+                      setAssistantFilter(
+                        event.target.value as
+                          | "all"
+                          | "priority"
+                          | "improve"
+                          | "good"
+                      )
+                    }
+                    className="rounded-xl border border-neutral-300 px-4 py-3 text-sm"
+                  >
+                    <option value="priority">Prioritaires — moins de 70</option>
+                    <option value="improve">À améliorer — 70 à 89</option>
+                    <option value="good">Très complètes — 90 et plus</option>
+                    <option value="all">Toutes les fiches</option>
+                  </select>
+
+                  <input
+                    type="search"
+                    value={assistantSearch}
+                    onChange={(event) =>
+                      setAssistantSearch(event.target.value)
+                    }
+                    placeholder="Rechercher un vin..."
+                    className="w-full rounded-xl border border-neutral-300 px-4 py-3 text-sm"
+                  />
+                </div>
+              </div>
+
+              <p className="mt-5 text-sm text-neutral-600">
+                {filteredAssistantAnalyses.length} fiche
+                {filteredAssistantAnalyses.length > 1 ? "s" : ""} affichée
+                {filteredAssistantAnalyses.length > 1 ? "s" : ""}
+              </p>
+
+              {filteredAssistantAnalyses.length === 0 ? (
+                <div className="mt-6 rounded-2xl border border-green-200 bg-green-50 p-5 text-sm text-green-900">
+                  Aucune fiche ne correspond à ce filtre.
+                </div>
+              ) : (
+                <div className="mt-6 space-y-5">
+                  {filteredAssistantAnalyses.map((analysis) => (
+                    <article
+                      key={`assistant-${analysis.wine.id}`}
+                      className="rounded-3xl border border-[#e6dcc8] bg-[#fffdf9] p-5"
+                    >
+                      <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+                        <div className="min-w-0">
+                          <h3 className="font-serif text-xl text-black">
+                            {analysis.wine.name || "Vin sans nom"}
+                          </h3>
+
+                          <p className="mt-1 text-sm text-neutral-600">
+                            {[
+                              analysis.wine.producer,
+                              analysis.wine.appellation,
+                              analysis.wine.region,
+                            ]
+                              .filter(Boolean)
+                              .join(" · ") || "Informations incomplètes"}
+                          </p>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-3">
+                          <Pill tone={scoreTone(analysis.score)}>
+                            {analysis.score}/100
+                          </Pill>
+
+                          <span className="rounded-full bg-[#fff3d6] px-3 py-1 text-xs font-semibold text-[#7a5311]">
+                            Gain potentiel : +{analysis.estimatedGain}
+                          </span>
+
+                          <Link
+                            href={`/admin/catalogue/${analysis.wine.id}`}
+                            className="rounded-full bg-black px-4 py-2 text-center text-xs font-semibold uppercase tracking-[0.16em] text-white hover:bg-[#8a6a2f]"
+                          >
+                            Modifier
+                          </Link>
+                        </div>
+                      </div>
+
+                      <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                        {[
+                          ["Image", analysis.imageScore],
+                          ["Métadonnées", analysis.metadataScore],
+                          ["Contenu", analysis.contentScore],
+                          ["Catalogue", analysis.catalogueScore],
+                        ].map(([label, value]) => (
+                          <div
+                            key={`${analysis.wine.id}-${label}`}
+                            className="rounded-2xl border border-[#eee2cf] bg-white p-4"
+                          >
+                            <p className="text-xs uppercase tracking-[0.14em] text-neutral-500">
+                              {label}
+                            </p>
+                            <p className="mt-2 font-serif text-2xl text-black">
+                              {value}/100
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="mt-5 rounded-2xl border border-[#eee2cf] bg-white p-5">
+                        <p className="text-sm font-semibold text-black">
+                          Actions recommandées
+                        </p>
+
+                        {analysis.recommendations.length === 0 ? (
+                          <p className="mt-3 text-sm text-green-800">
+                            Cette fiche ne présente aucun manque majeur selon
+                            les critères actuels.
+                          </p>
+                        ) : (
+                          <ul className="mt-3 space-y-2 text-sm leading-6 text-neutral-700">
+                            {analysis.recommendations.map(
+                              (recommendation, index) => (
+                                <li
+                                  key={`${analysis.wine.id}-recommendation-${index}`}
+                                  className="flex gap-3"
+                                >
+                                  <span className="text-[#8a6a2f]">✓</span>
+                                  <span>{recommendation}</span>
+                                </li>
+                              )
+                            )}
+                          </ul>
+                        )}
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
             </section>
 
             <section className="mt-8 rounded-3xl border border-[#e6dcc8] bg-white p-6 shadow-sm md:p-8">
