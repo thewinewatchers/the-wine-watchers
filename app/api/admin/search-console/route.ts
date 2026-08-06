@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 
 import { querySearchConsole } from "@/lib/googleSearchConsole";
+import {
+  calculateSeoPriority,
+  renderPriorityStars,
+} from "@/lib/seoPriorityEngine";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -170,6 +174,43 @@ export async function GET(request: Request) {
       .sort((a, b) => b.impressions - a.impressions)
       .slice(0, 50);
 
+    const priorityMissions = queries
+      .map((row) => {
+        const priority = calculateSeoPriority({
+          position: row.position,
+          impressions: row.impressions,
+          ctr: row.ctr,
+          clicks: row.clicks,
+        });
+
+        return {
+          ...row,
+          priorityScore: priority.score,
+          priorityStars: priority.stars,
+          priorityStarsLabel: renderPriorityStars(priority.stars),
+          priorityLevel: priority.level,
+          priorityReasons: priority.reasons,
+        };
+      })
+      .filter(
+        (row) =>
+          row.priorityScore > 0 &&
+          row.impressions >= 10 &&
+          row.query.trim()
+      )
+      .sort((a, b) => {
+        if (b.priorityScore !== a.priorityScore) {
+          return b.priorityScore - a.priorityScore;
+        }
+
+        if (b.impressions !== a.impressions) {
+          return b.impressions - a.impressions;
+        }
+
+        return a.position - b.position;
+      })
+      .slice(0, 10);
+
     return NextResponse.json({
       success: true,
       days,
@@ -192,6 +233,7 @@ export async function GET(request: Request) {
       queries,
       opportunities,
       lowCtrOpportunities,
+      priorityMissions,
     });
   } catch (error) {
     console.error("Erreur Search Console :", error);
