@@ -225,11 +225,9 @@ export default function AdminEditorialAssistantPage() {
       if (!matchesSearch) return false;
 
       if (filter === "priority") return analysis.score < 70;
-
       if (filter === "improve") {
         return analysis.score >= 70 && analysis.score < 90;
       }
-
       if (filter === "certified") return analysis.score >= 90;
       if (filter === "platine") return analysis.certification === "Platine";
       if (filter === "or") return analysis.certification === "Or";
@@ -303,7 +301,6 @@ export default function AdminEditorialAssistantPage() {
                 <p className="text-sm uppercase tracking-[0.18em] text-neutral-500">
                   Fiches analysées
                 </p>
-
                 <p className="mt-2 font-serif text-4xl text-black">
                   {summary.total}
                 </p>
@@ -313,7 +310,6 @@ export default function AdminEditorialAssistantPage() {
                 <p className="text-sm uppercase tracking-[0.18em] text-neutral-500">
                   Score moyen
                 </p>
-
                 <p className="mt-2 font-serif text-4xl text-black">
                   {summary.averageScore}/100
                 </p>
@@ -331,11 +327,11 @@ export default function AdminEditorialAssistantPage() {
                 <p className="text-sm uppercase tracking-[0.18em] text-red-700">
                   Prioritaires
                 </p>
-
                 <p className="mt-2 font-serif text-4xl text-red-900">
                   {summary.priorityCount}
                 </p>
               </button>
+
               <button
                 type="button"
                 onClick={() => setFilter("improve")}
@@ -348,7 +344,6 @@ export default function AdminEditorialAssistantPage() {
                 <p className="text-sm uppercase tracking-[0.18em] text-orange-700">
                   À améliorer
                 </p>
-
                 <p className="mt-2 font-serif text-4xl text-orange-900">
                   {summary.improvementCount}
                 </p>
@@ -366,7 +361,6 @@ export default function AdminEditorialAssistantPage() {
                 <p className="text-sm uppercase tracking-[0.18em] text-green-700">
                   Certifiées Or +
                 </p>
-
                 <p className="mt-2 font-serif text-4xl text-green-900">
                   {summary.certifiedCount}
                 </p>
@@ -399,7 +393,6 @@ export default function AdminEditorialAssistantPage() {
                     }`}
                   >
                     <p className="text-sm font-semibold text-black">{label}</p>
-
                     <p className="mt-2 font-serif text-3xl text-black">
                       {label === "À améliorer"
                         ? summary.certifications["À améliorer"] || 0
@@ -466,7 +459,6 @@ export default function AdminEditorialAssistantPage() {
                     const tone = getCertificationTone(
                       analysis.certification
                     );
-
                     const isExpanded = expandedId === analysis.id;
 
                     return (
@@ -521,6 +513,15 @@ export default function AdminEditorialAssistantPage() {
                               Modifier
                             </Link>
 
+                            <Link
+                              href={`/admin/editorial-assistant/ai?wine=${encodeURIComponent(
+                                analysis.id
+                              )}`}
+                              className="rounded-full border border-purple-300 bg-purple-50 px-4 py-2 text-sm font-semibold text-purple-900 hover:bg-purple-100"
+                            >
+                              ✨ Atelier IA
+                            </Link>
+
                             <button
                               type="button"
                               onClick={() =>
@@ -534,6 +535,7 @@ export default function AdminEditorialAssistantPage() {
                             </button>
                           </div>
                         </div>
+
                         {isExpanded && (
                           <div className="mt-6">
                             <div className="grid gap-5 lg:grid-cols-2">
@@ -547,27 +549,22 @@ export default function AdminEditorialAssistantPage() {
                                     label="Métadonnées"
                                     value={analysis.categories.metadata}
                                   />
-
                                   <ScoreBar
                                     label="Contenu éditorial"
                                     value={analysis.categories.editorial}
                                   />
-
                                   <ScoreBar
                                     label="Données techniques"
                                     value={analysis.categories.technical}
                                   />
-
                                   <ScoreBar
                                     label="Images"
                                     value={analysis.categories.images}
                                   />
-
                                   <ScoreBar
                                     label="Maillage interne"
                                     value={analysis.categories.internalLinks}
                                   />
-
                                   <ScoreBar
                                     label="Données structurées"
                                     value={analysis.categories.structuredData}
@@ -585,7 +582,6 @@ export default function AdminEditorialAssistantPage() {
                                     <p className="text-xs uppercase tracking-[0.14em] text-neutral-500">
                                       Gain potentiel
                                     </p>
-
                                     <p className="mt-2 font-serif text-3xl text-black">
                                       +{analysis.potentialGain}
                                     </p>
@@ -595,7 +591,6 @@ export default function AdminEditorialAssistantPage() {
                                     <p className="text-xs uppercase tracking-[0.14em] text-neutral-500">
                                       Temps estimé
                                     </p>
-
                                     <p className="mt-2 font-serif text-3xl text-black">
                                       {formatMinutes(
                                         analysis.estimatedMinutes
