@@ -6,7 +6,6 @@ import { supabase } from "@/lib/supabaseClient";
 
 type AiSection =
   | "story"
-  | "additional_information"
   | "tasting_notes"
   | "food_pairings"
   | "tww_opinion"
@@ -41,9 +40,9 @@ type AiResponse = {
 
 const SECTION_TO_FIELD: Partial<Record<AiSection, string>> = {
   story: "story",
-  additional_information: "meta_content",
   tasting_notes: "tasting_notes",
   food_pairings: "pairing",
+  tww_opinion: "meta_content",
   seo_title: "seo_title",
   seo_description: "seo_description",
 };
@@ -67,7 +66,6 @@ const SECTIONS: Array<{
   helper: string;
 }> = [
   { value: "story", label: "Histoire du vin", helper: "Développer le domaine, le terroir, la cuvée et son identité." },
-  { value: "additional_information", label: "Informations complémentaires", helper: "Ajouter du contexte utile sans répéter l’histoire du vin." },
   { value: "tasting_notes", label: "Notes de dégustation", helper: "Structurer le nez, la bouche, l’équilibre et la finale." },
   { value: "food_pairings", label: "Accords mets-vins", helper: "Proposer des accords gastronomiques cohérents et argumentés." },
   { value: "tww_opinion", label: "Avis The Wine Watchers", helper: "Rédiger un avis distinctif, précis et premium." },
@@ -485,11 +483,6 @@ export default function AdminEditorialAssistantAiPage() {
                     </div>
                   )}
 
-                  {section === "tww_opinion" && (
-                    <div className="mt-4 rounded-2xl border border-purple-200 bg-purple-50 px-4 py-3 text-sm text-purple-900">
-                      Aucun champ dédié « Avis The Wine Watchers » n’existe encore dans la fiche. Cette rubrique reste générable et copiable uniquement.
-                    </div>
-                  )}
 
                   <textarea
                     value={existingContent}
@@ -580,7 +573,7 @@ export default function AdminEditorialAssistantAiPage() {
                       )}
 
                       <p className="mt-5 text-xs leading-5 text-neutral-500">
-                        L’enregistrement nécessite toujours une confirmation explicite. L’Avis The Wine Watchers reste, pour l’instant, générable et copiable uniquement.
+                        L’enregistrement nécessite toujours une confirmation explicite. L’Avis The Wine Watchers est enregistré dans « Informations complémentaires », conformément à la structure actuelle des fiches.
                       </p>
                     </>
                   ) : (
