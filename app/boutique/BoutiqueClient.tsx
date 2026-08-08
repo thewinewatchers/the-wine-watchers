@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
@@ -363,10 +364,13 @@ function WineCard({
           )}
 
           {image ? (
-            <img
+            <Image
               src={image}
               alt={`Bouteille de ${name} - The Wine Watchers`}
-              className="relative z-10 max-h-[205px] w-auto object-contain transition duration-500 group-hover:scale-105"
+              width={205}
+              height={205}
+              sizes="205px"
+              className="relative z-10 h-auto max-h-[205px] w-auto object-contain transition duration-500 group-hover:scale-105"
             />
           ) : (
             <div className="relative z-10 flex h-full w-full items-center justify-center rounded-2xl border border-dashed border-[#cdbb9f] text-sm text-[#8a6a2f]">
