@@ -140,6 +140,37 @@ function categoryLabel(category: EditorialAction["category"]) {
   return "Données structurées";
 }
 
+type AiSection =
+  | "description"
+  | "story"
+  | "nose"
+  | "palate"
+  | "serving_temperature"
+  | "aging_potential"
+  | "tasting_notes"
+  | "food_pairings"
+  | "tww_opinion"
+  | "seo_title"
+  | "seo_description";
+
+function getAiSectionForAction(action: EditorialAction): AiSection | null {
+  const label = action.label.toLocaleLowerCase("fr");
+
+  if (label.includes("description") && !label.includes("meta")) return "description";
+  if (label.includes("nez")) return "nose";
+  if (label.includes("bouche")) return "palate";
+  if (label.includes("température de service")) return "serving_temperature";
+  if (label.includes("potentiel de garde")) return "aging_potential";
+  if (label.includes("titre seo")) return "seo_title";
+  if (label.includes("meta description")) return "seo_description";
+  if (label.includes("histoire du vin")) return "story";
+  if (label.includes("notes de dégustation")) return "tasting_notes";
+  if (label.includes("accords mets-vins")) return "food_pairings";
+  if (label.includes("avis the wine watchers")) return "tww_opinion";
+
+  return null;
+}
+
 function ScoreBar({ label, value }: { label: string; value: number }) {
   return (
     <div>
@@ -619,38 +650,63 @@ export default function AdminEditorialAssistantPage() {
                                 </p>
                               ) : (
                                 <div className="mt-5 space-y-3">
-                                  {analysis.actions.map((action, index) => (
-                                    <div
-                                      key={`${analysis.id}-action-${index}`}
-                                      className="rounded-2xl border border-[#eee2cf] bg-[#fffdf9] p-4"
-                                    >
-                                      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                                        <div>
-                                          <span className="rounded-full bg-[#fff3d6] px-3 py-1 text-xs font-semibold text-[#7a5311]">
-                                            {categoryLabel(action.category)}
-                                          </span>
+                                  {analysis.actions.map((action, index) => {
+                                    const aiSection =
+                                      getAiSectionForAction(action);
 
-                                          <p className="mt-3 font-semibold text-black">
-                                            {action.label}
-                                          </p>
+                                    return (
+                                      <div
+                                        key={`${analysis.id}-action-${index}`}
+                                        className="rounded-2xl border border-[#eee2cf] bg-[#fffdf9] p-4"
+                                      >
+                                        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                                          <div>
+                                            <span className="rounded-full bg-[#fff3d6] px-3 py-1 text-xs font-semibold text-[#7a5311]">
+                                              {categoryLabel(action.category)}
+                                            </span>
 
-                                          <p className="mt-2 text-sm leading-6 text-neutral-700">
-                                            {action.detail}
-                                          </p>
-                                        </div>
+                                            <p className="mt-3 font-semibold text-black">
+                                              {action.label}
+                                            </p>
 
-                                        <div className="flex shrink-0 flex-wrap gap-2 text-xs">
-                                          <span className="rounded-full bg-green-100 px-3 py-1 font-semibold text-green-900">
-                                            Gain +{action.estimatedGain}
-                                          </span>
+                                            <p className="mt-2 text-sm leading-6 text-neutral-700">
+                                              {action.detail}
+                                            </p>
+                                          </div>
 
-                                          <span className="rounded-full bg-neutral-100 px-3 py-1 font-semibold text-neutral-800">
-                                            {action.estimatedMinutes} min
-                                          </span>
+                                          <div className="flex shrink-0 flex-wrap items-center gap-2 text-xs">
+                                            <span className="rounded-full bg-green-100 px-3 py-1 font-semibold text-green-900">
+                                              Gain +{action.estimatedGain}
+                                            </span>
+
+                                            <span className="rounded-full bg-neutral-100 px-3 py-1 font-semibold text-neutral-800">
+                                              {action.estimatedMinutes} min
+                                            </span>
+
+                                            {aiSection ? (
+                                              <Link
+                                                href={`/admin/editorial-assistant/ai?wine=${encodeURIComponent(
+                                                  analysis.id
+                                                )}&section=${encodeURIComponent(
+                                                  aiSection
+                                                )}`}
+                                                className="rounded-full border border-purple-300 bg-purple-50 px-3 py-1 font-semibold text-purple-900 hover:bg-purple-100"
+                                              >
+                                                ✨ Traiter avec l’IA
+                                              </Link>
+                                            ) : (
+                                              <Link
+                                                href={`/admin/catalogue/${analysis.id}`}
+                                                className="rounded-full border border-[#8a6a2f] bg-white px-3 py-1 font-semibold text-[#8a6a2f] hover:bg-[#8a6a2f] hover:text-white"
+                                              >
+                                                Modifier la fiche
+                                              </Link>
+                                            )}
+                                          </div>
                                         </div>
                                       </div>
-                                    </div>
-                                  ))}
+                                    );
+                                  })}
                                 </div>
                               )}
                             </div>

@@ -5,7 +5,12 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 type AiSection =
+  | "description"
   | "story"
+  | "nose"
+  | "palate"
+  | "serving_temperature"
+  | "aging_potential"
   | "additional_information"
   | "tasting_notes"
   | "food_pairings"
@@ -32,7 +37,12 @@ type AiRequestBody = {
 };
 
 const SECTION_LABELS: Record<AiSection, string> = {
+  description: "Description du vin",
   story: "Histoire du vin",
+  nose: "Nez",
+  palate: "Bouche",
+  serving_temperature: "Température de service",
+  aging_potential: "Potentiel de garde",
   additional_information: "Informations complémentaires",
   tasting_notes: "Notes de dégustation",
   food_pairings: "Accords mets-vins",
@@ -54,6 +64,51 @@ function normalizeValue(value: unknown) {
 }
 
 function getSectionInstructions(section: AiSection) {
+  if (section === "description") {
+    return `
+Rédige ou améliore la description principale du vin.
+Objectif : environ 350 à 650 caractères.
+Le texte doit présenter clairement l'identité du vin, son origine, son style et son intérêt pour l'amateur.
+Évite de répéter mot pour mot l'Histoire du vin ou l'Avis The Wine Watchers.
+Ne fabrique aucune donnée historique, technique ou œnologique non fournie.
+Si un contenu actuel est fourni, conserve les informations fiables qu'il contient et améliore surtout sa précision, sa fluidité et sa valeur éditoriale.
+`;
+  }
+
+  if (section === "nose") {
+    return `
+Rédige uniquement la rubrique "Nez".
+Objectif : environ 90 à 180 caractères.
+Décris le profil aromatique avec précision, sans accumulation excessive de descripteurs.
+Ne prétends pas avoir dégusté le vin si cette information n'est pas fournie.
+`;
+  }
+
+  if (section === "palate") {
+    return `
+Rédige uniquement la rubrique "Bouche".
+Objectif : environ 100 à 220 caractères.
+Décris l'attaque, la texture, l'équilibre, la structure et la finale.
+Reste précis et crédible, sans prétendre à une dégustation réelle si elle n'est pas fournie.
+`;
+  }
+
+  if (section === "serving_temperature") {
+    return `
+Propose uniquement une température ou une plage de service adaptée au vin.
+Réponse très concise, par exemple : "16 à 18 °C".
+N'ajoute aucun commentaire autour.
+`;
+  }
+
+  if (section === "aging_potential") {
+    return `
+Propose uniquement un potentiel de garde formulé de manière prudente et utile.
+Réponse concise, par exemple : "À boire dès maintenant ou à conserver 10 à 15 ans".
+Ne présente jamais cette estimation comme une certitude absolue.
+`;
+  }
+
   if (section === "story") {
     return `
 Rédige une section "Histoire du vin" élégante et documentée.

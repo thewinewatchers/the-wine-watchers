@@ -13,6 +13,8 @@ export type EditorialWineInput = {
   description?: string | null;
   story?: string | null;
   tasting_notes?: string[] | string | null;
+  nose?: string | null;
+  palate?: string | null;
   food_pairings?: string[] | string | null;
   additional_information?: string | null;
   tww_opinion?: string | null;
@@ -221,7 +223,7 @@ export function calculateEditorialScore(
 
   const productDescriptionLength = textLength(wine.description);
   if (productDescriptionLength >= 300) {
-    editorial += 20;
+    editorial += 15;
   } else {
     warnings.push("Description produit insuffisante.");
     addAction(actions, {
@@ -238,7 +240,7 @@ export function calculateEditorialScore(
 
   const storyLength = textLength(wine.story);
   if (storyLength >= 600) {
-    editorial += 25;
+    editorial += 20;
   } else {
     warnings.push("Histoire du vin trop courte ou absente.");
     addAction(actions, {
@@ -255,7 +257,7 @@ export function calculateEditorialScore(
 
   const tastingLength = textLength(wine.tasting_notes);
   if (tastingLength >= 180) {
-    editorial += 20;
+    editorial += 15;
   } else {
     warnings.push("Notes de dégustation insuffisantes.");
     addAction(actions, {
@@ -270,9 +272,43 @@ export function calculateEditorialScore(
     });
   }
 
+  const noseLength = textLength(wine.nose);
+  if (noseLength >= 80) {
+    editorial += 10;
+  } else {
+    warnings.push("Nez insuffisant ou absent.");
+    addAction(actions, {
+      category: "editorial",
+      label: "Enrichir le nez",
+      detail:
+        noseLength === 0
+          ? "Rédiger une description aromatique précise du nez."
+          : `Ajouter environ ${80 - noseLength} caractères.`,
+      estimatedGain: 6,
+      estimatedMinutes: 6,
+    });
+  }
+
+  const palateLength = textLength(wine.palate);
+  if (palateLength >= 80) {
+    editorial += 10;
+  } else {
+    warnings.push("Bouche insuffisante ou absente.");
+    addAction(actions, {
+      category: "editorial",
+      label: "Enrichir la bouche",
+      detail:
+        palateLength === 0
+          ? "Rédiger une description précise de la bouche, de la texture et de la finale."
+          : `Ajouter environ ${80 - palateLength} caractères.`,
+      estimatedGain: 6,
+      estimatedMinutes: 6,
+    });
+  }
+
   const foodPairingsLength = textLength(wine.food_pairings);
   if (foodPairingsLength >= 100) {
-    editorial += 15;
+    editorial += 10;
   } else {
     warnings.push("Accords mets-vins insuffisants.");
     addAction(actions, {
@@ -287,29 +323,48 @@ export function calculateEditorialScore(
     });
   }
 
-  if (textLength(wine.additional_information) >= 120) {
-    editorial += 10;
-  } else {
-    warnings.push("Informations complémentaires insuffisantes.");
-    addAction(actions, {
-      category: "editorial",
-      label: "Compléter les informations",
-      detail: "Ajouter des informations complémentaires utiles.",
-      estimatedGain: 4,
-      estimatedMinutes: 7,
-    });
-  }
-
-  if (textLength(wine.tww_opinion) >= 120) {
+  const opinionLength = textLength(wine.tww_opinion);
+  if (opinionLength >= 120) {
     editorial += 10;
   } else {
     warnings.push("Avis The Wine Watchers absent ou trop court.");
     addAction(actions, {
       category: "editorial",
-      label: "Ajouter l’avis The Wine Watchers",
-      detail: "Rédiger un avis éditorial distinctif et argumenté.",
-      estimatedGain: 6,
+      label: "Améliorer l’avis The Wine Watchers",
+      detail:
+        opinionLength === 0
+          ? "Rédiger un avis éditorial distinctif et argumenté."
+          : `Ajouter environ ${120 - opinionLength} caractères.`,
+      estimatedGain: 10,
       estimatedMinutes: 10,
+    });
+  }
+
+  const servingTemperatureLength = textLength(wine.serving_temperature);
+  if (servingTemperatureLength >= 3) {
+    editorial += 5;
+  } else {
+    warnings.push("Température de service absente.");
+    addAction(actions, {
+      category: "editorial",
+      label: "Renseigner la température de service",
+      detail: "Proposer une température ou une plage de service adaptée au vin.",
+      estimatedGain: 3,
+      estimatedMinutes: 3,
+    });
+  }
+
+  const agingPotentialLength = textLength(wine.aging_potential);
+  if (agingPotentialLength >= 3) {
+    editorial += 5;
+  } else {
+    warnings.push("Potentiel de garde absent.");
+    addAction(actions, {
+      category: "editorial",
+      label: "Renseigner le potentiel de garde",
+      detail: "Proposer un potentiel de garde cohérent avec le profil du vin.",
+      estimatedGain: 3,
+      estimatedMinutes: 3,
     });
   }
 
@@ -324,8 +379,6 @@ export function calculateEditorialScore(
     ["Région", wine.region],
     ["Pays", wine.country],
     ["Cépages", wine.grapes],
-    ["Température de service", wine.serving_temperature],
-    ["Potentiel de garde", wine.aging_potential],
     ["Format", wine.format],
     ["Prix", wine.price],
     ["Stock", wine.stock],
@@ -360,7 +413,7 @@ export function calculateEditorialScore(
   let images = 0;
 
   if (!isEmpty(wine.image)) {
-    images += 45;
+    images += 55;
   } else {
     warnings.push("Image principale absente.");
     addAction(actions, {
@@ -372,20 +425,8 @@ export function calculateEditorialScore(
     });
   }
 
-  if (!isEmpty(wine.case_image)) {
-    images += 20;
-  } else {
-    addAction(actions, {
-      category: "images",
-      label: "Ajouter l’image de caisse",
-      detail: "Ajouter l’image de la caisse ou du conditionnement.",
-      estimatedGain: 4,
-      estimatedMinutes: 5,
-    });
-  }
-
   if (Array.isArray(wine.gallery) && wine.gallery.length > 0) {
-    images += 20;
+    images += 30;
   } else {
     addAction(actions, {
       category: "images",

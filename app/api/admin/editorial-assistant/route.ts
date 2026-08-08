@@ -156,9 +156,16 @@ function buildEditorialInput(wine: WineRow): EditorialWineInput {
           "degustation",
         ])
       ),
+    nose: toStringValue(
+      firstDefined(wine, ["nose", "nez"])
+    ),
+    palate: toStringValue(
+      firstDefined(wine, ["palate", "bouche"])
+    ),
     food_pairings:
       toStringArray(
         firstDefined(wine, [
+          "pairing",
           "food_pairings",
           "food_pairing",
           "pairings",
@@ -168,6 +175,7 @@ function buildEditorialInput(wine: WineRow): EditorialWineInput {
       ) ||
       toStringValue(
         firstDefined(wine, [
+          "pairing",
           "food_pairings",
           "food_pairing",
           "pairings",
@@ -175,15 +183,10 @@ function buildEditorialInput(wine: WineRow): EditorialWineInput {
           "accords_mets_vins",
         ])
       ),
-    additional_information: toStringValue(
-      firstDefined(wine, [
-        "additional_information",
-        "additional_info",
-        "informations_complementaires",
-      ])
-    ),
+    additional_information: null,
     tww_opinion: toStringValue(
       firstDefined(wine, [
+        "meta_content",
         "tww_opinion",
         "wine_watchers_opinion",
         "opinion",
@@ -214,7 +217,7 @@ function buildEditorialInput(wine: WineRow): EditorialWineInput {
       ])
     ),
     format: toStringValue(
-      firstDefined(wine, ["format", "bottle_format", "size"])
+      firstDefined(wine, ["bottle_size", "format", "bottle_format", "size"])
     ),
     price: toNumberOrString(firstDefined(wine, ["price"])),
     stock: toNumberOrString(firstDefined(wine, ["stock"])),

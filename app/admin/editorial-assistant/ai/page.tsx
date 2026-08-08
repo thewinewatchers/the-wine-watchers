@@ -5,7 +5,12 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 
 type AiSection =
+  | "description"
   | "story"
+  | "nose"
+  | "palate"
+  | "serving_temperature"
+  | "aging_potential"
   | "tasting_notes"
   | "food_pairings"
   | "tww_opinion"
@@ -39,7 +44,12 @@ type AiResponse = {
 };
 
 const SECTION_TO_FIELD: Partial<Record<AiSection, string>> = {
+  description: "description",
   story: "story",
+  nose: "nose",
+  palate: "palate",
+  serving_temperature: "serving_temperature",
+  aging_potential: "aging_potential",
   tasting_notes: "tasting_notes",
   food_pairings: "pairing",
   tww_opinion: "meta_content",
@@ -65,6 +75,31 @@ const SECTIONS: Array<{
   label: string;
   helper: string;
 }> = [
+  {
+    value: "description",
+    label: "Description du vin",
+    helper: "Enrichir la présentation principale du vin avec un texte clair, précis et utile.",
+  },
+  {
+    value: "nose",
+    label: "Nez",
+    helper: "Décrire avec précision le profil aromatique et son évolution.",
+  },
+  {
+    value: "palate",
+    label: "Bouche",
+    helper: "Décrire l’attaque, la matière, l’équilibre, la texture et la finale.",
+  },
+  {
+    value: "serving_temperature",
+    label: "Température de service",
+    helper: "Proposer une température ou une plage de service adaptée au vin.",
+  },
+  {
+    value: "aging_potential",
+    label: "Potentiel de garde",
+    helper: "Proposer une fenêtre de garde cohérente et formulée avec prudence.",
+  },
   { value: "story", label: "Histoire du vin", helper: "Développer le domaine, le terroir, la cuvée et son identité." },
   { value: "tasting_notes", label: "Notes de dégustation", helper: "Structurer le nez, la bouche, l’équilibre et la finale." },
   { value: "food_pairings", label: "Accords mets-vins", helper: "Proposer des accords gastronomiques cohérents et argumentés." },
@@ -115,19 +150,30 @@ export default function AdminEditorialAssistantAiPage() {
         const loadedAnalyses = (result as EditorialAssistantResponse).analyses || [];
         setAnalyses(loadedAnalyses);
 
-        const requestedWineId =
+        const searchParams =
           typeof window !== "undefined"
-            ? new URLSearchParams(window.location.search).get("wine")
+            ? new URLSearchParams(window.location.search)
             : null;
+
+        const requestedWineId = searchParams?.get("wine") || null;
+        const requestedSection = searchParams?.get("section") || null;
 
         const requestedWineExists =
           requestedWineId &&
           loadedAnalyses.some((wine) => wine.id === requestedWineId);
 
+        const requestedSectionExists =
+          requestedSection &&
+          SECTIONS.some((item) => item.value === requestedSection);
+
         if (requestedWineExists && requestedWineId) {
           setSelectedWineId(requestedWineId);
         } else if (loadedAnalyses.length > 0) {
           setSelectedWineId(loadedAnalyses[0].id);
+        }
+
+        if (requestedSectionExists && requestedSection) {
+          setSection(requestedSection as AiSection);
         }
       } catch (error) {
         setWineError(
