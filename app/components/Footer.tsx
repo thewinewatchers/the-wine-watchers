@@ -112,17 +112,17 @@ export default function Footer() {
 
             <div className="mt-4 grid gap-2 text-sm leading-6 text-white/70">
               <p>
-                <span className="text-white/40">Société : </span>
+                <span className="text-white/70">Société : </span>
                 <span className="text-white">The Wine Watchers SL</span>
               </p>
 
               <p>
-                <span className="text-white/40">Adresse : </span>
+                <span className="text-white/70">Adresse : </span>
                 Riera Ginjolers,99 17480 Roses
               </p>
 
               <p>
-                <span className="text-white/40">Email : </span>
+                <span className="text-white/70">Email : </span>
                 <a
                   href="mailto:contact@thewinewatchers.com"
                   className="transition hover:text-[#d8b56d]"
@@ -132,7 +132,7 @@ export default function Footer() {
               </p>
 
               <p>
-                <span className="text-white/40">Téléphone : </span>
+                <span className="text-white/70">Téléphone : </span>
                 <a
                   href="tel:+34972150878"
                   className="transition hover:text-[#d8b56d]"
@@ -142,7 +142,7 @@ export default function Footer() {
               </p>
 
               <p>
-                <span className="text-white/40">Pays : </span>
+                <span className="text-white/70">Pays : </span>
                 Espagne
               </p>
             </div>
@@ -191,7 +191,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-8 border-t border-white/10 pt-5">
-          <div className="flex flex-col gap-3 text-sm text-white/45 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col gap-3 text-sm text-white/70 md:flex-row md:items-center md:justify-between">
             <p>© 2026 The Wine Watchers SL. Tous droits réservés.</p>
 
             <Link href="/contact" className="transition hover:text-[#d8b56d]">
