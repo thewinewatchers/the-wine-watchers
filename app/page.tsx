@@ -198,6 +198,7 @@ export default async function Home() {
                   <Link
                     key={wine.id}
                     href={href}
+                    prefetch={false}
                     style={{
                       display: "block",
                       textDecoration: "none",
@@ -276,6 +277,7 @@ export default async function Home() {
             <div style={{ marginTop: 22 }}>
               <Link
                 href="/offres"
+                prefetch={false}
                 style={{
                   color: "#d6b36a",
                   textDecoration: "none",
