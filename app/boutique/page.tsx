@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 const categories = [
   {
@@ -53,10 +54,8 @@ const categories = [
 
 export default function BoutiquePage() {
   return (
-    <main className="min-h-screen bg-[#120706] text-[#f8efe3]">
-      <section className="relative overflow-hidden px-6 py-20 md:py-28">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(216,181,109,0.24),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(116,19,22,0.45),transparent_38%),linear-gradient(135deg,#180605,#2a0b0b_45%,#090202)]" />
-
+    <main>
+      <section className="bg-[#160604] px-6 py-16 text-white md:py-24">
         <div className="relative mx-auto grid max-w-7xl gap-12 md:grid-cols-[0.95fr_1.05fr] md:items-center">
           <div>
             <p className="text-sm uppercase tracking-[0.42em] text-[#d8b56d]">
@@ -92,12 +91,17 @@ export default function BoutiquePage() {
           <div className="relative">
             <div className="absolute -inset-5 rounded-[3rem] bg-[#d8b56d]/10 blur-2xl" />
 
-            <div className="relative overflow-hidden rounded-[2.5rem] border border-white/15 bg-white/5 p-3 shadow-2xl">
-              <img
-                src="/images/boutique-hero.png"
-                alt="Sélection de grands vins The Wine Watchers"
-                className="h-[420px] w-full rounded-[2rem] object-cover md:h-[540px]"
-              />
+            <div className="relative h-[420px] overflow-hidden rounded-[2.5rem] border border-white/15 bg-white/5 p-3 shadow-2xl md:h-[540px]">
+              <div className="relative h-full w-full overflow-hidden rounded-[2rem]">
+                <Image
+                  src="/images/boutique-hero.png"
+                  alt="Sélection de grands vins The Wine Watchers"
+                  fill
+                  priority
+                  sizes="(max-width: 768px) 100vw, 54vw"
+                  className="object-cover"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -123,10 +127,12 @@ export default function BoutiquePage() {
                 className="group overflow-hidden rounded-[2rem] border border-[#dfceb7] bg-[#fffaf3] shadow-sm transition hover:-translate-y-1 hover:border-[#d8b56d] hover:shadow-2xl"
               >
                 <div className="relative h-56 overflow-hidden">
-                  <img
+                  <Image
                     src={category.image}
                     alt={category.title}
-                    className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                    className="object-cover transition duration-700 group-hover:scale-105"
                   />
 
                   <div className="absolute inset-0 bg-gradient-to-t from-[#160604]/85 via-[#160604]/20 to-transparent" />
