@@ -92,7 +92,7 @@ export default async function Home() {
       style={{
         minHeight: "100vh",
         backgroundImage:
-          "linear-gradient(115deg, rgba(12,8,7,0.92), rgba(28,12,14,0.78), rgba(0,0,0,0.58)), url('/images/lafite.jpg')",
+          "linear-gradient(115deg, rgba(12,8,7,0.92), rgba(28,12,14,0.78), rgba(0,0,0,0.58))",
         backgroundSize: "cover",
         backgroundPosition: "center",
         textAlign: "center",

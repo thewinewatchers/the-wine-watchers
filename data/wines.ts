@@ -5,7 +5,7 @@ export const wines = [
     region: "Pauillac, Bordeaux",
     vintage: "2018",
     price: "950 €",
-    image: "/images/lafite.jpg",
+    image: "/images/chateau-lafite.jpg",
     category: "Bordeaux",
     rating: "98/100",
 
