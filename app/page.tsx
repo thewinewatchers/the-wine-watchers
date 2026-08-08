@@ -170,17 +170,18 @@ export default async function Home() {
               backdropFilter: "blur(8px)",
             }}
           >
-            <p
+            <h2
               style={{
                 color: "#d6b36a",
                 letterSpacing: 4,
                 textTransform: "uppercase",
                 fontSize: 12,
                 marginBottom: 22,
+                fontWeight: 400,
               }}
             >
               Nos offres du moment
-            </p>
+            </h2>
 
             <div
               style={{
