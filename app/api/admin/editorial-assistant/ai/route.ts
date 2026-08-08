@@ -4,10 +4,6 @@ import OpenAI from "openai";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 type AiSection =
   | "story"
   | "additional_information"
@@ -46,7 +42,9 @@ const SECTION_LABELS: Record<AiSection, string> = {
 };
 
 function normalizeValue(value: unknown) {
-  if (value === null || value === undefined || value === "") return "Non renseigné";
+  if (value === null || value === undefined || value === "") {
+    return "Non renseigné";
+  }
 
   if (Array.isArray(value)) {
     return value.map((item) => String(item)).join(", ");
@@ -150,7 +148,9 @@ Retourne uniquement la proposition finale destinée à être affichée dans l'at
 
 export async function POST(request: Request) {
   try {
-    if (!process.env.OPENAI_API_KEY) {
+    const apiKey = process.env.OPENAI_API_KEY;
+
+    if (!apiKey) {
       return NextResponse.json(
         {
           error: "Variable d’environnement manquante : OPENAI_API_KEY",
@@ -158,6 +158,10 @@ export async function POST(request: Request) {
         { status: 500 }
       );
     }
+
+    const openai = new OpenAI({
+      apiKey,
+    });
 
     const body = (await request.json()) as AiRequestBody;
 

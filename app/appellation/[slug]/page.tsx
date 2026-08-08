@@ -1,8 +1,13 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
 const SITE_URL = "https://www.thewinewatchers.com";
+
+const appellationRedirects: Record<string, string> = {
+  toscane: "toscana",
+  "super-toscans": "toscana-igt",
+};
 
 const appellations: Record<
   string,
@@ -1069,6 +1074,127 @@ const appellations: Record<
     boutiqueLabel: "Retour à la boutique États-Unis",
   },
 
+
+  hermitage: {
+    name: "Hermitage",
+    title: "Vins d’Hermitage – Grandes Syrah de la Vallée du Rhône",
+    description:
+      "Découvrez notre sélection de vins d’Hermitage : grandes Syrah, cuvées prestigieuses, domaines emblématiques et millésimes recherchés.",
+    intro:
+      "Hermitage est l’une des appellations les plus prestigieuses de la Vallée du Rhône septentrionale. Ses coteaux granitiques donnent naissance à des Syrah profondes, complexes et remarquablement aptes au vieillissement.",
+    boutiqueHref: "/boutique/rhone",
+    boutiqueLabel: "Retour à la boutique Vallée du Rhône",
+  },
+
+  "cote-des-bar": {
+    name: "Côte des Bar",
+    title: "Champagnes de la Côte des Bar – Terroirs de l’Aube",
+    description:
+      "Découvrez notre sélection de champagnes de la Côte des Bar, terroir majeur de l’Aube reconnu pour la personnalité de ses vins et la place importante du Pinot Noir.",
+    intro:
+      "La Côte des Bar constitue le grand vignoble champenois de l’Aube. Ses coteaux et ses sols calcaires donnent naissance à des champagnes de caractère, souvent généreux, précis et profondément marqués par leur terroir.",
+    boutiqueHref: "/boutique/champagne",
+    boutiqueLabel: "Retour à la boutique Champagne",
+  },
+
+  cornas: {
+    name: "Cornas",
+    title: "Vins de Cornas – Grandes Syrah du Rhône septentrional",
+    description:
+      "Découvrez notre sélection de vins de Cornas : Syrah de caractère, domaines réputés et grands millésimes de la Vallée du Rhône.",
+    intro:
+      "Cornas est une appellation historique du Rhône septentrional exclusivement consacrée aux vins rouges issus de Syrah. Ses coteaux granitiques produisent des vins puissants, profonds et capables d’une longue évolution en cave.",
+    boutiqueHref: "/boutique/rhone",
+    boutiqueLabel: "Retour à la boutique Vallée du Rhône",
+  },
+
+  piemont: {
+    name: "Piémont",
+    title: "Vins du Piémont – Grands vins italiens",
+    description:
+      "Découvrez notre sélection de vins du Piémont : Barolo, Barbaresco, grands Nebbiolo, domaines prestigieux et millésimes recherchés.",
+    intro:
+      "Le Piémont est l’une des régions viticoles majeures d’Italie. Il est notamment célèbre pour le Nebbiolo et pour les grands vins de Barolo et de Barbaresco, recherchés pour leur finesse, leur complexité et leur potentiel de garde.",
+    boutiqueHref: "/boutique/italie",
+    boutiqueLabel: "Retour à la boutique Italie",
+  },
+
+  sonoma: {
+    name: "Sonoma",
+    title: "Vins de Sonoma – Grands vins de Californie",
+    description:
+      "Découvrez notre sélection de vins de Sonoma : grandes cuvées californiennes, domaines emblématiques et millésimes recherchés.",
+    intro:
+      "Sonoma est l’une des grandes régions viticoles de Californie. La diversité de ses climats et de ses terroirs permet l’élaboration de vins de haut niveau, des Pinot Noir et Chardonnay aux Cabernet Sauvignon les plus structurés.",
+    boutiqueHref: "/boutique/usa",
+    boutiqueLabel: "Retour à la boutique États-Unis",
+  },
+
+  "chateauneuf-du-pape": {
+    name: "Châteauneuf-du-Pape",
+    title: "Vins de Châteauneuf-du-Pape – Grands vins de la Vallée du Rhône",
+    description:
+      "Découvrez notre sélection de vins de Châteauneuf-du-Pape : domaines prestigieux, cuvées de garde et grands millésimes du Rhône méridional.",
+    intro:
+      "Châteauneuf-du-Pape est l’une des appellations les plus célèbres de la Vallée du Rhône méridionale. Ses terroirs variés et ses assemblages donnent naissance à des vins profonds, généreux et complexes, capables d’un remarquable vieillissement.",
+    boutiqueHref: "/boutique/rhone",
+    boutiqueLabel: "Retour à la boutique Vallée du Rhône",
+  },
+
+  "saint-joseph": {
+    name: "Saint-Joseph",
+    title: "Vins de Saint-Joseph – Vallée du Rhône septentrionale",
+    description:
+      "Découvrez notre sélection de vins de Saint-Joseph : Syrah, grands domaines, cuvées recherchées et millésimes de la Vallée du Rhône.",
+    intro:
+      "Saint-Joseph s’étend sur la rive droite du Rhône et produit principalement des rouges issus de Syrah, auxquels s’ajoutent des blancs de Marsanne et de Roussanne. Les meilleurs terroirs associent fraîcheur, finesse et profondeur.",
+    boutiqueHref: "/boutique/rhone",
+    boutiqueLabel: "Retour à la boutique Vallée du Rhône",
+  },
+
+  "vallee-de-la-marne": {
+    name: "Vallée de la Marne",
+    title: "Champagnes de la Vallée de la Marne – Grands terroirs champenois",
+    description:
+      "Découvrez notre sélection de champagnes de la Vallée de la Marne, l’un des grands secteurs viticoles de Champagne.",
+    intro:
+      "La Vallée de la Marne est l’un des grands ensembles viticoles de Champagne. Le Pinot Meunier y occupe une place importante aux côtés du Pinot Noir et du Chardonnay, donnant des vins expressifs, fruités et équilibrés.",
+    boutiqueHref: "/boutique/champagne",
+    boutiqueLabel: "Retour à la boutique Champagne",
+  },
+
+  gigondas: {
+    name: "Gigondas",
+    title: "Vins de Gigondas – Grands rouges du Rhône méridional",
+    description:
+      "Découvrez notre sélection de vins de Gigondas : rouges de caractère, domaines réputés et grands millésimes de la Vallée du Rhône.",
+    intro:
+      "Gigondas est une appellation majeure du Rhône méridional, adossée aux Dentelles de Montmirail. Ses vins rouges, dominés par le Grenache, associent puissance, relief, fraîcheur et belle aptitude au vieillissement.",
+    boutiqueHref: "/boutique/rhone",
+    boutiqueLabel: "Retour à la boutique Vallée du Rhône",
+  },
+
+  "montagne-de-reims": {
+    name: "Montagne de Reims",
+    title: "Champagnes de la Montagne de Reims – Grands terroirs de Champagne",
+    description:
+      "Découvrez notre sélection de champagnes de la Montagne de Reims, terroir emblématique de Champagne et terre de grands crus.",
+    intro:
+      "La Montagne de Reims est l’un des secteurs les plus prestigieux de Champagne. Le Pinot Noir y occupe une place majeure et contribue à des vins structurés, profonds et élégants, issus de villages mondialement réputés.",
+    boutiqueHref: "/boutique/champagne",
+    boutiqueLabel: "Retour à la boutique Champagne",
+  },
+
+  "cote-des-blancs": {
+    name: "Côte des Blancs",
+    title: "Champagnes de la Côte des Blancs – Grands Chardonnay de Champagne",
+    description:
+      "Découvrez notre sélection de champagnes de la Côte des Blancs, terroir d’exception dédié au Chardonnay et à certaines des cuvées les plus prestigieuses de Champagne.",
+    intro:
+      "La Côte des Blancs est un terroir emblématique de Champagne, célèbre pour ses sols crayeux et ses grands Chardonnay. Ses vins se distinguent par leur finesse, leur tension, leur minéralité et leur remarquable capacité de vieillissement.",
+    boutiqueHref: "/boutique/champagne",
+    boutiqueLabel: "Retour à la boutique Champagne",
+  },
 };
 
 type AppellationWine = {
@@ -1219,6 +1345,24 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const redirectSlug = appellationRedirects[slug];
+
+  if (redirectSlug) {
+    const targetAppellation = appellations[redirectSlug];
+
+    return {
+      title: `${targetAppellation.title} | The Wine Watchers`,
+      description: targetAppellation.description,
+      alternates: {
+        canonical: `${SITE_URL}/appellation/${redirectSlug}`,
+      },
+      robots: {
+        index: true,
+        follow: true,
+      },
+    };
+  }
+
   const appellation = appellations[slug];
 
   if (!appellation) {
@@ -1250,6 +1394,12 @@ export default async function AppellationPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const redirectSlug = appellationRedirects[slug];
+
+  if (redirectSlug) {
+    permanentRedirect(`/appellation/${redirectSlug}`);
+  }
+
   const appellation = appellations[slug];
 
   if (!appellation) {
@@ -1454,7 +1604,9 @@ export default async function AppellationPage({
                     ? "États-Unis"
                     : appellation.boutiqueHref.includes("rhone")
                       ? "Vallée du Rhône"
-                      : "Bordeaux"}
+                      : appellation.boutiqueHref.includes("champagne")
+                        ? "Champagne"
+                        : "Bordeaux"}
           </Link>
           <span>/</span>
           <span className="font-medium text-[#3b1f1f]">{appellation.name}</span>
