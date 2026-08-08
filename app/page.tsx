@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import NewsletterForm from "./components/NewsletterForm";
 
 type Wine = {
@@ -349,9 +350,12 @@ export default async function Home() {
               boxShadow: "0 28px 75px rgba(0,0,0,0.46)",
             }}
           >
-            <img
+            <Image
               src="/images/accueil-sommelier.jpg"
               alt="Sommelier dégustant un grand vin - The Wine Watchers"
+              width={933}
+              height={800}
+              sizes="(max-width: 760px) 100vw, 760px"
               style={{
                 display: "block",
                 width: "100%",
