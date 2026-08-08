@@ -4,7 +4,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
 
 function normalizeSearch(value: string) {
   return value
@@ -64,23 +63,36 @@ export default function Menu() {
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    async function checkUser() {
-      const { data } = await supabase.auth.getUser();
-      setIsLoggedIn(Boolean(data.user));
+    function hasStoredSupabaseSession() {
+      try {
+        return Object.keys(window.localStorage).some(
+          (key) =>
+            key.startsWith("sb-") &&
+            key.endsWith("-auth-token") &&
+            Boolean(window.localStorage.getItem(key))
+        );
+      } catch {
+        return false;
+      }
     }
 
-    checkUser();
+    function syncLoginState() {
+      setIsLoggedIn(hasStoredSupabaseSession());
+    }
 
-    const { data: listener } = supabase.auth.onAuthStateChange(() => {
-      checkUser();
-    });
+    syncLoginState();
+
+    window.addEventListener("storage", syncLoginState);
+    window.addEventListener("focus", syncLoginState);
 
     return () => {
-      listener.subscription.unsubscribe();
+      window.removeEventListener("storage", syncLoginState);
+      window.removeEventListener("focus", syncLoginState);
     };
   }, []);
 
   const handleLogout = async () => {
+    const { supabase } = await import("@/lib/supabaseClient");
     await supabase.auth.signOut();
     setIsLoggedIn(false);
     setOpen(false);
