@@ -130,6 +130,7 @@ export default function AdminEditorialAssistantAiPage() {
   const [copied, setCopied] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
+  const [manualSaveMessage, setManualSaveMessage] = useState("");
   const [loadingCurrentContent, setLoadingCurrentContent] = useState(false);
 
   useEffect(() => {
@@ -204,6 +205,7 @@ export default function AdminEditorialAssistantAiPage() {
       setLoadingCurrentContent(true);
       setGenerationError("");
       setSaveMessage("");
+      setManualSaveMessage("");
 
       try {
         const { data, error } = await supabase
@@ -257,6 +259,7 @@ export default function AdminEditorialAssistantAiPage() {
     setGenerationError("");
     setCopied(false);
     setSaveMessage("");
+    setManualSaveMessage("");
   }
 
   function handleSectionChange(nextSection: AiSection) {
@@ -265,6 +268,7 @@ export default function AdminEditorialAssistantAiPage() {
     setGenerationError("");
     setCopied(false);
     setSaveMessage("");
+    setManualSaveMessage("");
   }
 
   async function generateProposal() {
@@ -321,6 +325,72 @@ export default function AdminEditorialAssistantAiPage() {
       window.setTimeout(() => setCopied(false), 2000);
     } catch {
       setGenerationError("Impossible de copier automatiquement le texte.");
+    }
+  }
+
+  async function saveExistingContent() {
+    if (!selectedWine) return;
+
+    const field = SECTION_TO_FIELD[section];
+
+    if (!field) {
+      setGenerationError(
+        "Cette rubrique n’est pas encore reliée à un champ enregistrable."
+      );
+      return;
+    }
+
+    const contentToSave = existingContent.trim();
+
+    if (!contentToSave) {
+      setGenerationError("Ajoute un contenu avant de l’enregistrer.");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Confirmer l’enregistrement manuel de « ${getSectionLabel(section)} » dans la fiche ${selectedWine.name} ?`
+    );
+
+    if (!confirmed) return;
+
+    setSaving(true);
+    setGenerationError("");
+    setManualSaveMessage("");
+
+    try {
+      const payload =
+        section === "tasting_notes"
+          ? { [field]: [contentToSave] }
+          : { [field]: contentToSave };
+
+      const response = await fetch(`/api/admin/wines/${selectedWine.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result?.details ||
+            result?.error ||
+            "Impossible d’enregistrer le contenu."
+        );
+      }
+
+      setExistingContent(contentToSave);
+      setManualSaveMessage(
+        `${getSectionLabel(section)} enregistré avec succès dans la fiche.`
+      );
+    } catch (error) {
+      setGenerationError(
+        error instanceof Error
+          ? error.message
+          : "Impossible d’enregistrer le contenu."
+      );
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -538,6 +608,29 @@ export default function AdminEditorialAssistantAiPage() {
                     placeholder={`Contenu actuel — ${getSectionLabel(section)}`}
                     className="mt-5 w-full rounded-2xl border border-neutral-300 px-4 py-4 text-sm leading-7 outline-none focus:border-[#8a6a2f]"
                   />
+
+                  <div className="mt-4 flex flex-wrap items-center gap-3">
+                    {SECTION_TO_FIELD[section] ? (
+                      <button
+                        type="button"
+                        onClick={saveExistingContent}
+                        disabled={saving || loadingCurrentContent || !existingContent.trim()}
+                        className="rounded-full bg-green-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {saving ? "Enregistrement..." : "Enregistrer le contenu"}
+                      </button>
+                    ) : (
+                      <span className="rounded-full border border-neutral-300 bg-white px-5 py-2.5 text-sm font-semibold text-neutral-500">
+                        Enregistrement non disponible
+                      </span>
+                    )}
+                  </div>
+
+                  {manualSaveMessage && (
+                    <div className="mt-4 rounded-2xl border border-green-200 bg-green-50 p-4 text-sm text-green-800">
+                      {manualSaveMessage}
+                    </div>
+                  )}
 
                   <div className="mt-4 rounded-2xl bg-[#fffaf3] px-4 py-3 text-sm text-neutral-700">
                     <strong>{getSectionLabel(section)}</strong> — {getSectionHelper(section)}
