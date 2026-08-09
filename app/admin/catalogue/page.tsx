@@ -744,12 +744,21 @@ function AdminCatalogueContent() {
   return (
     <main className="min-h-screen bg-[#f8f3ea] px-6 py-12 text-[#1f1a17]">
       <div className="mx-auto max-w-7xl">
-        <Link
-          href="/admin"
-          className="text-sm uppercase tracking-[0.25em] text-[#8a6a2f] hover:text-black"
-        >
-          ← Retour admin
-        </Link>
+        <div className="flex flex-wrap items-center gap-5">
+          <Link
+            href="/admin"
+            className="text-sm uppercase tracking-[0.25em] text-[#8a6a2f] hover:text-black"
+          >
+            ← Retour admin
+          </Link>
+
+          <Link
+            href="/admin/editorial-assistant/ai"
+            className="text-sm uppercase tracking-[0.25em] text-[#8a6a2f] hover:text-black"
+          >
+            ← Retour Editorial Assistant AI
+          </Link>
+        </div>
 
         <div className="mt-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
