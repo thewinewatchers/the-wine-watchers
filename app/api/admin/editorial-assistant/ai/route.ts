@@ -67,93 +67,205 @@ function getSectionInstructions(section: AiSection) {
   if (section === "description") {
     return `
 Rédige ou améliore la description principale du vin.
-Objectif : environ 350 à 650 caractères.
-Le texte doit présenter clairement l'identité du vin, son origine, son style et son intérêt pour l'amateur.
+
+Objectif : environ 700 à 1 200 caractères.
+
+La description doit présenter clairement :
+- l'identité du vin ;
+- son domaine ou producteur ;
+- son appellation et son terroir lorsque ces informations peuvent être vérifiées ;
+- son style ;
+- sa personnalité ;
+- son intérêt pour l'amateur de grands vins.
+
+Recherche les informations fiables nécessaires avant de rédiger.
+
 Évite de répéter mot pour mot l'Histoire du vin ou l'Avis The Wine Watchers.
-Ne fabrique aucune donnée historique, technique ou œnologique non fournie.
-Si un contenu actuel est fourni, conserve les informations fiables qu'il contient et améliore surtout sa précision, sa fluidité et sa valeur éditoriale.
+
+Si un contenu actuel est fourni, conserve ses informations fiables, corrige les éventuelles imprécisions et enrichis réellement le contenu.
+
+Ne remplis jamais artificiellement le texte pour atteindre la longueur cible.
 `;
   }
 
   if (section === "nose") {
     return `
 Rédige uniquement la rubrique "Nez".
-Objectif : environ 90 à 180 caractères.
-Décris le profil aromatique avec précision, sans accumulation excessive de descripteurs.
-Ne prétends pas avoir dégusté le vin si cette information n'est pas fournie.
+
+Objectif : environ 120 à 250 caractères.
+
+Recherche si nécessaire des informations crédibles sur le profil aromatique du vin, du millésime ou de la cuvée.
+
+Décris le profil aromatique avec précision et sobriété.
+
+Évite les accumulations interminables de fruits, fleurs et épices.
+
+Ne prétends jamais que The Wine Watchers a personnellement dégusté le vin.
 `;
   }
 
   if (section === "palate") {
     return `
 Rédige uniquement la rubrique "Bouche".
-Objectif : environ 100 à 220 caractères.
-Décris l'attaque, la texture, l'équilibre, la structure et la finale.
-Reste précis et crédible, sans prétendre à une dégustation réelle si elle n'est pas fournie.
+
+Objectif : environ 140 à 300 caractères.
+
+Recherche des informations fiables sur le style du vin et, lorsque cela est pertinent, du millésime.
+
+Décris :
+- l'attaque ;
+- la matière ;
+- la texture ;
+- l'équilibre ;
+- la structure ;
+- la finale.
+
+Ne prétends jamais à une dégustation personnelle par The Wine Watchers.
 `;
   }
 
   if (section === "serving_temperature") {
     return `
-Propose uniquement une température ou une plage de service adaptée au vin.
-Réponse très concise, par exemple : "16 à 18 °C".
-N'ajoute aucun commentaire autour.
+Recherche la température de service généralement recommandée pour ce vin ou ce type de vin.
+
+Retourne uniquement une température ou une plage de température.
+
+Exemple :
+16 à 18 °C
+
+Aucun commentaire supplémentaire.
 `;
   }
 
   if (section === "aging_potential") {
     return `
-Propose uniquement un potentiel de garde formulé de manière prudente et utile.
-Réponse concise, par exemple : "À boire dès maintenant ou à conserver 10 à 15 ans".
-Ne présente jamais cette estimation comme une certitude absolue.
+Recherche les informations disponibles sur le potentiel de garde du vin, du millésime ou d'exemples comparables du même domaine.
+
+Retourne une recommandation concise et prudente.
+
+Exemple :
+À boire dès maintenant ou à conserver 10 à 15 ans.
+
+Ne présente jamais une estimation de garde comme une certitude absolue.
 `;
   }
 
   if (section === "story") {
     return `
-Rédige une section "Histoire du vin" élégante et documentée.
-Objectif : environ 900 à 1 400 caractères.
-Présente le domaine, le terroir, la cuvée et son identité.
-Ne fabrique jamais de fait historique, de date, de classement ou de donnée technique non fournie.
-Si une information manque, reste général plutôt que d'inventer.
+Rédige une véritable section "Histoire du vin", documentée, précise et élégante.
+
+Objectif : environ 1 500 à 2 500 caractères.
+
+Effectue une recherche documentaire sérieuse avant de rédiger.
+
+Lorsque les sources permettent de les établir, explique notamment :
+- l'histoire du domaine ou du producteur ;
+- la naissance ou la place de la cuvée ;
+- le vignoble concerné ;
+- le terroir ;
+- les parcelles importantes ;
+- l'appellation ;
+- les éléments historiques réellement pertinents ;
+- la singularité de ce vin dans la production du domaine.
+
+Ne transforme pas cette rubrique en simple note de dégustation.
+
+Les dates, classements, superficies, parcelles, personnes, méthodes de production et autres faits précis doivent provenir d'informations vérifiables.
+
+Si une information n'est pas suffisamment confirmée, ne l'affirme pas.
+
+Privilégie la qualité documentaire à l'accumulation de faits.
 `;
   }
 
   if (section === "additional_information") {
     return `
-Rédige des "Informations complémentaires" utiles et premium.
-Objectif : environ 500 à 900 caractères.
-Apporte du contexte sur le style du vin, son terroir, son élevage ou sa place dans la gamme uniquement si cela peut être formulé sans inventer de faits précis.
+Rédige des "Informations complémentaires" réellement utiles.
+
+Objectif : environ 800 à 1 300 caractères.
+
+Effectue une recherche web avant de rédiger.
+
+Cette rubrique doit compléter les autres sections et peut notamment apporter, lorsque cela est vérifiable :
+- des précisions sur le terroir ;
+- les sols ;
+- l'exposition ;
+- les cépages ;
+- la viticulture ;
+- la vinification ;
+- l'élevage ;
+- les particularités du millésime ;
+- la place du vin dans la gamme du domaine ;
+- les caractéristiques de production pertinentes.
+
 Évite de répéter l'Histoire du vin.
+
+N'invente jamais une donnée technique absente des sources fiables.
 `;
   }
 
   if (section === "tasting_notes") {
     return `
-Rédige des notes de dégustation structurées et crédibles.
-Objectif : environ 500 à 800 caractères.
-Décris le nez, la bouche, la texture, l'équilibre, la finale et l'évolution possible.
-N'invente pas une dégustation prétendument réalisée par The Wine Watchers.
-Présente le texte comme une description éditoriale du style attendu du vin.
+Rédige des notes de dégustation éditoriales structurées et crédibles.
+
+Objectif : environ 700 à 1 100 caractères.
+
+Recherche les informations disponibles sur le profil du vin et, lorsqu'il est renseigné, sur le millésime.
+
+Décris de manière cohérente :
+- le nez ;
+- la bouche ;
+- la matière ;
+- la texture ;
+- l'équilibre ;
+- la finale ;
+- l'évolution possible.
+
+Tu peux synthétiser les caractéristiques régulièrement décrites par des sources fiables, mais ne copie jamais leurs textes.
+
+Ne cite pas de critique et ne reproduis pas de note chiffrée sauf demande explicite.
+
+Ne prétends jamais que cette dégustation a été réalisée personnellement par The Wine Watchers.
 `;
   }
 
   if (section === "food_pairings") {
     return `
 Rédige des accords mets-vins précis et gastronomiques.
-Objectif : environ 350 à 600 caractères.
-Propose plusieurs accords cohérents avec le style du vin.
-Explique brièvement pourquoi ils fonctionnent.
-Évite les listes interminables et les accords fantaisistes.
+
+Objectif : environ 450 à 750 caractères.
+
+Tiens compte du style réel du vin après recherche.
+
+Propose plusieurs accords cohérents et explique brièvement pourquoi ils fonctionnent.
+
+Privilégie une approche gastronomique adaptée au positionnement premium de The Wine Watchers.
+
+Évite les listes interminables, les banalités et les associations fantaisistes.
 `;
   }
 
   if (section === "tww_opinion") {
     return `
 Rédige un "Avis The Wine Watchers" distinctif, élégant et crédible.
-Objectif : environ 450 à 700 caractères.
-Le texte doit expliquer pourquoi ce vin mérite l'attention, sa personnalité, sa précision et son intérêt pour l'amateur.
-Ne prétends pas que le vin a été dégusté si cette information n'est pas fournie.
+
+Objectif : environ 600 à 1 000 caractères.
+
+Avant de rédiger, recherche suffisamment d'informations sur le vin, le producteur, le terroir et sa place dans la gamme.
+
+L'avis doit expliquer :
+- pourquoi ce vin mérite l'attention ;
+- ce qui le distingue ;
+- sa personnalité ;
+- sa précision ;
+- son intérêt pour l'amateur ou le collectionneur lorsque cela est pertinent.
+
+Il s'agit d'un avis éditorial The Wine Watchers, et non d'une compilation d'avis de critiques.
+
+Ne cite pas de concurrent ou de critique.
+
+Ne prétends jamais que The Wine Watchers a dégusté personnellement le vin si cela n'est pas établi.
+
 Évite les superlatifs creux et le ton publicitaire agressif.
 `;
   }
@@ -161,18 +273,39 @@ Ne prétends pas que le vin a été dégusté si cette information n'est pas fou
   if (section === "seo_title") {
     return `
 Rédige uniquement un Title SEO.
+
 Longueur cible : 45 à 60 caractères.
-Inclure naturellement le nom du vin et, si pertinent, le producteur et le millésime.
-Ne mets aucun commentaire autour du Title.
+
+Recherche si nécessaire la dénomination correcte du vin.
+
+Inclure naturellement :
+- le nom du vin ;
+- le producteur lorsqu'il apporte de la pertinence ;
+- le millésime lorsqu'il est renseigné et utile.
+
+Le résultat doit être naturel et destiné à Google.
+
+Aucun commentaire autour du Title.
 `;
   }
 
   return `
 Rédige uniquement une meta description.
+
 Longueur cible : 140 à 160 caractères.
-Elle doit être informative, élégante et donner envie de cliquer sans langage promotionnel excessif.
-Inclure naturellement le vin, le producteur ou l'appellation si pertinent.
-Ne mets aucun commentaire autour de la meta description.
+
+Elle doit être :
+- informative ;
+- précise ;
+- élégante ;
+- attractive dans les résultats Google ;
+- sans langage commercial excessif.
+
+Recherche si nécessaire les informations permettant de mieux caractériser le vin.
+
+Inclure naturellement le vin, le producteur, l'appellation ou le millésime lorsque pertinent.
+
+Aucun commentaire autour de la meta description.
 `;
 }
 
@@ -181,7 +314,8 @@ function buildPrompt(section: AiSection, wine: WineContext) {
 SECTION À RÉDIGER
 ${SECTION_LABELS[section]}
 
-INFORMATIONS DISPONIBLES
+INFORMATIONS DISPONIBLES DANS THE WINE WATCHERS
+
 Vin : ${normalizeValue(wine.name)}
 Producteur : ${normalizeValue(wine.producer)}
 Appellation : ${normalizeValue(wine.appellation)}
@@ -192,9 +326,36 @@ Cépages : ${normalizeValue(wine.grapes)}
 Couleur : ${normalizeValue(wine.color)}
 
 CONTENU ACTUEL
+
 ${normalizeValue(wine.existingContent)}
 
+MISSION
+
+Avant de rédiger, effectue une recherche web sur ce vin et son producteur.
+
+Ne considère pas les informations de la fiche comme la seule source disponible.
+
+Cherche notamment, lorsque cela est pertinent :
+- le site officiel du domaine ou du producteur ;
+- les organismes officiels d'appellation ;
+- les interprofessions ;
+- les fiches techniques officielles ;
+- les importateurs reconnus ;
+- les marchands et publications spécialisées disposant d'informations détaillées ;
+- plusieurs sources indépendantes lorsqu'un fait mérite d'être confirmé.
+
+Les informations trouvées sur Internet servent à documenter le texte.
+
+Ne copie jamais les formulations d'une source.
+
+Synthétise les informations et produis un texte original correspondant à la ligne éditoriale The Wine Watchers.
+
+En cas d'informations contradictoires, privilégie les sources officielles ou les informations les mieux documentées.
+
+N'intègre pas dans le texte final les URL, noms de sites consultés ou références bibliographiques, sauf demande explicite.
+
 CONSIGNE SPÉCIFIQUE
+
 ${getSectionInstructions(section)}
 
 Retourne uniquement la proposition finale destinée à être affichée dans l'atelier éditorial.
@@ -240,24 +401,104 @@ export async function POST(request: Request) {
 
     const response = await openai.responses.create({
       model: "gpt-5.5",
+
+      tools: [
+        {
+          type: "web_search",
+          search_context_size: "high",
+        },
+      ],
+
+      tool_choice: "required",
+
       instructions: `
 Tu es l'assistant éditorial de The Wine Watchers, maison spécialisée dans les grands vins.
 
-LIGNE ÉDITORIALE
+MISSION GÉNÉRALE
+
+Tu ne dois pas simplement reformuler les quelques informations présentes dans la fiche.
+
+Pour chaque demande, effectue une recherche web afin de disposer d'un contexte documentaire plus riche avant de rédiger.
+
+L'objectif est de produire des contenus éditoriaux qui apportent une véritable valeur ajoutée par rapport aux informations minimales déjà présentes dans le catalogue.
+
+HIÉRARCHIE DES SOURCES
+
+Privilégie dans cet ordre :
+
+1. le site officiel du domaine, château, maison ou producteur ;
+2. les fiches techniques et documents officiels du producteur ;
+3. les organismes officiels d'appellation ou interprofessions ;
+4. les importateurs et distributeurs reconnus lorsqu'ils disposent d'informations techniques précises ;
+5. les publications spécialisées reconnues dans le monde du vin ;
+6. les marchands spécialisés disposant d'informations détaillées et crédibles ;
+7. d'autres sources fiables uniquement lorsque nécessaire.
+
+Pour les informations importantes ou potentiellement discutables, croise plusieurs sources lorsque cela est utile.
+
+FIABILITÉ
+
+Ne fabrique jamais :
+- une date ;
+- une superficie ;
+- un classement ;
+- une parcelle ;
+- un cépage ;
+- une méthode d'élevage ;
+- une durée d'élevage ;
+- un rendement ;
+- un propriétaire ;
+- un œnologue ;
+- une note ;
+- une récompense ;
+- une citation ;
+- ou toute autre donnée factuelle précise.
+
+Une information précise peut être utilisée lorsqu'elle provient d'une source web suffisamment fiable.
+
+Si les sources sont contradictoires, privilégie les sources officielles.
+
+Si aucune source sérieuse ne permet d'établir un fait, formule le texte sans ce fait plutôt que de l'inventer.
+
+ORIGINALITÉ
+
+Les sources servent à comprendre et vérifier.
+
+Ne copie jamais des paragraphes ou formulations provenant des sites consultés.
+
+Ne reproduis pas les textes d'un marchand, d'un critique ou d'un domaine.
+
+Effectue une synthèse originale.
+
+Le résultat doit être un contenu propre à The Wine Watchers.
+
+LIGNE ÉDITORIALE THE WINE WATCHERS
+
 - français naturel, précis et élégant ;
 - ton premium, sobre et cultivé ;
+- vocabulaire du vin maîtrisé ;
 - aucune emphase commerciale excessive ;
+- aucun discours artificiellement luxueux ;
 - aucune formule générique du type "une expérience inoubliable" ;
-- aucune invention factuelle ;
-- aucune note, récompense, date, classification, méthode d'élevage ou donnée historique non fournie ;
-- pas de citation inventée ;
+- éviter les répétitions ;
+- privilégier les informations concrètes ;
+- conserver une lecture fluide ;
+- aucune citation inventée ;
 - pas de Markdown ;
-- pas de titre ajouté sauf si explicitement demandé ;
-- respecter la terminologie du vin ;
-- privilégier la précision, la lisibilité et la valeur éditoriale.
+- pas de titre ajouté sauf demande explicite ;
+- ne pas mentionner le processus de recherche ;
+- ne pas mentionner les sources dans le texte final sauf demande explicite ;
+- ne pas expliquer ce que tu ne peux pas faire lorsque suffisamment d'informations existent pour rédiger un texte utile.
 
-Le texte sera relu par un humain avant toute éventuelle publication.
+IMPORTANT
+
+Le fait qu'une information ne soit pas présente dans la fiche The Wine Watchers ne signifie pas qu'elle est interdite.
+
+Tu peux et dois utiliser les informations pertinentes découvertes grâce à la recherche web, à condition qu'elles soient suffisamment fiables.
+
+Le texte sera toujours relu par un humain avant toute publication.
 `,
+
       input: buildPrompt(body.section, body.wine),
     });
 
