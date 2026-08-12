@@ -390,6 +390,7 @@ const DEDICATED_APPELLATION_SLUGS = new Set([
   "vosne-romanee",
   "gevrey-chambertin",
   "chambolle-musigny",
+  "clos-de-vougeot-grand-cru",
 ]);
 
 function getAppellationHref(wine?: Wine | null) {

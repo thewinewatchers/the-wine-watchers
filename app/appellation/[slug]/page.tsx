@@ -360,6 +360,16 @@ const appellations: Record<
     boutiqueHref: "/boutique/bourgogne",
     boutiqueLabel: "Retour à la boutique Bourgogne",
   },
+  "clos-de-vougeot-grand-cru": {
+    name: "Clos de Vougeot Grand Cru",
+    title: "Clos de Vougeot Grand Cru – Bourgogne",
+    description:
+      "Découvrez notre sélection de Clos de Vougeot Grand Cru, l’un des terroirs historiques les plus emblématiques de la Côte de Nuits.",
+    intro:
+      "Clos de Vougeot Grand Cru est l’un des climats les plus célèbres de Bourgogne. Entièrement ceint de murs et situé au cœur de la Côte de Nuits, ce vaste Grand Cru donne naissance à des Pinot Noir complexes, profonds et capables d’une remarquable évolution en bouteille.",
+    boutiqueHref: "/boutique/bourgogne",
+    boutiqueLabel: "Retour à la boutique Bourgogne",
+  },
   "clos-de-la-roche": {
     name: "Clos de la Roche",
     title: "Clos de la Roche Grand Cru – Morey-Saint-Denis",
