@@ -264,6 +264,173 @@ function getWineHref(wine: Wine) {
   return `/boutique/vin/${wine.slug || wine.id}`;
 }
 
+
+function slugify(value?: string | number | null) {
+  return String(value ?? "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/œ/g, "oe")
+    .replace(/æ/g, "ae")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+const KNOWN_APPELLATION_SLUGS = new Set([
+  "aloxe-corton",
+  "auxey-duresses",
+  "barbaresco",
+  "barbaresco-docg",
+  "barolo",
+  "barolo-docg",
+  "batard-montrachet",
+  "beaune",
+  "bienvenues-batard-montrachet",
+  "bolgheri",
+  "bolgheri-doc",
+  "bolgheri-sassicaia",
+  "bolgheri-sassicaia-doc",
+  "bolgheri-superiore",
+  "bonnes-mares",
+  "brunello-di-montalcino",
+  "brunello-di-montalcino-docg",
+  "california",
+  "californie",
+  "castilla-y-leon",
+  "castilla-y-leon-vt",
+  "castille-et-leon",
+  "chablis",
+  "chambertin",
+  "chambertin-clos-de-beze",
+  "chambolle-musigny",
+  "champagne",
+  "chapelle-chambertin",
+  "charmes-chambertin",
+  "chassagne-montrachet",
+  "chateauneuf-du-pape",
+  "chevalier-montrachet",
+  "clos-de-la-roche",
+  "clos-de-tart",
+  "clos-de-vougeot",
+  "clos-de-vougeot-grand-cru",
+  "clos-des-lambrays",
+  "clos-saint-denis",
+  "cornas",
+  "corton",
+  "corton-charlemagne",
+  "cote-de-beaune",
+  "cote-de-nuits",
+  "cote-des-bar",
+  "cote-des-blancs",
+  "cote-rotie",
+  "criots-batard-montrachet",
+  "echezeaux",
+  "flagey-echezeaux",
+  "gevrey-chambertin",
+  "gigondas",
+  "grands-echezeaux",
+  "griotte-chambertin",
+  "hermitage",
+  "la-grande-rue",
+  "la-romanee",
+  "la-tache",
+  "latricieres-chambertin",
+  "margaux",
+  "mazis-chambertin",
+  "mazoyeres-chambertin",
+  "meursault",
+  "montagne-de-reims",
+  "montalcino",
+  "monthelie",
+  "montrachet",
+  "morey-saint-denis",
+  "musigny",
+  "napa-valley",
+  "napa-valley-ava",
+  "nuits-saint-georges",
+  "oakville",
+  "oakville-ava",
+  "pauillac",
+  "pernand-vergelesses",
+  "pessac-leognan",
+  "piemont",
+  "pomerol",
+  "pommard",
+  "priorat",
+  "priorat-doca",
+  "puligny-montrachet",
+  "rias-baixas",
+  "rias-baixas-do",
+  "ribera-del-duero",
+  "ribera-del-duero-do",
+  "richebourg",
+  "rioja",
+  "rioja-doca",
+  "romanee-conti",
+  "romanee-saint-vivant",
+  "ruchottes-chambertin",
+  "rutherford",
+  "rutherford-ava",
+  "saint-aubin",
+  "saint-emilion",
+  "saint-estephe",
+  "saint-joseph",
+  "saint-julien",
+  "saint-romain",
+  "sauternes",
+  "savigny-les-beaune",
+  "sonoma",
+  "st-helena",
+  "st-helena-ava",
+  "stags-leap-district",
+  "stags-leap-district-ava",
+  "toro",
+  "toro-do",
+  "toscana",
+  "toscana-igt",
+  "vallee-de-la-marne",
+  "volnay",
+  "vosne-romanee",
+  "vougeot",
+  "yountville",
+  "yountville-ava",
+]);
+
+const APPELLATION_SLUG_ALIASES: Record<string, string> = {
+  "aoc-champagne": "champagne",
+  "chablis-1er-cru": "chablis",
+  "chablis-premier-cru": "chablis",
+  "chablis-grand-cru": "chablis",
+  "cotes-rotie": "cote-rotie",
+  toscane: "toscana",
+  "super-toscans": "toscana-igt",
+};
+
+function getAppellationHref(appellation: string, categorySlug: string) {
+  const rawSlug = slugify(appellation);
+  const appellationSlug = APPELLATION_SLUG_ALIASES[rawSlug] || rawSlug;
+
+  if (KNOWN_APPELLATION_SLUGS.has(appellationSlug)) {
+    return `/appellation/${appellationSlug}`;
+  }
+
+  return `/boutique/${categorySlug}?appellation=${encodeURIComponent(appellation)}`;
+}
+
+function getProducerHref(producer: string) {
+  const producerSlug = slugify(producer);
+
+  if (producerSlug === "domaine-armand-rousseau" || producerSlug === "armand-rousseau") {
+    return "/producteur/armand-rousseau";
+  }
+
+  if (producerSlug.includes("opus-one")) {
+    return "/producteur/opus-one";
+  }
+
+  return `/producteur/${producerSlug}`;
+}
+
 function uniqueSorted(values: Array<string | number | undefined | null>) {
   return Array.from(
     new Set(values.map((value) => String(value ?? "").trim()).filter(Boolean))
@@ -333,9 +500,11 @@ function getWineGroupTitle(wine: Wine, categorySlug: string) {
 function WineCard({
   wine,
   categoryTitle,
+  categorySlug,
 }: {
   wine: Wine;
   categoryTitle: string;
+  categorySlug: string;
 }) {
   const image = getWineImage(wine);
   const name = getWineName(wine);
@@ -381,9 +550,18 @@ function WineCard({
       </Link>
 
       <div className="p-5">
-        <p className="mb-3 rounded-full bg-[#24110d]/90 px-3 py-1.5 text-center text-[10px] uppercase tracking-[0.16em] text-[#d8b56d]">
-          {location}
-        </p>
+        {wine.appellation ? (
+          <Link
+            href={getAppellationHref(wine.appellation, categorySlug)}
+            className="mb-3 block rounded-full bg-[#24110d]/90 px-3 py-1.5 text-center text-[10px] uppercase tracking-[0.16em] text-[#d8b56d] transition hover:bg-[#8a1f1f]"
+          >
+            {wine.appellation}
+          </Link>
+        ) : (
+          <p className="mb-3 rounded-full bg-[#24110d]/90 px-3 py-1.5 text-center text-[10px] uppercase tracking-[0.16em] text-[#d8b56d]">
+            {location}
+          </p>
+        )}
 
         <div className="mb-3 flex flex-wrap items-center gap-2">
          
@@ -412,11 +590,18 @@ function WineCard({
           </h3>
         </Link>
 
-        {(wine.producer || wine.region) && (
+        {wine.producer ? (
+          <Link
+            href={getProducerHref(wine.producer)}
+            className="mt-3 block truncate text-[11px] uppercase tracking-[0.18em] text-[#b08a43] transition hover:text-[#8a1f1f]"
+          >
+            {wine.producer}
+          </Link>
+        ) : wine.region ? (
           <p className="mt-3 truncate text-[11px] uppercase tracking-[0.18em] text-[#b08a43]">
-            {wine.producer || wine.region}
+            {wine.region}
           </p>
-        )}
+        ) : null}
 
         <div className="mt-5 flex items-end justify-between gap-2 border-t border-[#eadfce] pt-4">
           <div className="min-w-0">
@@ -1076,9 +1261,14 @@ export default function BoutiqueClient({
                                     Producteur
                                   </p>
 
-                                  <h3 className="mt-0.5 truncate font-serif text-lg text-[#d8b56d]">
-                                    {producerGroup.title}
-                                  </h3>
+                                  <Link
+                                    href={getProducerHref(producerGroup.title)}
+                                    className="block transition hover:text-white"
+                                  >
+                                    <h3 className="mt-0.5 truncate font-serif text-lg text-[#d8b56d]">
+                                      {producerGroup.title}
+                                    </h3>
+                                  </Link>
                                 </div>
 
                                 <div className="mb-3 rounded-xl border border-[#d8c6ae] bg-[#fffaf3] px-4 py-2 shadow-sm">
@@ -1094,6 +1284,7 @@ export default function BoutiqueClient({
                                 <WineCard
                                   wine={wine}
                                   categoryTitle={categoryTitle}
+                                  categorySlug={slug}
                                 />
                               </section>
                             ))
@@ -1137,9 +1328,14 @@ export default function BoutiqueClient({
                                 Producteur
                               </p>
 
-                              <h3 className="font-serif text-2xl text-[#d8b56d] md:text-3xl">
-                                {producerGroup.title}
-                              </h3>
+                              <Link
+                                href={getProducerHref(producerGroup.title)}
+                                className="block transition hover:text-white"
+                              >
+                                <h3 className="font-serif text-2xl text-[#d8b56d] md:text-3xl">
+                                  {producerGroup.title}
+                                </h3>
+                              </Link>
                             </div>
                           </div>
 
@@ -1174,6 +1370,7 @@ export default function BoutiqueClient({
                                         key={wine.id}
                                         wine={wine}
                                         categoryTitle={categoryTitle}
+                                        categorySlug={slug}
                                       />
                                     ))}
                                   </div>

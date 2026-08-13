@@ -1258,6 +1258,33 @@ function getComparableAppellationSlug(value?: string | null) {
     .replace(/-appellation-d-origine-controlee$/, "");
 }
 
+function getProducerHref(producer?: string | null) {
+  const producerSlug = slugify(String(producer || ""));
+
+  if (!producerSlug) {
+    return "/boutique";
+  }
+
+  if (
+    producerSlug === "domaine-armand-rousseau" ||
+    producerSlug.endsWith("-armand-rousseau") ||
+    producerSlug.includes("armand-rousseau")
+  ) {
+    return "/producteur/armand-rousseau";
+  }
+
+  if (
+    producerSlug === "opus-one" ||
+    producerSlug.startsWith("opus-one-") ||
+    producerSlug.endsWith("-opus-one") ||
+    producerSlug.includes("opus-one")
+  ) {
+    return "/producteur/opus-one";
+  }
+
+  return `/producteur/${producerSlug}`;
+}
+
 function getWineHref(wine: AppellationWine) {
   return `/boutique/vin/${wine.slug || wine.id}`;
 }
@@ -1697,7 +1724,7 @@ export default async function AppellationPage({
               {producers.map((producer) => (
                 <Link
                   key={producer}
-                  href={`/producteur/${slugify(producer)}`}
+                  href={getProducerHref(producer)}
                   className="rounded-full border border-[#d8b56d]/50 bg-[#fffaf3] px-5 py-2 text-sm text-[#6d5b50] transition hover:border-[#8a1f1f] hover:text-[#8a1f1f]"
                 >
                   {producer}
@@ -1794,7 +1821,7 @@ export default async function AppellationPage({
                             <div className="p-5">
                               {wine.producer && (
                                 <Link
-                                  href={`/producteur/${slugify(wine.producer)}`}
+                                  href={getProducerHref(wine.producer)}
                                   className="mb-3 block rounded-full bg-[#24110d]/90 px-3 py-1.5 text-center text-[10px] uppercase tracking-[0.16em] text-[#d8b56d] transition hover:bg-[#8a1f1f]"
                                 >
                                   {wine.producer}

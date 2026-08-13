@@ -378,6 +378,7 @@ function getMainCategorySlug(wine?: Wine | null) {
 }
 
 const DEDICATED_APPELLATION_SLUGS = new Set([
+  // Bordeaux
   "pauillac",
   "margaux",
   "saint-julien",
@@ -386,11 +387,54 @@ const DEDICATED_APPELLATION_SLUGS = new Set([
   "saint-emilion",
   "pessac-leognan",
   "sauternes",
+
+  // Bourgogne
+  "cote-de-nuits",
+  "cote-de-beaune",
+  "chablis",
   "meursault",
-  "vosne-romanee",
+  "puligny-montrachet",
   "gevrey-chambertin",
+  "vosne-romanee",
   "chambolle-musigny",
-  "clos-de-vougeot-grand-cru",
+
+  // Rhône
+  "cote-rotie",
+  "hermitage",
+  "cornas",
+  "saint-joseph",
+  "chateauneuf-du-pape",
+  "gigondas",
+
+  // Italie
+  "toscane",
+  "piemont",
+  "barolo",
+  "barbaresco",
+  "brunello-di-montalcino",
+  "bolgheri",
+  "super-toscans",
+
+  // Espagne
+  "ribera-del-duero",
+  "rioja",
+  "priorat",
+  "toro",
+  "rias-baixas",
+
+  // USA
+  "napa-valley",
+  "sonoma",
+  "oakville",
+  "rutherford",
+  "stags-leap-district",
+
+  // Champagne
+  "montagne-de-reims",
+  "vallee-de-la-marne",
+  "cote-des-blancs",
+  "cote-des-bar",
+  "champagne",
 ]);
 
 function getAppellationHref(wine?: Wine | null) {

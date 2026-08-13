@@ -115,43 +115,62 @@ const categories = {
 
 const popularAppellations: Record<string, { name: string; href: string }[]> = {
   bordeaux: [
-    { name: "Pauillac", href: "/boutique/bordeaux?appellation=Pauillac" },
-    { name: "Margaux", href: "/boutique/bordeaux?appellation=Margaux" },
-    {
-      name: "Saint-Julien",
-      href: "/boutique/bordeaux?appellation=Saint-Julien",
-    },
-    {
-      name: "Saint-Estèphe",
-      href: "/boutique/bordeaux?appellation=Saint-Estèphe",
-    },
-    {
-      name: "Saint-Émilion",
-      href: "/boutique/bordeaux?appellation=Saint-Émilion",
-    },
-    { name: "Pomerol", href: "/boutique/bordeaux?appellation=Pomerol" },
-    {
-      name: "Pessac-Léognan",
-      href: "/boutique/bordeaux?appellation=Pessac-Léognan",
-    },
-    { name: "Sauternes", href: "/boutique/bordeaux?appellation=Sauternes" },
+    { name: "Pauillac", href: "/appellation/pauillac" },
+    { name: "Margaux", href: "/appellation/margaux" },
+    { name: "Saint-Julien", href: "/appellation/saint-julien" },
+    { name: "Saint-Estèphe", href: "/appellation/saint-estephe" },
+    { name: "Saint-Émilion", href: "/appellation/saint-emilion" },
+    { name: "Pomerol", href: "/appellation/pomerol" },
+    { name: "Pessac-Léognan", href: "/appellation/pessac-leognan" },
+    { name: "Sauternes", href: "/appellation/sauternes" },
   ],
   bourgogne: [
-    { name: "Chablis 1er Cru", href: "/boutique/bourgogne?appellation=Chablis%201er%20Cru" },
-{ name: "Chablis Grand Cru", href: "/boutique/bourgogne?appellation=Chablis%20Grand%20Cru" },
-    { name: "Meursault", href: "/boutique/bourgogne?appellation=Meursault" },
-    {
-      name: "Vosne-Romanée",
-      href: "/boutique/bourgogne?appellation=Vosne-Romanée",
-    },
-    {
-      name: "Gevrey-Chambertin",
-      href: "/boutique/bourgogne?appellation=Gevrey-Chambertin",
-    },
-    {
-      name: "Chambolle-Musigny",
-      href: "/boutique/bourgogne?appellation=Chambolle-Musigny",
-    },
+    { name: "Côte de Nuits", href: "/appellation/cote-de-nuits" },
+    { name: "Côte de Beaune", href: "/appellation/cote-de-beaune" },
+    { name: "Chablis", href: "/appellation/chablis" },
+    { name: "Meursault", href: "/appellation/meursault" },
+    { name: "Puligny-Montrachet", href: "/appellation/puligny-montrachet" },
+    { name: "Vosne-Romanée", href: "/appellation/vosne-romanee" },
+    { name: "Gevrey-Chambertin", href: "/appellation/gevrey-chambertin" },
+    { name: "Chambolle-Musigny", href: "/appellation/chambolle-musigny" },
+  ],
+  rhone: [
+    { name: "Côte-Rôtie", href: "/appellation/cote-rotie" },
+    { name: "Hermitage", href: "/appellation/hermitage" },
+    { name: "Cornas", href: "/appellation/cornas" },
+    { name: "Saint-Joseph", href: "/appellation/saint-joseph" },
+    { name: "Châteauneuf-du-Pape", href: "/appellation/chateauneuf-du-pape" },
+    { name: "Gigondas", href: "/appellation/gigondas" },
+  ],
+  italie: [
+    { name: "Toscane", href: "/appellation/toscana" },
+    { name: "Piémont", href: "/appellation/piemont" },
+    { name: "Barolo", href: "/appellation/barolo" },
+    { name: "Barbaresco", href: "/appellation/barbaresco" },
+    { name: "Brunello di Montalcino", href: "/appellation/brunello-di-montalcino" },
+    { name: "Bolgheri", href: "/appellation/bolgheri" },
+    { name: "Super Toscans", href: "/appellation/toscana-igt" },
+  ],
+  espagne: [
+    { name: "Ribera del Duero", href: "/appellation/ribera-del-duero" },
+    { name: "Rioja", href: "/appellation/rioja" },
+    { name: "Priorat", href: "/appellation/priorat" },
+    { name: "Toro", href: "/appellation/toro" },
+    { name: "Rías Baixas", href: "/appellation/rias-baixas" },
+  ],
+  usa: [
+    { name: "Napa Valley", href: "/appellation/napa-valley" },
+    { name: "Sonoma", href: "/appellation/sonoma" },
+    { name: "Oakville", href: "/appellation/oakville" },
+    { name: "Rutherford", href: "/appellation/rutherford" },
+    { name: "Stags Leap District", href: "/appellation/stags-leap-district" },
+  ],
+  champagne: [
+    { name: "Champagne", href: "/appellation/champagne" },
+    { name: "Montagne de Reims", href: "/appellation/montagne-de-reims" },
+    { name: "Vallée de la Marne", href: "/appellation/vallee-de-la-marne" },
+    { name: "Côte des Blancs", href: "/appellation/cote-des-blancs" },
+    { name: "Côte des Bar", href: "/appellation/cote-des-bar" },
   ],
 };
 
@@ -250,7 +269,7 @@ export default async function BoutiqueCategoryPage({ params }: PageProps) {
             <div className="flex flex-wrap gap-3">
               {appellationsToShow.map((appellation) => (
                 <Link
-                  key={appellation.href}
+                  key={appellation.name}
                   href={appellation.href}
                   className="rounded-full border border-[#d8b56d]/50 bg-[#f8f4ee] px-4 py-2 text-sm font-medium text-[#3b1f1f] transition hover:border-[#3b1f1f] hover:bg-[#3b1f1f] hover:text-white"
                 >
