@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 type Wine = {
@@ -86,10 +87,22 @@ async function getOfferWines() {
     });
 }
 
-export const metadata = {
-  title: "Offres du moment – The Wine Watchers",
+export const metadata: Metadata = {
+  title: "Offres du moment | The Wine Watchers",
   description:
-    "Découvrez les offres du moment The Wine Watchers : grands vins proposés dans des conditions tarifaires avantageuses.",
+    "Découvrez les offres du moment The Wine Watchers : grands vins proposés dans des conditions tarifaires avantageuses, selon les disponibilités.",
+  alternates: {
+    canonical: `${SITE_URL}/offres`,
+  },
+  openGraph: {
+    title: "Offres du moment | The Wine Watchers",
+    description:
+      "Découvrez une sélection de grands vins actuellement proposés dans des conditions tarifaires avantageuses chez The Wine Watchers.",
+    url: `${SITE_URL}/offres`,
+    siteName: "The Wine Watchers",
+    locale: "fr_FR",
+    type: "website",
+  },
 };
 
 export default async function OffresPage() {
@@ -115,10 +128,10 @@ export default async function OffresPage() {
           </h1>
 
           <p className="mt-6 max-w-3xl text-base leading-8 text-white/75 md:text-lg">
-  Découvrez une sélection de grands vins proposés actuellement dans des
-  conditions tarifaires particulièrement avantageuses. Cette sélection évolue
-  au fil des disponibilités.
-</p>
+            Découvrez une sélection de grands vins proposés actuellement dans des
+            conditions tarifaires particulièrement avantageuses. Cette sélection évolue
+            au fil des disponibilités.
+          </p>
         </div>
       </section>
 

@@ -77,6 +77,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/boutique/usa",
     "/boutique/champagne",
     "/boutique/primeurs-2025",
+    "/offres",
     "/millesimes",
     "/blog",
     "/a-propos",

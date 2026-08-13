@@ -43,6 +43,10 @@ export default function Footer() {
                 Boutique
               </Link>
 
+              <Link href="/offres" className="transition hover:text-[#d8b56d]">
+                Offres du moment
+              </Link>
+
               <Link
                 href="/boutique/primeurs-2025"
                 className="transition hover:text-[#d8b56d]"
