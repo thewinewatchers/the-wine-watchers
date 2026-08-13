@@ -104,6 +104,188 @@ function getWineUrl(wine: Wine) {
   return `/boutique/vin/${wine.slug?.trim() || wine.id}`;
 }
 
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/œ/g, "oe")
+    .replace(/æ/g, "ae")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function getProducerHref(producer?: string | null) {
+  const producerSlug = slugify(String(producer || "").trim());
+
+  if (!producerSlug) return "";
+
+  if (producerSlug === "domaine-armand-rousseau") {
+    return "/producteur/armand-rousseau";
+  }
+
+  if (producerSlug === "opus-one-winery" || producerSlug === "opus-one") {
+    return "/producteur/opus-one";
+  }
+
+  return `/producteur/${producerSlug}`;
+}
+
+const DEDICATED_APPELLATION_SLUGS = new Set([
+  "pauillac",
+  "margaux",
+  "saint-julien",
+  "saint-estephe",
+  "pomerol",
+  "saint-emilion",
+  "pessac-leognan",
+  "sauternes",
+  "cote-de-nuits",
+  "cote-de-beaune",
+  "chablis",
+  "meursault",
+  "puligny-montrachet",
+  "gevrey-chambertin",
+  "vosne-romanee",
+  "chambolle-musigny",
+  "cote-rotie",
+  "hermitage",
+  "cornas",
+  "saint-joseph",
+  "chateauneuf-du-pape",
+  "gigondas",
+  "toscane",
+  "piemont",
+  "barolo",
+  "barbaresco",
+  "brunello-di-montalcino",
+  "bolgheri",
+  "super-toscans",
+  "ribera-del-duero",
+  "rioja",
+  "priorat",
+  "toro",
+  "rias-baixas",
+  "napa-valley",
+  "sonoma",
+  "oakville",
+  "rutherford",
+  "stags-leap-district",
+  "champagne",
+  "montagne-de-reims",
+  "vallee-de-la-marne",
+  "cote-des-blancs",
+  "cote-des-bar",
+]);
+
+function getAppellationHref(appellation?: string | null) {
+  const appellationSlug = slugify(String(appellation || "").trim());
+
+  if (!appellationSlug || !DEDICATED_APPELLATION_SLUGS.has(appellationSlug)) {
+    return "";
+  }
+
+  return `/appellation/${appellationSlug}`;
+}
+
+function getRegionHref(region?: string | null) {
+  const regionSlug = slugify(String(region || "").trim());
+
+  if (!regionSlug) return "";
+
+  const bordeauxRegions = new Set([
+    "bordeaux",
+    "pauillac",
+    "margaux",
+    "saint-julien",
+    "saint-estephe",
+    "pomerol",
+    "saint-emilion",
+    "pessac-leognan",
+    "sauternes",
+  ]);
+
+  const bourgogneRegions = new Set([
+    "bourgogne",
+    "cote-de-nuits",
+    "cote-de-beaune",
+    "chablis",
+    "gevrey-chambertin",
+    "vosne-romanee",
+    "chambolle-musigny",
+    "meursault",
+    "puligny-montrachet",
+  ]);
+
+  const rhoneRegions = new Set([
+    "rhone",
+    "vallee-du-rhone",
+    "cote-rotie",
+    "hermitage",
+    "cornas",
+    "saint-joseph",
+    "chateauneuf-du-pape",
+    "gigondas",
+  ]);
+
+  const spanishRegions = new Set([
+    "espagne",
+    "castille-et-leon",
+    "castille-leon",
+    "castilla-y-leon",
+    "ribera-del-duero",
+    "rioja",
+    "priorat",
+    "toro",
+    "rias-baixas",
+  ]);
+
+  const italianRegions = new Set([
+    "italie",
+    "italia",
+    "toscane",
+    "toscana",
+    "piemont",
+    "piedmont",
+    "barolo",
+    "barbaresco",
+    "bolgheri",
+  ]);
+
+  const usaRegions = new Set([
+    "usa",
+    "etats-unis",
+    "etats-unis-d-amerique",
+    "united-states",
+    "californie",
+    "california",
+    "napa",
+    "napa-valley",
+    "sonoma",
+    "oakville",
+    "rutherford",
+    "stags-leap-district",
+  ]);
+
+  const champagneRegions = new Set([
+    "champagne",
+    "montagne-de-reims",
+    "vallee-de-la-marne",
+    "cote-des-blancs",
+    "cote-des-bar",
+  ]);
+
+  if (bordeauxRegions.has(regionSlug)) return "/boutique/bordeaux";
+  if (bourgogneRegions.has(regionSlug)) return "/boutique/bourgogne";
+  if (rhoneRegions.has(regionSlug)) return "/boutique/rhone";
+  if (spanishRegions.has(regionSlug)) return "/boutique/espagne";
+  if (italianRegions.has(regionSlug)) return "/boutique/italie";
+  if (usaRegions.has(regionSlug)) return "/boutique/usa";
+  if (champagneRegions.has(regionSlug)) return "/boutique/champagne";
+
+  return "";
+}
+
 function getVintageIntroduction(year: string) {
   const introductions: Record<
     string,
@@ -457,6 +639,53 @@ export default async function MillesimePage({ params }: Props) {
               {regions.length} région{regions.length > 1 ? "s" : ""}
             </div>
           </div>
+
+          {regions.length > 0 && (
+            <div
+              style={{
+                display: "flex",
+                gap: "10px",
+                flexWrap: "wrap",
+                marginTop: "22px",
+              }}
+            >
+              {regions.map((region) => {
+                const regionHref = getRegionHref(region);
+
+                return regionHref ? (
+                  <Link
+                    key={region}
+                    href={regionHref}
+                    style={{
+                      padding: "9px 14px",
+                      border: "1px solid rgba(216,183,191,0.32)",
+                      borderRadius: "999px",
+                      color: "#f2dfe4",
+                      background: "rgba(255,255,255,0.035)",
+                      textDecoration: "none",
+                      fontSize: "13px",
+                    }}
+                  >
+                    {region}
+                  </Link>
+                ) : (
+                  <span
+                    key={region}
+                    style={{
+                      padding: "9px 14px",
+                      border: "1px solid rgba(255,255,255,0.12)",
+                      borderRadius: "999px",
+                      color: "rgba(255,255,255,0.68)",
+                      background: "rgba(255,255,255,0.025)",
+                      fontSize: "13px",
+                    }}
+                  >
+                    {region}
+                  </span>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 
@@ -508,6 +737,9 @@ export default async function MillesimePage({ params }: Props) {
             {wines.map((wine) => {
               const currentPrice = formatPrice(wine.price);
               const comparePrice = formatPrice(wine.compare_at_price);
+              const appellationHref = getAppellationHref(wine.appellation);
+              const producerHref = getProducerHref(wine.producer);
+              const regionHref = getRegionHref(wine.region);
 
               return (
                 <article
@@ -548,23 +780,112 @@ export default async function MillesimePage({ params }: Props) {
                         }}
                       />
                     </div>
+                  </Link>
 
-                    <div style={{ padding: "22px" }}>
-                      <p
-                        style={{
-                          margin: 0,
-                          color: "#d4aab4",
-                          fontSize: "12px",
-                          fontWeight: 700,
-                          letterSpacing: "0.12em",
-                          textTransform: "uppercase",
-                        }}
-                      >
-                        {wine.appellation?.trim() ||
-                          wine.region?.trim() ||
-                          `Millésime ${year}`}
-                      </p>
+                  <div style={{ padding: "22px" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "8px",
+                        flexWrap: "wrap",
+                        alignItems: "center",
+                      }}
+                    >
+                      {wine.appellation?.trim() ? (
+                        appellationHref ? (
+                          <Link
+                            href={appellationHref}
+                            style={{
+                              color: "#d4aab4",
+                              fontSize: "12px",
+                              fontWeight: 700,
+                              letterSpacing: "0.12em",
+                              textTransform: "uppercase",
+                              textDecoration: "none",
+                            }}
+                          >
+                            {wine.appellation.trim()}
+                          </Link>
+                        ) : (
+                          <span
+                            style={{
+                              color: "#d4aab4",
+                              fontSize: "12px",
+                              fontWeight: 700,
+                              letterSpacing: "0.12em",
+                              textTransform: "uppercase",
+                            }}
+                          >
+                            {wine.appellation.trim()}
+                          </span>
+                        )
+                      ) : wine.region?.trim() ? (
+                        regionHref ? (
+                          <Link
+                            href={regionHref}
+                            style={{
+                              color: "#d4aab4",
+                              fontSize: "12px",
+                              fontWeight: 700,
+                              letterSpacing: "0.12em",
+                              textTransform: "uppercase",
+                              textDecoration: "none",
+                            }}
+                          >
+                            {wine.region.trim()}
+                          </Link>
+                        ) : (
+                          <span
+                            style={{
+                              color: "#d4aab4",
+                              fontSize: "12px",
+                              fontWeight: 700,
+                              letterSpacing: "0.12em",
+                              textTransform: "uppercase",
+                            }}
+                          >
+                            {wine.region.trim()}
+                          </span>
+                        )
+                      ) : (
+                        <span
+                          style={{
+                            color: "#d4aab4",
+                            fontSize: "12px",
+                            fontWeight: 700,
+                            letterSpacing: "0.12em",
+                            textTransform: "uppercase",
+                          }}
+                        >
+                          Millésime {year}
+                        </span>
+                      )}
 
+                      {wine.region?.trim() && wine.appellation?.trim() && regionHref && (
+                        <>
+                          <span style={{ color: "rgba(255,255,255,0.35)" }}>•</span>
+                          <Link
+                            href={regionHref}
+                            style={{
+                              color: "rgba(255,255,255,0.62)",
+                              fontSize: "12px",
+                              textDecoration: "none",
+                            }}
+                          >
+                            {wine.region.trim()}
+                          </Link>
+                        </>
+                      )}
+                    </div>
+
+                    <Link
+                      href={getWineUrl(wine)}
+                      style={{
+                        display: "inline-block",
+                        color: "#ffffff",
+                        textDecoration: "none",
+                      }}
+                    >
                       <h3
                         style={{
                           margin: "11px 0 0",
@@ -576,9 +897,24 @@ export default async function MillesimePage({ params }: Props) {
                       >
                         {getWineName(wine)}
                       </h3>
+                    </Link>
 
-                      {wine.producer?.trim() &&
-                        wine.producer.trim() !== getWineName(wine) && (
+                    {wine.producer?.trim() &&
+                      wine.producer.trim() !== getWineName(wine) && (
+                        producerHref ? (
+                          <Link
+                            href={producerHref}
+                            style={{
+                              display: "inline-block",
+                              marginTop: "9px",
+                              color: "rgba(255,255,255,0.68)",
+                              fontSize: "14px",
+                              textDecoration: "none",
+                            }}
+                          >
+                            {wine.producer.trim()}
+                          </Link>
+                        ) : (
                           <p
                             style={{
                               margin: "9px 0 0",
@@ -588,72 +924,75 @@ export default async function MillesimePage({ params }: Props) {
                           >
                             {wine.producer.trim()}
                           </p>
+                        )
+                      )}
+
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "flex-end",
+                        justifyContent: "space-between",
+                        gap: "16px",
+                        marginTop: "22px",
+                      }}
+                    >
+                      <div>
+                        {comparePrice && (
+                          <div
+                            style={{
+                              marginBottom: "4px",
+                              color: "rgba(255,255,255,0.46)",
+                              fontSize: "13px",
+                              textDecoration: "line-through",
+                            }}
+                          >
+                            {comparePrice}
+                          </div>
                         )}
 
-                      <div
+                        {currentPrice ? (
+                          <div
+                            style={{
+                              fontSize: "18px",
+                              fontWeight: 700,
+                            }}
+                          >
+                            {currentPrice} HT
+                          </div>
+                        ) : (
+                          <div
+                            style={{
+                              color: "rgba(255,255,255,0.6)",
+                              fontSize: "14px",
+                            }}
+                          >
+                            Prix sur demande
+                          </div>
+                        )}
+                      </div>
+
+                      <Link
+                        href={getWineUrl(wine)}
+                        aria-label={`Voir ${getWineName(wine)} ${year}`}
                         style={{
-                          display: "flex",
-                          alignItems: "flex-end",
-                          justifyContent: "space-between",
-                          gap: "16px",
-                          marginTop: "22px",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          width: "40px",
+                          height: "40px",
+                          flexShrink: 0,
+                          border: "1px solid rgba(255,255,255,0.16)",
+                          borderRadius: "50%",
+                          background: "rgba(255,255,255,0.05)",
+                          color: "#ffffff",
+                          textDecoration: "none",
+                          fontSize: "18px",
                         }}
                       >
-                        <div>
-                          {comparePrice && (
-                            <div
-                              style={{
-                                marginBottom: "4px",
-                                color: "rgba(255,255,255,0.46)",
-                                fontSize: "13px",
-                                textDecoration: "line-through",
-                              }}
-                            >
-                              {comparePrice}
-                            </div>
-                          )}
-
-                          {currentPrice ? (
-                            <div
-                              style={{
-                                fontSize: "18px",
-                                fontWeight: 700,
-                              }}
-                            >
-                              {currentPrice} HT
-                            </div>
-                          ) : (
-                            <div
-                              style={{
-                                color: "rgba(255,255,255,0.6)",
-                                fontSize: "14px",
-                              }}
-                            >
-                              Prix sur demande
-                            </div>
-                          )}
-                        </div>
-
-                        <span
-                          aria-hidden="true"
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            width: "40px",
-                            height: "40px",
-                            flexShrink: 0,
-                            border: "1px solid rgba(255,255,255,0.16)",
-                            borderRadius: "50%",
-                            background: "rgba(255,255,255,0.05)",
-                            fontSize: "18px",
-                          }}
-                        >
-                          →
-                        </span>
-                      </div>
+                        →
+                      </Link>
                     </div>
-                  </Link>
+                  </div>
                 </article>
               );
             })}
