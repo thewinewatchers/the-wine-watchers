@@ -257,7 +257,19 @@ function getDiscountInfo(
 }
 
 function getWineImage(wine: Wine) {
-  return wine.image_url || wine.imageUrl || wine.image || "";
+  const image = wine.image_url || wine.imageUrl || wine.image || "";
+
+  if (!image) return "";
+
+  if (image.startsWith("http://") || image.startsWith("https://")) {
+    return image;
+  }
+
+  const normalizedImage = image.replace(/\\/g, "/");
+
+  return normalizedImage.startsWith("/")
+    ? normalizedImage
+    : `/${normalizedImage}`;
 }
 
 function getWineHref(wine: Wine) {
