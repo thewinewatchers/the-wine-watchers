@@ -1580,19 +1580,24 @@ export default function WinePage({ initialWine }: { initialWine: Wine }) {
           </div>
 
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              href="/boutique/bordeaux"
-              className="rounded-full border border-[#8a6a2f]/40 bg-white px-5 py-3 text-sm font-semibold text-[#6d5b50] transition hover:border-[#8a1f1f] hover:text-[#8a1f1f]"
-            >
-              Tous les Bordeaux
-            </Link>
+            {(categorySlug === "bordeaux" ||
+              categorySlug === "primeurs-2025") && (
+              <>
+                <Link
+                  href="/boutique/bordeaux"
+                  className="rounded-full border border-[#8a6a2f]/40 bg-white px-5 py-3 text-sm font-semibold text-[#6d5b50] transition hover:border-[#8a1f1f] hover:text-[#8a1f1f]"
+                >
+                  Tous les Bordeaux
+                </Link>
 
-            <Link
-              href="/boutique/bordeaux?primeur=2025"
-              className="rounded-full border border-[#8a6a2f]/40 bg-white px-5 py-3 text-sm font-semibold text-[#6d5b50] transition hover:border-[#8a1f1f] hover:text-[#8a1f1f]"
-            >
-              Bordeaux Primeurs 2025
-            </Link>
+                <Link
+                  href="/boutique/primeurs-2025"
+                  className="rounded-full border border-[#8a6a2f]/40 bg-white px-5 py-3 text-sm font-semibold text-[#6d5b50] transition hover:border-[#8a1f1f] hover:text-[#8a1f1f]"
+                >
+                  Bordeaux Primeurs 2025
+                </Link>
+              </>
+            )}
 
             {categorySlug && (
               <Link
