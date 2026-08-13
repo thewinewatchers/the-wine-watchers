@@ -43,7 +43,7 @@ export default function LivraisonPage() {
           Cette page présente les conditions applicables aux livraisons, retraits,
           retours et remboursements des commandes passées sur The Wine Watchers.
           Elle complète nos{" "}
-          <Link href="/cgv" className="font-semibold underline">
+          <Link href="/conditions-generales-de-vente" className="font-semibold underline">
             Conditions Générales de Vente
           </Link>
           .
