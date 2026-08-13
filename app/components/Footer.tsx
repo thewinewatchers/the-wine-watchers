@@ -96,7 +96,7 @@ export default function Footer() {
               </Link>
 
               <Link
-                href="/livraison-retours"
+                href="/livraison"
                 className="transition hover:text-[#d8b56d]"
               >
                 Livraison & retours
