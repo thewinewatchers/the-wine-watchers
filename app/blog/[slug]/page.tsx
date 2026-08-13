@@ -29,6 +29,30 @@ const articleLinks: Record<
         label: "Explorer l’appellation Pauillac",
         href: "/appellation/pauillac",
       },
+      {
+        label: "Explorer l’appellation Margaux",
+        href: "/appellation/margaux",
+      },
+      {
+        label: "Explorer l’appellation Saint-Julien",
+        href: "/appellation/saint-julien",
+      },
+      {
+        label: "Explorer l’appellation Saint-Estèphe",
+        href: "/appellation/saint-estephe",
+      },
+      {
+        label: "Explorer l’appellation Pomerol",
+        href: "/appellation/pomerol",
+      },
+      {
+        label: "Explorer l’appellation Saint-Émilion",
+        href: "/appellation/saint-emilion",
+      },
+      {
+        label: "Explorer l’appellation Pessac-Léognan",
+        href: "/appellation/pessac-leognan",
+      },
     ],
     external: [
       {
@@ -57,12 +81,24 @@ const articleLinks: Record<
         href: "/boutique/bourgogne",
       },
       {
+        label: "Voir les vins du Rhône",
+        href: "/boutique/rhone",
+      },
+      {
         label: "Voir les vins d’Italie",
         href: "/boutique/italie",
       },
       {
         label: "Voir les vins d’Espagne",
         href: "/boutique/espagne",
+      },
+      {
+        label: "Voir les vins des USA",
+        href: "/boutique/usa",
+      },
+      {
+        label: "Voir les Champagnes",
+        href: "/boutique/champagne",
       },
     ],
     external: [
@@ -84,6 +120,26 @@ const articleLinks: Record<
         href: "/boutique/bordeaux",
       },
       {
+        label: "Découvrir Château Lafite Rothschild",
+        href: "/producteur/chateau-lafite-rothschild",
+      },
+      {
+        label: "Découvrir Château Mouton Rothschild",
+        href: "/producteur/chateau-mouton-rothschild",
+      },
+      {
+        label: "Découvrir Château Latour",
+        href: "/producteur/chateau-latour",
+      },
+      {
+        label: "Découvrir Château Lynch-Bages",
+        href: "/producteur/chateau-lynch-bages",
+      },
+      {
+        label: "Découvrir Château Pichon Baron",
+        href: "/producteur/chateau-pichon-baron",
+      },
+      {
         label: "Lire l’article sur Château Lafite Rothschild",
         href: "/blog/chateau-lafite-rothschild-histoire-et-terroir",
       },
@@ -102,6 +158,10 @@ const articleLinks: Record<
 
   "chateau-lafite-rothschild-histoire-et-terroir": {
     internal: [
+      {
+        label: "Découvrir Château Lafite Rothschild",
+        href: "/producteur/chateau-lafite-rothschild",
+      },
       {
         label: "Explorer l’appellation Pauillac",
         href: "/appellation/pauillac",
@@ -130,6 +190,10 @@ const articleLinks: Record<
   "romanee-conti-un-domaine-legendaire": {
     internal: [
       {
+        label: "Découvrir le Domaine de la Romanée-Conti",
+        href: "/producteur/domaine-de-la-romanee-conti",
+      },
+      {
         label: "Voir les vins de Bourgogne",
         href: "/boutique/bourgogne",
       },
@@ -138,8 +202,24 @@ const articleLinks: Record<
         href: "/appellation/vosne-romanee",
       },
       {
-        label: "Explorer Gevrey-Chambertin",
-        href: "/appellation/gevrey-chambertin",
+        label: "Explorer La Tâche",
+        href: "/appellation/la-tache",
+      },
+      {
+        label: "Explorer Richebourg",
+        href: "/appellation/richebourg",
+      },
+      {
+        label: "Explorer Romanée-Saint-Vivant",
+        href: "/appellation/romanee-saint-vivant",
+      },
+      {
+        label: "Explorer Échezeaux",
+        href: "/appellation/echezeaux",
+      },
+      {
+        label: "Explorer Grands-Échezeaux",
+        href: "/appellation/grands-echezeaux",
       },
     ],
     external: [
