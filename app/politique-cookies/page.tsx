@@ -1,4 +1,25 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+const SITE_URL = "https://www.thewinewatchers.com";
+
+export const metadata: Metadata = {
+  title: "Politique de cookies | The Wine Watchers",
+  description:
+    "Consultez la politique de cookies de The Wine Watchers SL et les informations relatives aux cookies techniques, à leur gestion et à leur utilisation sur le site.",
+  alternates: {
+    canonical: `${SITE_URL}/politique-cookies`,
+  },
+  openGraph: {
+    title: "Politique de cookies | The Wine Watchers",
+    description:
+      "Informations relatives à l’utilisation des cookies et technologies similaires sur le site The Wine Watchers.",
+    url: `${SITE_URL}/politique-cookies`,
+    siteName: "The Wine Watchers",
+    locale: "fr_FR",
+    type: "website",
+  },
+};
 
 export default function PolitiqueCookiesPage() {
   return (
