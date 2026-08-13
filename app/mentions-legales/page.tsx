@@ -1,4 +1,25 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+const SITE_URL = "https://www.thewinewatchers.com";
+
+export const metadata: Metadata = {
+  title: "Mentions légales | The Wine Watchers",
+  description:
+    "Consultez les mentions légales de The Wine Watchers SL : informations sur l’éditeur, l’hébergement, les prestataires techniques, la responsabilité et la protection des données.",
+  alternates: {
+    canonical: `${SITE_URL}/mentions-legales`,
+  },
+  openGraph: {
+    title: "Mentions légales | The Wine Watchers",
+    description:
+      "Informations légales relatives à The Wine Watchers SL, à l’éditeur du site, à l’hébergement, aux prestataires techniques et aux données personnelles.",
+    url: `${SITE_URL}/mentions-legales`,
+    siteName: "The Wine Watchers",
+    locale: "fr_FR",
+    type: "website",
+  },
+};
 
 export default function MentionsLegalesPage() {
   return (
@@ -150,7 +171,7 @@ export default function MentionsLegalesPage() {
               Les traitements de données personnelles effectués via le site sont
               décrits dans la{" "}
               <Link
-                href="/politique-confidentialite"
+                href="/politique-de-confidentialite"
                 className="font-semibold text-[#8a6a2f] underline"
               >
                 Politique de confidentialité
