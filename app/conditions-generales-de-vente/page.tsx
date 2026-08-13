@@ -1,4 +1,25 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+const SITE_URL = "https://www.thewinewatchers.com";
+
+export const metadata: Metadata = {
+  title: "Conditions générales de vente | The Wine Watchers",
+  description:
+    "Consultez les Conditions Générales de Vente de The Wine Watchers SL applicables aux commandes de grands vins, primeurs, livraisons et services associés.",
+  alternates: {
+    canonical: `${SITE_URL}/conditions-generales-de-vente`,
+  },
+  openGraph: {
+    title: "Conditions générales de vente | The Wine Watchers",
+    description:
+      "Conditions Générales de Vente de The Wine Watchers SL applicables aux commandes de grands vins, primeurs, livraisons et services associés.",
+    url: `${SITE_URL}/conditions-generales-de-vente`,
+    siteName: "The Wine Watchers",
+    locale: "fr_FR",
+    type: "website",
+  },
+};
 
 export default function ConditionsGeneralesDeVentePage() {
   return (
