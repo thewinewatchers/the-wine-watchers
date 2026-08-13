@@ -1,4 +1,25 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+const SITE_URL = "https://www.thewinewatchers.com";
+
+export const metadata: Metadata = {
+  title: "Politique de confidentialité | The Wine Watchers",
+  description:
+    "Consultez la politique de confidentialité de The Wine Watchers SL concernant la collecte, l’utilisation, la conservation et la protection des données personnelles.",
+  alternates: {
+    canonical: `${SITE_URL}/politique-de-confidentialite`,
+  },
+  openGraph: {
+    title: "Politique de confidentialité | The Wine Watchers",
+    description:
+      "Informations sur le traitement et la protection des données personnelles chez The Wine Watchers SL.",
+    url: `${SITE_URL}/politique-de-confidentialite`,
+    siteName: "The Wine Watchers",
+    locale: "fr_FR",
+    type: "website",
+  },
+};
 
 export default function PolitiqueConfidentialitePage() {
   return (
