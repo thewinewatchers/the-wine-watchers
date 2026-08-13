@@ -1328,7 +1328,7 @@ export const PRODUCER_EDITORIAL_LIBRARY: Record<
       {
         title: "Une remarquable capacité de garde",
         paragraphs: [
-          "Les meilleurs millésimes évoluent lentement vers des notes de tabac blond, de truffe, de cuir fin et de sous-bois.",
+     "Les meilleurs millésimes évoluent lentement vers des notes de tabac blond, de truffe, de cuir fin et de sous-bois.",
           "Cette évolution progressive confirme leur aptitude à traverser plusieurs décennies tout en conservant leur fraîcheur.",
         ],
       },
@@ -2659,7 +2659,7 @@ export const PRODUCER_EDITORIAL_LIBRARY: Record<
           "Le domaine exploite notamment Chambertin, Latricières-Chambertin et Chapelle-Chambertin, ainsi que plusieurs premiers crus et villages de Gevrey-Chambertin.",
           "Chaque climat est vinifié séparément afin de révéler les nuances propres à son terroir.",
         ],
-      },
+ },
       {
         title: "Une viticulture respectueuse",
         paragraphs: [
@@ -3717,6 +3717,60 @@ export const PRODUCER_EDITORIAL_LIBRARY: Record<
     ],
     conclusion:
       "L’avis The Wine Watchers : nous apprécions le Domaine Jean-Marie Fourrier pour la précision de ses interprétations, la qualité remarquable de son fruit et sa capacité à révéler les terroirs de la Côte de Nuits sans artifice. Ses vins associent finesse, profondeur et potentiel de garde, avec une identité particulièrement lisible dans les grandes cuvées de Gevrey-Chambertin.",
+  },
+
+  "domaine-meo-camuzet": {
+    eyebrow: "Histoire, terroir et identité",
+    title:
+      "Domaine Méo-Camuzet, la profondeur et l’élégance de Vosne-Romanée",
+    introduction:
+      "Le Domaine Méo-Camuzet compte parmi les grandes signatures historiques de Vosne-Romanée et de la Côte de Nuits. Son patrimoine réunit des parcelles dans plusieurs climats prestigieux de Bourgogne, tandis que son style recherche un équilibre entre profondeur, finesse de texture et expression précise du terroir. Sous la direction de Jean-Nicolas Méo, le domaine poursuit une histoire familiale étroitement liée à quelques-uns des crus les plus recherchés de Vosne-Romanée et de ses environs.",
+    sections: [
+      {
+        title: "Une histoire familiale profondément ancrée à Vosne-Romanée",
+        paragraphs: [
+          "L’histoire du Domaine Méo-Camuzet s’inscrit au cœur de Vosne-Romanée. Au fil des générations, la famille Méo a constitué et préservé un patrimoine de vignes remarquable, longtemps exploité en partie selon le système du métayage avant que le domaine ne reprenne progressivement la conduite directe de ses parcelles.",
+          "Jean-Nicolas Méo rejoint le domaine à la fin des années 1980 et accompagne cette transition vers une exploitation plus directement maîtrisée. Cette nouvelle étape permet d’affirmer une identité de domaine cohérente, fondée sur une connaissance toujours plus précise des parcelles et sur une recherche constante de qualité.",
+        ],
+      },
+      {
+        title: "Henri Jayer, une influence déterminante",
+        paragraphs: [
+          "L’histoire moderne de Méo-Camuzet est indissociable de la relation avec Henri Jayer, qui exploita certaines vignes du domaine et transmit à Jean-Nicolas Méo une partie de son expérience. Cette proximité a contribué à façonner une approche attentive à la maturité du raisin, à la précision des extractions et à la pureté du Pinot Noir.",
+          "Le domaine a cependant développé au fil du temps sa propre interprétation. L’objectif n’est pas de reproduire un modèle, mais de préserver l’identité de chaque climat en recherchant l’équilibre entre matière, fraîcheur, texture et longueur.",
+        ],
+      },
+      {
+        title: "Un patrimoine exceptionnel de grands terroirs",
+        paragraphs: [
+          "Le Domaine Méo-Camuzet dispose de parcelles dans plusieurs appellations majeures de la Côte de Nuits. Son patrimoine comprend notamment des vignes à Vosne-Romanée, Nuits-Saint-Georges et dans de prestigieux Grands Crus tels que Richebourg, Échezeaux et Clos de Vougeot.",
+          "Parmi les cuvées les plus emblématiques figure également Vosne-Romanée Premier Cru Cros Parantoux, climat devenu mythique par sa rareté et par la personnalité singulière des vins qui y naissent. Cette diversité permet au domaine de proposer une lecture particulièrement riche des terroirs bourguignons.",
+        ],
+      },
+      {
+        title: "Une vinification au service de la texture et du terroir",
+        paragraphs: [
+          "Le travail du domaine recherche des raisins mûrs et équilibrés, capables d’exprimer naturellement leur origine. Les vinifications sont adaptées aux caractéristiques de chaque parcelle et de chaque millésime, avec une attention particulière portée à la finesse des extractions et à la qualité des élevages.",
+          "Le bois accompagne la construction du vin sans devoir masquer le fruit ni le terroir. Dans leur jeunesse, certaines cuvées peuvent présenter une matière généreuse et une structure affirmée ; avec le temps, elles gagnent en harmonie et révèlent progressivement la complexité de leurs climats.",
+        ],
+      },
+      {
+        title: "Des vins profonds, raffinés et construits pour la garde",
+        paragraphs: [
+          "Les vins de Méo-Camuzet associent généralement un fruit précis à une texture ample et raffinée. Cerise noire, framboise, violette, épices, sous-bois et nuances minérales peuvent se développer selon les terroirs et l’évolution en bouteille, toujours soutenus par une structure soigneusement dessinée.",
+          "Les grandes cuvées possèdent un remarquable potentiel de vieillissement. Leur profondeur ne repose pas sur la puissance seule, mais sur l’équilibre entre concentration, fraîcheur et finesse tannique, qui permet aux meilleurs millésimes de gagner en complexité pendant de nombreuses années.",
+        ],
+      },
+      {
+        title: "L’avis The Wine Watchers",
+        paragraphs: [
+          "Nous sélectionnons les vins du Domaine Méo-Camuzet pour la noblesse de leur expression, la précision de leurs textures et leur capacité à restituer la personnalité des grands terroirs de la Côte de Nuits. Du Clos de Vougeot aux grands climats de Vosne-Romanée, chaque cuvée possède une identité propre et une profondeur qui se révèle pleinement avec le temps.",
+          "Pour l’amateur comme pour le collectionneur, Méo-Camuzet représente une signature majeure de la Bourgogne contemporaine : des vins recherchés, produits en quantités limitées et capables d’associer intensité, élégance et remarquable potentiel de garde.",
+        ],
+      },
+    ],
+    conclusion:
+      "Choisir un vin du Domaine Méo-Camuzet, c’est découvrir une interprétation exigeante des grands terroirs de Vosne-Romanée et de la Côte de Nuits. Derrière la rareté de certaines cuvées se trouve une même recherche : préserver la profondeur du Pinot Noir, la finesse des climats et cette capacité unique des grands Bourgognes à gagner en complexité avec le temps.",
   },
 };
 
