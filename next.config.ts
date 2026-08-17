@@ -52,6 +52,16 @@ const nextConfig: NextConfig = {
         destination: "/producteur/chateau-cheval-blanc",
         permanent: true,
       },
+      {
+        source: "/boutique/vin/leoville-poyferre-2025",
+        destination: "/boutique/vin/chateau-leoville-poyferre-2025",
+        permanent: true,
+      },
+      {
+        source: "/producteur/pavillon-blanc",
+        destination: "/producteur/chateau-margaux",
+        permanent: true,
+      },
     ];
   },
 };
