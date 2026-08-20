@@ -120,7 +120,7 @@ async function getWine(id: string) {
   async function fetchWine(column: "id" | "slug", value: string) {
     const url =
       `${supabaseUrl}/rest/v1/wines?${column}=eq.${encodeURIComponent(value)}` +
-      `&hidden_from_site=neq.true` +
+      `&or=(hidden_from_site.eq.false,hidden_from_site.is.null)` +
       `&select=*&limit=1`;
 
     const response = await fetch(url, {
