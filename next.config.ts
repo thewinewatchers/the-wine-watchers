@@ -62,6 +62,12 @@ const nextConfig: NextConfig = {
         destination: "/producteur/chateau-margaux",
         permanent: true,
       },
+      {
+        source: "/boutique/vin/chateau-la-mission-haut-brion-2025",
+        destination:
+          "/boutique/vin/chateau-la-mission-haut-brion-rouge-2025",
+        permanent: true,
+      },
     ];
   },
 };
