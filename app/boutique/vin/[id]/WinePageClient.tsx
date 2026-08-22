@@ -1395,7 +1395,7 @@ export default function WinePage({ initialWine }: { initialWine: Wine }) {
           {wine.meta_content && (
             <section className="rounded-[2rem] border border-[#e1d1bd] bg-[#fffaf3] p-8 shadow-sm lg:col-span-2">
               <p className="text-sm uppercase tracking-[0.28em] text-[#8a6a2f]">
-                Informations complémentaires
+                L’Avis The Wine Watchers
               </p>
 
               <p className="mt-5 whitespace-pre-line text-base leading-8 text-[#6d5b50]">
