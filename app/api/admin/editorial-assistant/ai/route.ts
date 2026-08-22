@@ -247,26 +247,52 @@ Privilégie une approche gastronomique adaptée au positionnement premium de The
 
   if (section === "tww_opinion") {
     return `
-Rédige un "Avis The Wine Watchers" distinctif, élégant et crédible.
+Rédige un "Avis The Wine Watchers" distinctif, précis, élégant et crédible.
 
 Objectif : environ 600 à 1 000 caractères.
 
-Avant de rédiger, recherche suffisamment d'informations sur le vin, le producteur, le terroir et sa place dans la gamme.
+Avant de rédiger, recherche suffisamment d'informations sur :
+- le vin précis concerné ;
+- le producteur ou domaine ;
+- le cru, l'appellation et le terroir lorsque cela est pertinent ;
+- le millésime lorsqu'il est renseigné ;
+- la place de cette cuvée dans la gamme du domaine ;
+- son style et son potentiel d'évolution lorsque ces éléments sont documentables.
 
-L'avis doit expliquer :
-- pourquoi ce vin mérite l'attention ;
-- ce qui le distingue ;
-- sa personnalité ;
-- sa précision ;
-- son intérêt pour l'amateur ou le collectionneur lorsque cela est pertinent.
+L'avis doit porter prioritairement sur la bouteille ou la cuvée concernée, et non seulement sur la réputation générale du domaine.
+
+Il doit expliquer de manière naturelle et argumentée :
+- ce qui distingue ce vin ou ce cru ;
+- la manière dont le domaine interprète ce terroir ;
+- la personnalité du millésime lorsqu'elle peut être établie ;
+- les qualités qui justifient sa présence dans la sélection The Wine Watchers ;
+- son intérêt pour l'amateur ou le collectionneur lorsque cela est réellement pertinent.
+
+Le texte doit être suffisamment spécifique pour qu'il ne puisse pas être repris tel quel pour un autre vin.
+
+Lorsque le millésime est renseigné, évite de produire un avis qui pourrait s'appliquer indistinctement à tous les millésimes du même domaine.
+
+Lorsque le cru ou la cuvée possède une identité particulière, fais-la apparaître clairement.
 
 Il s'agit d'un avis éditorial The Wine Watchers, et non d'une compilation d'avis de critiques.
 
-Ne cite pas de concurrent ou de critique.
+Ne cite pas de concurrent, de marchand ou de critique.
+
+Ne reproduis aucune note chiffrée dans cette rubrique sauf demande explicite.
 
 Ne prétends jamais que The Wine Watchers a dégusté personnellement le vin si cela n'est pas établi.
 
-Évite les superlatifs creux et le ton publicitaire agressif.
+Évite les superlatifs creux, le ton publicitaire agressif et les formulations génériques réutilisables.
+
+Évite notamment les matrices répétitives du type :
+- "la noblesse de ses arômes" ;
+- "la précision de son interprétation" ;
+- "sa capacité à exprimer un terroir d'exception" ;
+- ou toute succession de formules abstraites qui pourrait convenir à de nombreux vins sans distinction.
+
+Privilégie toujours des éléments concrets propres au domaine, au cru, au millésime ou au style du vin.
+
+La conclusion doit, lorsque cela est naturel, expliquer en une phrase pourquoi cette bouteille trouve sa place dans la sélection The Wine Watchers, sans appel commercial ni formule promotionnelle.
 `;
   }
 
