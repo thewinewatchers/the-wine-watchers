@@ -7,6 +7,7 @@ type SitemapWine = {
   slug: string | null;
   producer: string | null;
   vintage: string | number | null;
+  updated_at: string | null;
 };
 
 function slugify(value: string) {
@@ -30,6 +31,18 @@ function normalizeVintage(value: string | number | null) {
   return year;
 }
 
+function normalizeLastModified(value: string | null) {
+  if (!value) return undefined;
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return undefined;
+  }
+
+  return date;
+}
+
 async function getSitemapWines(): Promise<SitemapWine[]> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
@@ -39,7 +52,7 @@ async function getSitemapWines(): Promise<SitemapWine[]> {
   }
 
   const response = await fetch(
-    `${supabaseUrl}/rest/v1/wines?hidden_from_site=neq.true&slug=not.is.null&select=slug,producer,vintage&order=name.asc`,
+    `${supabaseUrl}/rest/v1/wines?hidden_from_site=neq.true&slug=not.is.null&select=slug,producer,vintage,updated_at&order=name.asc`,
     {
       headers: {
         apikey: supabaseKey,
@@ -63,7 +76,6 @@ async function getSitemapWines(): Promise<SitemapWine[]> {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const now = new Date();
   const wines = await getSitemapWines();
 
   const pagesPrincipales: MetadataRoute.Sitemap = [
@@ -89,7 +101,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/conditions-generales-de-vente",
   ].map((path) => ({
     url: `${siteUrl}${path}`,
-    lastModified: now,
     changeFrequency: "weekly",
     priority: path === "" ? 1 : path === "/millesimes" ? 0.9 : 0.8,
   }));
@@ -143,7 +154,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const pagesAppellations: MetadataRoute.Sitemap = appellations.map((slug) => ({
     url: `${siteUrl}/appellation/${slug}`,
-    lastModified: now,
     changeFrequency: "weekly",
     priority: 0.85,
   }));
@@ -153,12 +163,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       (wine): wine is SitemapWine & { slug: string } =>
         typeof wine.slug === "string" && wine.slug.trim().length > 0
     )
-    .map((wine) => ({
-      url: `${siteUrl}/boutique/vin/${wine.slug}`,
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.85,
-    }));
+    .map((wine) => {
+      const lastModified = normalizeLastModified(wine.updated_at);
+
+      return {
+        url: `${siteUrl}/boutique/vin/${wine.slug}`,
+        ...(lastModified ? { lastModified } : {}),
+        changeFrequency: "monthly",
+        priority: 0.85,
+      };
+    });
 
   const producers = Array.from(
     new Set(
@@ -175,7 +189,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const pagesProducteurs: MetadataRoute.Sitemap = producers.map((slug) => ({
     url: `${siteUrl}/producteur/${slug}`,
-    lastModified: now,
     changeFrequency: "weekly",
     priority: 0.8,
   }));
@@ -190,14 +203,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const pagesMillesimes: MetadataRoute.Sitemap = vintages.map((year) => ({
     url: `${siteUrl}/millesime/${year}`,
-    lastModified: now,
     changeFrequency: "weekly",
     priority: 0.85,
   }));
 
   const pagesBlog: MetadataRoute.Sitemap = blogPosts.map((post) => ({
     url: `${siteUrl}/blog/${post.slug}`,
-    lastModified: now,
     changeFrequency: "monthly",
     priority: 0.75,
   }));
