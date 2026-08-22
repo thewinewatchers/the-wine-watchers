@@ -51,6 +51,11 @@ type EditorialAnalysis = {
   actions: EditorialAction[];
   estimatedMinutes: number;
   potentialGain: number;
+
+  twwOpinionStatus: "regenerate" | "improve" | "compliant";
+  twwOpinionLabel: string;
+  twwOpinionReason: string;
+  twwOpinionDuplicateCount: number;
 };
 
 type EditorialAssistantResponse = {
@@ -62,6 +67,10 @@ type EditorialAssistantResponse = {
     priorityCount: number;
     improvementCount: number;
     certifiedCount: number;
+    twwOpinionRegenerateCount: number;
+    twwOpinionImproveCount: number;
+    twwOpinionCompliantCount: number;
+    twwOpinionReviewCount: number;
   };
   analyses: EditorialAnalysis[];
 };
@@ -74,7 +83,11 @@ type EditorialFilter =
   | "platine"
   | "or"
   | "argent"
-  | "bronze";
+  | "bronze"
+  | "tww-review"
+  | "tww-regenerate"
+  | "tww-improve"
+  | "tww-compliant";
 
 function formatInteger(value: number) {
   return new Intl.NumberFormat("fr-FR", {
@@ -264,6 +277,21 @@ export default function AdminEditorialAssistantPage() {
       if (filter === "or") return analysis.certification === "Or";
       if (filter === "argent") return analysis.certification === "Argent";
       if (filter === "bronze") return analysis.certification === "Bronze";
+      if (filter === "tww-review") {
+        return (
+          analysis.twwOpinionStatus === "regenerate" ||
+          analysis.twwOpinionStatus === "improve"
+        );
+      }
+      if (filter === "tww-regenerate") {
+        return analysis.twwOpinionStatus === "regenerate";
+      }
+      if (filter === "tww-improve") {
+        return analysis.twwOpinionStatus === "improve";
+      }
+      if (filter === "tww-compliant") {
+        return analysis.twwOpinionStatus === "compliant";
+      }
 
       return true;
     });
@@ -399,6 +427,105 @@ export default function AdminEditorialAssistantPage() {
             </section>
 
             <section className="mt-8 rounded-3xl border border-[#e6dcc8] bg-white p-6 shadow-sm md:p-8">
+              <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+                <div>
+                  <p className="text-sm uppercase tracking-[0.2em] text-[#8a6a2f]">
+                    Avis The Wine Watchers
+                  </p>
+                  <h2 className="mt-2 font-serif text-3xl text-black">
+                    Qualité des avis TWW
+                  </h2>
+                  <p className="mt-3 max-w-3xl text-sm leading-7 text-neutral-700">
+                    Détection automatique des anciennes matrices éditoriales et des
+                    avis repris à l’identique sur plusieurs fiches.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setFilter("tww-review")}
+                  className={`rounded-full border px-5 py-2 text-sm font-semibold ${
+                    filter === "tww-review"
+                      ? "border-[#8a6a2f] bg-[#8a6a2f] text-white"
+                      : "border-[#8a6a2f] bg-white text-[#8a6a2f] hover:bg-[#fffaf3]"
+                  }`}
+                >
+                  Afficher les avis à reprendre
+                </button>
+              </div>
+
+              <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <button
+                  type="button"
+                  onClick={() => setFilter("tww-review")}
+                  className={`rounded-2xl border p-5 text-left ${
+                    filter === "tww-review"
+                      ? "border-[#8a6a2f] bg-[#fffaf3] ring-2 ring-[#8a6a2f]"
+                      : "border-[#e6dcc8] bg-[#fffaf3]"
+                  }`}
+                >
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#8a6a2f]">
+                    À reprendre
+                  </p>
+                  <p className="mt-2 font-serif text-3xl text-black">
+                    {summary.twwOpinionReviewCount}
+                  </p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setFilter("tww-regenerate")}
+                  className={`rounded-2xl border p-5 text-left ${
+                    filter === "tww-regenerate"
+                      ? "border-red-500 bg-red-100 ring-2 ring-red-500"
+                      : "border-red-200 bg-red-50"
+                  }`}
+                >
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-red-700">
+                    🔴 À régénérer
+                  </p>
+                  <p className="mt-2 font-serif text-3xl text-red-900">
+                    {summary.twwOpinionRegenerateCount}
+                  </p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setFilter("tww-improve")}
+                  className={`rounded-2xl border p-5 text-left ${
+                    filter === "tww-improve"
+                      ? "border-orange-500 bg-orange-100 ring-2 ring-orange-500"
+                      : "border-orange-200 bg-orange-50"
+                  }`}
+                >
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-orange-700">
+                    🟠 À améliorer
+                  </p>
+                  <p className="mt-2 font-serif text-3xl text-orange-900">
+                    {summary.twwOpinionImproveCount}
+                  </p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setFilter("tww-compliant")}
+                  className={`rounded-2xl border p-5 text-left ${
+                    filter === "tww-compliant"
+                      ? "border-green-500 bg-green-100 ring-2 ring-green-500"
+                      : "border-green-200 bg-green-50"
+                  }`}
+                >
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-green-700">
+                    🟢 Conforme
+                  </p>
+                  <p className="mt-2 font-serif text-3xl text-green-900">
+                    {summary.twwOpinionCompliantCount}
+                  </p>
+                </button>
+              </div>
+            </section>
+
+            <section className="mt-8 rounded-3xl border border-[#e6dcc8] bg-white p-6 shadow-sm md:p-8">
               <h2 className="font-serif text-2xl text-black">
                 Certifications du catalogue
               </h2>
@@ -461,6 +588,10 @@ export default function AdminEditorialAssistantPage() {
                     <option value="or">Or</option>
                     <option value="argent">Argent</option>
                     <option value="bronze">Bronze</option>
+                    <option value="tww-review">Avis TWW à reprendre</option>
+                    <option value="tww-regenerate">Avis TWW — à régénérer</option>
+                    <option value="tww-improve">Avis TWW — à améliorer</option>
+                    <option value="tww-compliant">Avis TWW — conformes</option>
                     <option value="all">Toutes les fiches</option>
                   </select>
 
@@ -509,6 +640,22 @@ export default function AdminEditorialAssistantPage() {
                               <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-black">
                                 {analysis.starsLabel}
                               </span>
+
+                              <span
+                                className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                                  analysis.twwOpinionStatus === "regenerate"
+                                    ? "bg-red-100 text-red-900"
+                                    : analysis.twwOpinionStatus === "improve"
+                                      ? "bg-orange-100 text-orange-900"
+                                      : "bg-green-100 text-green-900"
+                                }`}
+                              >
+                                {analysis.twwOpinionStatus === "regenerate"
+                                  ? "🔴 Avis TWW à régénérer"
+                                  : analysis.twwOpinionStatus === "improve"
+                                    ? "🟠 Avis TWW à améliorer"
+                                    : "🟢 Avis TWW conforme"}
+                              </span>
                             </div>
 
                             <h3
@@ -545,12 +692,22 @@ export default function AdminEditorialAssistantPage() {
                             </Link>
 
                             <Link
-                              href={`/admin/editorial-assistant/ai?wine=${encodeURIComponent(
-                                analysis.id
-                              )}`}
+                              href={
+                                analysis.twwOpinionStatus === "regenerate" ||
+                                analysis.twwOpinionStatus === "improve"
+                                  ? `/admin/editorial-assistant/ai?wine=${encodeURIComponent(
+                                      analysis.id
+                                    )}&section=tww_opinion`
+                                  : `/admin/editorial-assistant/ai?wine=${encodeURIComponent(
+                                      analysis.id
+                                    )}`
+                              }
                               className="rounded-full border border-purple-300 bg-purple-50 px-4 py-2 text-sm font-semibold text-purple-900 hover:bg-purple-100"
                             >
-                              ✨ Atelier IA
+                              {analysis.twwOpinionStatus === "regenerate" ||
+                              analysis.twwOpinionStatus === "improve"
+                                ? "✨ Reprendre l’avis TWW"
+                                : "✨ Atelier IA"}
                             </Link>
 
                             <button
@@ -636,6 +793,34 @@ export default function AdminEditorialAssistantPage() {
                                   recommandée
                                   {analysis.actions.length > 1 ? "s" : ""}.
                                 </p>
+                              </div>
+                            </div>
+
+                            <div className="mt-5 rounded-2xl border border-white/80 bg-white p-5">
+                              <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                                <div>
+                                  <h4 className="font-serif text-xl text-black">
+                                    Avis The Wine Watchers
+                                  </h4>
+                                  <p className="mt-3 text-sm leading-7 text-neutral-700">
+                                    {analysis.twwOpinionReason}
+                                  </p>
+                                  {analysis.twwOpinionDuplicateCount > 1 && (
+                                    <p className="mt-2 text-xs font-semibold text-orange-800">
+                                      Avis identique détecté sur{" "}
+                                      {analysis.twwOpinionDuplicateCount} fiches.
+                                    </p>
+                                  )}
+                                </div>
+
+                                <Link
+                                  href={`/admin/editorial-assistant/ai?wine=${encodeURIComponent(
+                                    analysis.id
+                                  )}&section=tww_opinion`}
+                                  className="shrink-0 rounded-full border border-purple-300 bg-purple-50 px-4 py-2 text-sm font-semibold text-purple-900 hover:bg-purple-100"
+                                >
+                                  ✨ Traiter l’avis TWW
+                                </Link>
                               </div>
                             </div>
 

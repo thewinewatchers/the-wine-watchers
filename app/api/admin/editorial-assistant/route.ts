@@ -94,6 +94,83 @@ function toBoolean(value: unknown) {
   return ["true", "1", "yes", "oui"].includes(normalized);
 }
 
+type TwwOpinionStatus = "regenerate" | "improve" | "compliant";
+
+type TwwOpinionDiagnostic = {
+  status: TwwOpinionStatus;
+  label: string;
+  reason: string;
+};
+
+function normalizeOpinionForComparison(value: string | null) {
+  if (!value) return "";
+
+  return value
+    .toLocaleLowerCase("fr")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\*\*/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function hasLegacyTwwTemplate(value: string | null) {
+  const normalized = normalizeOpinionForComparison(value);
+
+  if (!normalized) return false;
+
+  const legacyMarkers = [
+    "pour la noblesse de ses aromes",
+    "la precision de son interpretation par le domaine",
+    "sa capacite a exprimer avec justesse l'identite de la bourgogne",
+    "plus qu'un simple symbole de prestige",
+    "une rencontre rare entre un terroir d'exception",
+    "des references intemporelles",
+  ];
+
+  return legacyMarkers.filter((marker) => normalized.includes(marker)).length >= 2;
+}
+
+function getTwwOpinionDiagnostic(
+  opinion: string | null,
+  duplicateCount: number
+): TwwOpinionDiagnostic {
+  const normalized = normalizeOpinionForComparison(opinion);
+
+  if (!normalized) {
+    return {
+      status: "regenerate",
+      label: "Avis TWW à régénérer",
+      reason: "Aucun Avis The Wine Watchers exploitable n’est actuellement enregistré.",
+    };
+  }
+
+  if (hasLegacyTwwTemplate(opinion)) {
+    return {
+      status: "regenerate",
+      label: "Avis TWW à régénérer",
+      reason:
+        "Ancienne matrice éditoriale générique détectée. L’avis doit être individualisé pour le vin, le cru et le millésime.",
+    };
+  }
+
+  if (duplicateCount > 1) {
+    return {
+      status: "improve",
+      label: "Avis TWW à améliorer",
+      reason:
+        `Cet avis est repris à l’identique sur ${duplicateCount} fiches. Il mérite d’être individualisé pour cette bouteille et ce millésime.`,
+    };
+  }
+
+  return {
+    status: "compliant",
+    label: "Avis TWW conforme",
+    reason:
+      "Aucune ancienne matrice ni duplication exacte n’a été détectée dans le catalogue.",
+  };
+}
+
 function buildEditorialInput(wine: WineRow): EditorialWineInput {
   const slug = toStringValue(firstDefined(wine, ["slug"]));
   const producer = toStringValue(
@@ -293,10 +370,39 @@ export async function GET(request: Request) {
       (wine) => includeHidden || !wine.hidden_from_site
     );
 
+    const opinionCounts = wines.reduce((counts, wine) => {
+      const opinion = toStringValue(
+        firstDefined(wine, [
+          "meta_content",
+          "tww_opinion",
+          "wine_watchers_opinion",
+          "opinion",
+          "avis",
+          "avis_tww",
+        ])
+      );
+      const normalized = normalizeOpinionForComparison(opinion);
+
+      if (normalized) {
+        counts.set(normalized, (counts.get(normalized) || 0) + 1);
+      }
+
+      return counts;
+    }, new Map<string, number>());
+
     const analyses = wines
       .map((wine) => {
         const editorialInput = buildEditorialInput(wine);
         const result = calculateEditorialScore(editorialInput);
+        const twwOpinion = editorialInput.tww_opinion || null;
+        const normalizedOpinion = normalizeOpinionForComparison(twwOpinion);
+        const duplicateCount = normalizedOpinion
+          ? opinionCounts.get(normalizedOpinion) || 1
+          : 0;
+        const twwOpinionDiagnostic = getTwwOpinionDiagnostic(
+          twwOpinion,
+          duplicateCount
+        );
 
         return {
           id: String(wine.id || ""),
@@ -331,6 +437,11 @@ export async function GET(request: Request) {
           actions: result.actions,
           estimatedMinutes: result.estimatedMinutes,
           potentialGain: result.potentialGain,
+
+          twwOpinionStatus: twwOpinionDiagnostic.status,
+          twwOpinionLabel: twwOpinionDiagnostic.label,
+          twwOpinionReason: twwOpinionDiagnostic.reason,
+          twwOpinionDuplicateCount: duplicateCount,
         };
       })
       .sort((a, b) => {
@@ -366,6 +477,20 @@ export async function GET(request: Request) {
           (item) => item.score >= 70 && item.score < 90
         ).length,
         certifiedCount: analyses.filter((item) => item.score >= 90).length,
+        twwOpinionRegenerateCount: analyses.filter(
+          (item) => item.twwOpinionStatus === "regenerate"
+        ).length,
+        twwOpinionImproveCount: analyses.filter(
+          (item) => item.twwOpinionStatus === "improve"
+        ).length,
+        twwOpinionCompliantCount: analyses.filter(
+          (item) => item.twwOpinionStatus === "compliant"
+        ).length,
+        twwOpinionReviewCount: analyses.filter(
+          (item) =>
+            item.twwOpinionStatus === "regenerate" ||
+            item.twwOpinionStatus === "improve"
+        ).length,
       },
       analyses,
     });
