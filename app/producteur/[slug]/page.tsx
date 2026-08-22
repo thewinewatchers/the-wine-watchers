@@ -541,6 +541,17 @@ export default async function ProducteurPage({
 
   const editorialContent = PRODUCER_EDITORIAL_LIBRARY[slug];
 
+  const producerJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Winery",
+    "@id": SITE_URL + "/producteur/" + slug + "#winery",
+    name: producer,
+    url: SITE_URL + "/producteur/" + slug,
+    ...(editorialContent?.introduction
+      ? { description: editorialContent.introduction }
+      : {}),
+  };
+
   const itemListJsonLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
@@ -584,6 +595,13 @@ export default async function ProducteurPage({
 
   return (
     <main className="min-h-screen bg-[#f8f3ea] text-[#24110d]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(producerJsonLd),
+        }}
+      />
+
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
