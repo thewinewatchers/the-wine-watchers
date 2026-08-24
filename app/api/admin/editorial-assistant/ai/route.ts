@@ -426,7 +426,7 @@ export async function POST(request: Request) {
     }
 
     const response = await openai.responses.create({
-      model: "gpt-5.5",
+      model: "gpt-5.6-luna",
 
       tools: [
         {
@@ -544,7 +544,7 @@ Le texte sera toujours relu par un humain avant toute publication.
       section: body.section,
       sectionLabel: SECTION_LABELS[body.section],
       proposal,
-      model: "gpt-5.5",
+      model: "gpt-5.6-luna",
       requestId: response._request_id || null,
     });
   } catch (error) {
