@@ -1,27 +1,174 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { notFound } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
 
 const SITE_URL = "https://www.thewinewatchers.com";
+const PAGE_SLUG = "politique-cookies";
 
-export const metadata: Metadata = {
-  title: "Politique de cookies | The Wine Watchers",
-  description:
-    "Consultez la politique de cookies de The Wine Watchers SL et les informations relatives aux cookies techniques, à leur gestion et à leur utilisation sur le site.",
-  alternates: {
-    canonical: `${SITE_URL}/politique-cookies`,
-  },
-  openGraph: {
-    title: "Politique de cookies | The Wine Watchers",
-    description:
-      "Informations relatives à l’utilisation des cookies et technologies similaires sur le site The Wine Watchers.",
-    url: `${SITE_URL}/politique-cookies`,
-    siteName: "The Wine Watchers",
-    locale: "fr_FR",
-    type: "website",
-  },
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+type ContentBlock = {
+  type: "paragraph" | "subheading";
+  text: string;
 };
 
-export default function PolitiqueCookiesPage() {
+type PageSection = {
+  title: string;
+  blocks: ContentBlock[];
+};
+
+type SitePage = {
+  slug: string;
+  name: string;
+  page_title: string;
+  eyebrow: string | null;
+  intro: string | null;
+  seo_title: string | null;
+  seo_description: string | null;
+  sections: PageSection[];
+  is_active: boolean;
+};
+
+function normalizeSections(value: unknown): PageSection[] {
+  if (!Array.isArray(value)) return [];
+
+  return value.map((section) => {
+    const rawSection =
+      section && typeof section === "object"
+        ? (section as Record<string, unknown>)
+        : {};
+
+    const rawBlocks = Array.isArray(rawSection.blocks)
+      ? rawSection.blocks
+      : [];
+
+    return {
+      title: String(rawSection.title || ""),
+      blocks: rawBlocks.map((block) => {
+        const rawBlock =
+          block && typeof block === "object"
+            ? (block as Record<string, unknown>)
+            : {};
+
+        return {
+          type:
+            rawBlock.type === "subheading"
+              ? "subheading"
+              : "paragraph",
+          text: String(rawBlock.text || ""),
+        };
+      }),
+    };
+  });
+}
+
+async function getPage(): Promise<SitePage | null> {
+  const { data, error } = await supabase
+    .from("site_pages")
+    .select(
+      `
+        slug,
+        name,
+        page_title,
+        eyebrow,
+        intro,
+        seo_title,
+        seo_description,
+        sections,
+        is_active
+      `
+    )
+    .eq("slug", PAGE_SLUG)
+    .eq("is_active", true)
+    .maybeSingle();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return {
+    slug: data.slug,
+    name: data.name,
+    page_title: data.page_title,
+    eyebrow: data.eyebrow,
+    intro: data.intro,
+    seo_title: data.seo_title,
+    seo_description: data.seo_description,
+    sections: normalizeSections(data.sections),
+    is_active: data.is_active,
+  };
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getPage();
+
+  const title =
+    page?.seo_title ||
+    "Politique de cookies | The Wine Watchers";
+
+  const description =
+    page?.seo_description ||
+    "Consultez la politique de cookies de The Wine Watchers SL et les informations relatives aux cookies techniques, à leur gestion et à leur utilisation sur le site.";
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `${SITE_URL}/politique-cookies`,
+    },
+    openGraph: {
+      title,
+      description,
+      url: `${SITE_URL}/politique-cookies`,
+      siteName: "The Wine Watchers",
+      locale: "fr_FR",
+      type: "website",
+    },
+  };
+}
+
+function renderText(text: string) {
+  const lines = text.split("\n");
+
+  const isBulletList =
+    lines.length > 1 &&
+    lines.every(
+      (line) =>
+        !line.trim() ||
+        line.trim().startsWith("•")
+    );
+
+  if (isBulletList) {
+    return (
+      <ul className="mt-4 list-disc pl-8 leading-8 text-[#6d5b50]">
+        {lines
+          .map((line) => line.trim())
+          .filter(Boolean)
+          .map((line, index) => (
+            <li key={index}>
+              {line.replace(/^•\s*/, "")}
+            </li>
+          ))}
+      </ul>
+    );
+  }
+
+  return (
+    <p className="mt-4 whitespace-pre-line leading-8 text-[#6d5b50]">
+      {text}
+    </p>
+  );
+}
+
+export default async function PolitiqueCookiesPage() {
+  const page = await getPage();
+
+  if (!page) {
+    notFound();
+  }
+
   return (
     <main className="min-h-screen bg-[#f7f1e8] text-[#24110d]">
       <section className="bg-[#170606] px-6 py-20 text-white">
@@ -33,72 +180,58 @@ export default function PolitiqueCookiesPage() {
             ← Retour accueil
           </Link>
 
-          <h1 className="mt-8 font-serif text-5xl">Politique de cookies</h1>
+          {page.eyebrow && (
+            <p className="mt-8 text-sm uppercase tracking-[0.25em] text-[#d8b56d]">
+              {page.eyebrow}
+            </p>
+          )}
 
-          <p className="mt-6 max-w-3xl text-white/70">
-            Informations relatives à l’utilisation des cookies et technologies
-            similaires sur le site The Wine Watchers.
-          </p>
+          <h1 className="mt-8 font-serif text-5xl">
+            {page.page_title}
+          </h1>
+
+          {page.intro && (
+            <p className="mt-6 max-w-3xl text-white/70">
+              {page.intro}
+            </p>
+          )}
         </div>
       </section>
 
       <section className="mx-auto max-w-5xl px-6 py-16">
         <div className="rounded-[2rem] border border-[#e1d1bd] bg-[#fffaf3] p-8 shadow-sm md:p-10">
-          <h2 className="font-serif text-3xl">Qu’est-ce qu’un cookie ?</h2>
-          <p className="mt-4 leading-8 text-[#6d5b50]">
-            Un cookie est un petit fichier enregistré sur votre appareil lors
-            de la consultation d’un site internet. Il permet notamment
-            d’assurer le bon fonctionnement du site, de mémoriser certaines
-            informations et d’améliorer l’expérience utilisateur.
-          </p>
+          {page.sections.map((section, sectionIndex) => (
+            <section key={`${section.title}-${sectionIndex}`}>
+              <h2
+                className={
+                  sectionIndex === 0
+                    ? "font-serif text-3xl"
+                    : "mt-10 font-serif text-3xl"
+                }
+              >
+                {section.title}
+              </h2>
 
-          <h2 className="mt-10 font-serif text-3xl">
-            Cookies strictement nécessaires
-          </h2>
-          <p className="mt-4 leading-8 text-[#6d5b50]">
-            The Wine Watchers utilise uniquement des cookies techniques
-            indispensables au fonctionnement du site, notamment pour :
-          </p>
+              {section.blocks.map((block, blockIndex) => {
+                if (block.type === "subheading") {
+                  return (
+                    <h3
+                      key={`${sectionIndex}-${blockIndex}`}
+                      className="mt-8 font-serif text-2xl"
+                    >
+                      {block.text}
+                    </h3>
+                  );
+                }
 
-          <ul className="mt-4 list-disc pl-8 leading-8 text-[#6d5b50]">
-            <li>la connexion et l’authentification des utilisateurs ;</li>
-            <li>la gestion du panier et du processus de commande ;</li>
-            <li>la sécurité du site et la prévention des fraudes ;</li>
-            <li>le traitement des paiements sécurisés ;</li>
-            <li>le bon fonctionnement général de la plateforme.</li>
-          </ul>
-
-          <h2 className="mt-10 font-serif text-3xl">
-            Absence de cookies publicitaires
-          </h2>
-          <p className="mt-4 leading-8 text-[#6d5b50]">
-            À ce jour, The Wine Watchers n’utilise aucun cookie publicitaire,
-            de remarketing ou de profilage comportemental.
-          </p>
-
-          <h2 className="mt-10 font-serif text-3xl">
-            Évolution future du site
-          </h2>
-          <p className="mt-4 leading-8 text-[#6d5b50]">
-            Si des outils statistiques ou publicitaires nécessitant votre
-            consentement venaient à être installés à l’avenir, un mécanisme de
-            recueil du consentement conforme à la réglementation applicable sera
-            mis en place avant leur activation.
-          </p>
-
-          <h2 className="mt-10 font-serif text-3xl">Gestion des cookies</h2>
-          <p className="mt-4 leading-8 text-[#6d5b50]">
-            Vous pouvez configurer votre navigateur afin de bloquer ou supprimer
-            les cookies. Toutefois, certaines fonctionnalités essentielles du
-            site pourraient alors ne plus fonctionner correctement.
-          </p>
-
-          <h2 className="mt-10 font-serif text-3xl">Contact</h2>
-          <p className="mt-4 leading-8 text-[#6d5b50]">
-            Pour toute question relative à l’utilisation des cookies, vous
-            pouvez nous contacter via notre page de contact ou à l’adresse
-            indiquée dans les mentions légales.
-          </p>
+                return (
+                  <div key={`${sectionIndex}-${blockIndex}`}>
+                    {renderText(block.text)}
+                  </div>
+                );
+              })}
+            </section>
+          ))}
         </div>
       </section>
     </main>

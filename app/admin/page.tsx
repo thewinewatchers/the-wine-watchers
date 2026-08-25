@@ -119,6 +119,12 @@ const adminLinks = [
       "Visualiser les frais de livraison par pays, poids et transporteur.",
   },
   {
+    title: "Pages du site",
+    href: "/admin/pages",
+    description:
+      "Modifier les CGV, mentions légales, livraison, confidentialité et politique de cookies.",
+  },
+  {
     title: "Images",
     href: "/admin/images",
     description:
