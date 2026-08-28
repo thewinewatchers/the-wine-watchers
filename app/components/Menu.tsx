@@ -2,8 +2,19 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
+
+type NavigationItem = {
+  id: string;
+  label: string;
+  href: string;
+  position: number;
+  is_active: boolean;
+  show_when_logged_out: boolean;
+  show_when_logged_in: boolean;
+};
 
 function normalizeSearch(value: string) {
   return value
@@ -61,6 +72,29 @@ export default function Menu() {
   const [open, setOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [search, setSearch] = useState("");
+  const [navigationItems, setNavigationItems] = useState<NavigationItem[]>([]);
+
+  useEffect(() => {
+    async function loadNavigation() {
+      const { data, error } = await supabase
+        .from("site_navigation")
+        .select(
+          "id, label, href, position, is_active, show_when_logged_out, show_when_logged_in"
+        )
+        .eq("is_active", true)
+        .order("position", { ascending: true })
+        .order("label", { ascending: true });
+
+      if (error) {
+        console.error("Impossible de charger le menu :", error);
+        return;
+      }
+
+      setNavigationItems((data || []) as NavigationItem[]);
+    }
+
+    loadNavigation();
+  }, []);
 
   useEffect(() => {
     function hasStoredSupabaseSession() {
@@ -92,7 +126,6 @@ export default function Menu() {
   }, []);
 
   const handleLogout = async () => {
-    const { supabase } = await import("@/lib/supabaseClient");
     await supabase.auth.signOut();
     setIsLoggedIn(false);
     setOpen(false);
@@ -118,6 +151,20 @@ export default function Menu() {
 
   const showLoggedOutLinks = isLoggedIn === false;
   const showLoggedInLinks = isLoggedIn === true;
+
+  const visibleNavigationItems = useMemo(() => {
+    return navigationItems.filter((item) => {
+      if (isLoggedIn === true) {
+        return item.show_when_logged_in;
+      }
+
+      if (isLoggedIn === false) {
+        return item.show_when_logged_out;
+      }
+
+      return item.show_when_logged_out || item.show_when_logged_in;
+    });
+  }, [navigationItems, isLoggedIn]);
 
   return (
     <header className="sticky top-0 z-50 border-b border-neutral-200 bg-white/95 backdrop-blur">
@@ -148,17 +195,15 @@ export default function Menu() {
         </button>
 
         <nav className="hidden items-center justify-end gap-4 whitespace-nowrap text-sm uppercase tracking-wide text-neutral-700 xl:flex">
-          <Link href="/" className="transition hover:text-[#8B1E2D]">
-            Accueil
-          </Link>
-
-          <Link href="/boutique" className="transition hover:text-[#8B1E2D]">
-            Boutique
-          </Link>
-
-          <Link href="/millesimes" className="transition hover:text-[#8B1E2D]">
-            Millésimes
-          </Link>
+          {visibleNavigationItems.map((item) => (
+            <Link
+              key={item.id}
+              href={item.href}
+              className="transition hover:text-[#8B1E2D]"
+            >
+              {item.label}
+            </Link>
+          ))}
 
           {showLoggedOutLinks && (
             <>
@@ -186,14 +231,6 @@ export default function Menu() {
               Mon compte
             </Link>
           )}
-
-          <Link href="/a-propos" className="transition hover:text-[#8B1E2D]">
-            À propos
-          </Link>
-
-          <Link href="/blog" className="transition hover:text-[#8B1E2D]">
-            Blog
-          </Link>
 
           {showLoggedInLinks && (
             <Link
@@ -236,17 +273,15 @@ export default function Menu() {
       {open && (
         <nav className="border-t border-neutral-200 bg-white px-6 py-4 text-sm uppercase tracking-wide text-neutral-700 xl:hidden">
           <div className="flex flex-col gap-4">
-            <Link href="/" onClick={() => setOpen(false)}>
-              Accueil
-            </Link>
-
-            <Link href="/boutique" onClick={() => setOpen(false)}>
-              Boutique
-            </Link>
-
-            <Link href="/millesimes" onClick={() => setOpen(false)}>
-              Millésimes
-            </Link>
+            {visibleNavigationItems.map((item) => (
+              <Link
+                key={item.id}
+                href={item.href}
+                onClick={() => setOpen(false)}
+              >
+                {item.label}
+              </Link>
+            ))}
 
             {showLoggedOutLinks && (
               <>
@@ -265,14 +300,6 @@ export default function Menu() {
                 Mon compte
               </Link>
             )}
-
-            <Link href="/a-propos" onClick={() => setOpen(false)}>
-              À propos
-            </Link>
-
-            <Link href="/blog" onClick={() => setOpen(false)}>
-              Blog
-            </Link>
 
             {showLoggedInLinks && (
               <Link
