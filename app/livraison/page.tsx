@@ -240,6 +240,31 @@ export default async function LivraisonPage() {
         )}
 
         <div className="space-y-8">
+
+          <section className="rounded-2xl border border-[#d6c3a5] bg-[#fffaf2] p-6">
+            <h2 className="mb-3 text-xl font-serif text-[#2a120b]">
+              Livraison et températures élevées
+            </h2>
+
+            <p className="leading-7 text-neutral-700">
+              Afin de préserver l’intégrité et les conditions de conservation
+              de vos vins, The Wine Watchers suspend automatiquement les
+              expéditions en cas de fortes chaleurs ou de période de canicule.
+            </p>
+
+            <p className="mt-4 leading-7 text-neutral-700">
+              Les commandes concernées sont conservées dans des conditions
+              adaptées et expédiées dès que les températures permettent à
+              nouveau un transport dans des conditions satisfaisantes.
+            </p>
+
+            <p className="mt-4 leading-7 text-neutral-700">
+              Cette mesure de précaution vise à protéger les vins contre les
+              variations thermiques susceptibles d’altérer leur qualité
+              pendant le transport.
+            </p>
+          </section>
+
           {page.sections.map((section, sectionIndex) => {
             const isImportant =
               section.title === "Information importante";
