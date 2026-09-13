@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
 
 type ContentBlock = {
   type: "paragraph" | "subheading";
@@ -69,6 +70,39 @@ function normalizeSections(value: unknown): PageSection[] {
   });
 }
 
+async function authenticatedFetch(
+  url: string,
+  options: RequestInit = {}
+) {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  const accessToken = session?.access_token || "";
+
+  if (!accessToken) {
+    throw new Error(
+      "Session administrateur absente ou expirée. Reconnectez-vous."
+    );
+  }
+
+  const headers = new Headers(options.headers);
+
+  headers.set(
+    "Authorization",
+    `Bearer ${accessToken}`
+  );
+
+  if (options.body && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+
+  return fetch(url, {
+    ...options,
+    headers,
+  });
+}
+
 export default function AdminSitePageEditor() {
   const params = useParams();
   const slug = String(params.slug || "");
@@ -88,7 +122,7 @@ export default function AdminSitePageEditor() {
       setSuccessMessage("");
 
       try {
-        const response = await fetch(
+        const response = await authenticatedFetch(
           `/api/admin/pages/${encodeURIComponent(slug)}`,
           {
             method: "GET",
@@ -346,7 +380,7 @@ export default function AdminSitePageEditor() {
     };
 
     try {
-      const response = await fetch(
+      const response = await authenticatedFetch(
         `/api/admin/pages/${encodeURIComponent(slug)}`,
         {
           method: "PATCH",
