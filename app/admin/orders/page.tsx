@@ -107,6 +107,7 @@ export default function AdminOrdersPage() {
   const [items, setItems] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
+  const [sendingReminderOrderId, setSendingReminderOrderId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -149,23 +150,44 @@ export default function AdminOrdersPage() {
     loadOrders();
   }, []);
 
-  async function markOrderAsPaid(orderId: string) {
+  async function updateOrderPaymentStatus(
+    orderId: string,
+    nextStatus: "bank_transfer_pending" | "paid"
+  ) {
     setUpdatingOrderId(orderId);
     setErrorMessage("");
     setSuccessMessage("");
 
-    const { error } = await supabase
+    const payload =
+      nextStatus === "paid"
+        ? {
+            status: "paid",
+            payment_status: "paid",
+          }
+        : {
+            status: "bank_transfer_pending",
+            payment_status: "unpaid",
+          };
+
+    const { data, error } = await supabase
       .from("orders")
-      .update({
-        status: "paid",
-        payment_status: "paid",
-      })
-      .eq("id", orderId);
+      .update(payload)
+      .eq("id", orderId)
+      .select("id, status, payment_status")
+      .single();
 
     if (error) {
       console.error("Erreur mise à jour paiement :", error);
       setErrorMessage(
-        `Impossible de marquer la commande comme payée : ${error.message}`
+        `Impossible de modifier le statut de la commande : ${error.message}`
+      );
+      setUpdatingOrderId(null);
+      return;
+    }
+
+    if (!data) {
+      setErrorMessage(
+        "La commande n’a pas été modifiée. Vérifiez les droits Supabase/RLS."
       );
       setUpdatingOrderId(null);
       return;
@@ -176,15 +198,68 @@ export default function AdminOrdersPage() {
         order.id === orderId
           ? {
               ...order,
-              status: "paid",
-              payment_status: "paid",
+              status: data.status,
+              payment_status: data.payment_status,
             }
           : order
       )
     );
 
-    setSuccessMessage("Commande marquée comme payée.");
+    setSuccessMessage(
+      nextStatus === "paid"
+        ? "Commande marquée comme payée."
+        : "Commande remise en attente de virement."
+    );
     setUpdatingOrderId(null);
+  }
+
+  async function sendPaymentReminder(orderId: string) {
+    setSendingReminderOrderId(orderId);
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session?.access_token) {
+        setErrorMessage(
+          "Session administrateur introuvable. Reconnectez-vous à l’administration."
+        );
+        return;
+      }
+
+      const response = await fetch("/api/admin/orders/payment-reminder", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ orderId }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result?.error || "Impossible d’envoyer le rappel de paiement."
+        );
+      }
+
+      setSuccessMessage(
+        result?.message || "Rappel de paiement envoyé avec succès."
+      );
+    } catch (error) {
+      console.error("Erreur envoi rappel paiement :", error);
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Impossible d’envoyer le rappel de paiement."
+      );
+    } finally {
+      setSendingReminderOrderId(null);
+    }
   }
 
   const itemsByOrderId = useMemo(() => {
@@ -311,18 +386,54 @@ export default function AdminOrdersPage() {
                           {formatDate(order.created_at)}
                         </p>
 
-                        {!isPaid && (
+                        <div className="mt-4 flex flex-wrap gap-2">
                           <button
                             type="button"
-                            onClick={() => markOrderAsPaid(order.id)}
-                            disabled={updatingOrderId === order.id}
-                            className="mt-4 rounded-full bg-[#8a1f1f] px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-[#641313] disabled:cursor-not-allowed disabled:opacity-50"
+                            onClick={() =>
+                              updateOrderPaymentStatus(
+                                order.id,
+                                "bank_transfer_pending"
+                              )
+                            }
+                            disabled={
+                              updatingOrderId === order.id ||
+                              (order.status === "bank_transfer_pending" &&
+                                order.payment_status === "unpaid")
+                            }
+                            className="rounded-full border border-[#8a6a2f] bg-white px-4 py-3 text-xs font-semibold uppercase tracking-[0.15em] text-[#8a6a2f] transition hover:bg-[#fff3df] disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            En attente de virement
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              updateOrderPaymentStatus(order.id, "paid")
+                            }
+                            disabled={
+                              updatingOrderId === order.id ||
+                              order.payment_status === "paid"
+                            }
+                            className="rounded-full bg-[#8a1f1f] px-4 py-3 text-xs font-semibold uppercase tracking-[0.15em] text-white transition hover:bg-[#641313] disabled:cursor-not-allowed disabled:opacity-50"
                           >
                             {updatingOrderId === order.id
                               ? "Mise à jour..."
                               : "Marquer comme payé"}
                           </button>
-                        )}
+
+                          {isBankTransfer && !isPaid && (
+                            <button
+                              type="button"
+                              onClick={() => sendPaymentReminder(order.id)}
+                              disabled={sendingReminderOrderId === order.id}
+                              className="rounded-full bg-black px-4 py-3 text-xs font-semibold uppercase tracking-[0.15em] text-white transition hover:bg-[#8a6a2f] disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                              {sendingReminderOrderId === order.id
+                                ? "Envoi..."
+                                : "Envoyer un rappel"}
+                            </button>
+                          )}
+                        </div>
                       </div>
 
                       <div className="lg:text-right">
