@@ -80,12 +80,6 @@ async function requireAdmin(request: Request) {
     };
   }
 
-  /*
-   * Compatibilité avec les deux noms :
-   * ADMIN_EMAIL=contact@thewinewatchers.com
-   * ou
-   * ADMIN_EMAILS=contact@thewinewatchers.com,autre@exemple.com
-   */
   const adminEmailsRaw =
     process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || "";
 
@@ -226,12 +220,6 @@ export async function POST(request: Request) {
       );
     }
 
-    /*
-     * Port 587 :
-     * - connexion initiale non chiffrée
-     * - passage obligatoire en STARTTLS
-     * - certificat TLS vérifié normalement
-     */
     const transporter = nodemailer.createTransport({
       host: smtpHost,
       port: smtpPort,
@@ -254,10 +242,6 @@ export async function POST(request: Request) {
       socketTimeout: 20000,
     });
 
-    /*
-     * Vérifie d'abord la connexion SMTP.
-     * Cela permet d'obtenir une erreur claire avant de tenter l'envoi.
-     */
     await transporter.verify();
 
     const firstName = String(order.customer_first_name || "").trim();
@@ -373,6 +357,8 @@ www.thewinewatchers.com`;
       to: customerName
         ? `"${customerName.replace(/"/g, "")}" <${customerEmail}>`
         : customerEmail,
+
+      bcc: smtpUser,
 
       replyTo: smtpUser,
 
