@@ -7,8 +7,8 @@ const SITE_URL = "https://www.thewinewatchers.com";
 const appellationRedirects: Record<string, string> = {
   toscane: "toscana",
   "super-toscans": "toscana-igt",
+  "corton-grand-cru": "corton",
 };
-
 const appellations: Record<
   string,
   {
