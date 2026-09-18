@@ -15,6 +15,57 @@ const articleLinks: Record<
     external: { label: string; href: string }[];
   }
 > = {
+  "vendanges-2026-bordeaux": {
+    internal: [
+      {
+        label: "Voir les vins de Bordeaux",
+        href: "/boutique/bordeaux",
+      },
+      {
+        label: "Explorer l’appellation Pauillac",
+        href: "/appellation/pauillac",
+      },
+      {
+        label: "Explorer l’appellation Margaux",
+        href: "/appellation/margaux",
+      },
+      {
+        label: "Explorer l’appellation Saint-Julien",
+        href: "/appellation/saint-julien",
+      },
+      {
+        label: "Explorer l’appellation Saint-Estèphe",
+        href: "/appellation/saint-estephe",
+      },
+      {
+        label: "Explorer l’appellation Pomerol",
+        href: "/appellation/pomerol",
+      },
+      {
+        label: "Explorer l’appellation Saint-Émilion",
+        href: "/appellation/saint-emilion",
+      },
+      {
+        label: "Explorer l’appellation Pessac-Léognan",
+        href: "/appellation/pessac-leognan",
+      },
+      {
+        label: "Lire notre analyse des Primeurs Bordeaux 2025",
+        href: "/blog/primeurs-bordeaux-2025",
+      },
+    ],
+    external: [
+      {
+        label: "Site officiel des Vins de Bordeaux",
+        href: "https://www.bordeaux.com/",
+      },
+      {
+        label: "Institut des Sciences de la Vigne et du Vin",
+        href: "https://www.isvv.u-bordeaux.fr/",
+      },
+    ],
+  },
+
   "primeurs-bordeaux-2025": {
     internal: [
       {
@@ -257,10 +308,23 @@ export default async function BlogArticlePage({ params }: Props) {
     notFound();
   }
 
-  const paragraphs = post.content
+  const contentBlocks = post.content
     .split("\n")
-    .map((paragraph) => paragraph.trim())
-    .filter(Boolean);
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      if (line.startsWith("## ")) {
+        return {
+          type: "heading" as const,
+          text: line.replace(/^##\s+/, ""),
+        };
+      }
+
+      return {
+        type: "paragraph" as const,
+        text: line,
+      };
+    });
 
   const links = articleLinks[post.slug];
 
@@ -313,10 +377,21 @@ export default async function BlogArticlePage({ params }: Props) {
               {post.title}
             </h2>
 
-            <div className="space-y-7 text-base leading-8 text-neutral-800 md:text-lg">
-              {paragraphs.map((paragraph, index) => (
-                <p key={index}>{paragraph}</p>
-              ))}
+            <div className="text-base leading-8 text-neutral-800 md:text-lg">
+              {contentBlocks.map((block, index) =>
+                block.type === "heading" ? (
+                  <h2
+                    key={index}
+                    className="mb-5 mt-12 font-serif text-2xl font-semibold leading-tight text-[#5b111b] md:text-3xl"
+                  >
+                    {block.text}
+                  </h2>
+                ) : (
+                  <p key={index} className="mb-7">
+                    {block.text}
+                  </p>
+                )
+              )}
             </div>
 
             {links && (

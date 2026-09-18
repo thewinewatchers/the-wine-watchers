@@ -1,5 +1,151 @@
 export const blogPosts = [
   {
+    slug: "vendanges-2026-bordeaux",
+    title:
+      "Vendanges 2026 à Bordeaux : un millésime d’une précocité historique",
+    description:
+      "Vendanges exceptionnellement précoces, chaleur, sécheresse et maturités contrastées : découvrez les premières tendances du millésime 2026 à Bordeaux.",
+    date: "18 septembre 2026",
+    category: "Bordeaux",
+    content: `
+À Bordeaux, les vendanges 2026 resteront sans doute comme l’une des récoltes les plus précoces de l’histoire récente du vignoble.
+
+Après un cycle végétatif particulièrement rapide et un été marqué par des épisodes de chaleur intense et une forte contrainte hydrique, les premiers coups de sécateur sont intervenus dès le début du mois d’août.
+
+À la mi-septembre, alors que les vinifications sont déjà bien engagées dans de nombreuses propriétés, une première tendance se dessine : 2026 apparaît comme un millésime de contrastes, où le terroir, l’âge des vignes et surtout la précision de la date de récolte devraient jouer un rôle déterminant.
+
+## Une précocité exceptionnelle
+
+Le millésime 2026 s’est distingué très tôt par l’avance de son cycle végétatif. Débourrement, floraison puis véraison se sont succédé rapidement sous l’effet de températures élevées.
+
+Dès le 6 août, les premiers raisins destinés à l’élaboration des Crémants de Bordeaux étaient récoltés. Les blancs secs ont suivi quelques jours plus tard.
+
+Dans les grands crus, le calendrier est tout aussi spectaculaire.
+
+À Château Montrose, à Saint-Estèphe, les vendanges des raisins blancs ont commencé dès le 12 août. À Saint-Émilion, Château Troplong Mondot a débuté la récolte de ses merlots le 19 août, la date la plus précoce jamais enregistrée dans l’histoire de la propriété.
+
+Dans le Médoc, les vendanges des rouges ont également débuté très tôt, dès la fin du mois d’août dans plusieurs propriétés.
+
+Cette précocité ne constitue cependant pas, à elle seule, un indicateur de qualité. Elle impose au contraire une observation particulièrement attentive de chaque parcelle : dans un millésime chaud, quelques jours peuvent faire la différence entre une maturité équilibrée et une concentration excessive.
+
+## Les vendanges 2026 en chiffres
+
+Quelques dates permettent de mesurer la précocité du millésime.
+
+6 août — début des vendanges pour les Crémants de Bordeaux.
+
+À partir du 10 août — premiers raisins destinés aux vins blancs secs.
+
+12 août — Château Montrose commence à vendanger ses raisins blancs.
+
+19 août — Château Troplong Mondot débute ses vendanges, un record historique pour la propriété.
+
+25 août — Château Montrose commence la récolte de ses raisins rouges.
+
+Fin août — début des vendanges dans plusieurs grands crus du Médoc.
+
+La précocité constitue ainsi l’un des marqueurs majeurs de 2026, avec parfois plusieurs semaines d’avance sur le calendrier traditionnel bordelais.
+
+## Une saison viticole sous le signe de la chaleur
+
+L’année 2026 aura également été marquée par des conditions climatiques extrêmes.
+
+Les épisodes de chaleur successifs ont accéléré le cycle de la vigne et renforcé la contrainte hydrique. En juin, les températures ont dépassé 42 °C à Bordeaux lors des épisodes les plus chauds.
+
+Après plusieurs mois particulièrement secs, les précipitations du mois d’août ont apporté un répit bienvenu à certaines parcelles, notamment dans le Médoc.
+
+Mais les réactions de la vigne se sont révélées très différentes selon les terroirs.
+
+Les sols disposant de bonnes réserves hydriques ainsi que les vieilles vignes profondément enracinées semblent avoir mieux résisté. À l’inverse, certaines jeunes plantations et les parcelles particulièrement drainantes ont davantage souffert.
+
+Cette hétérogénéité devrait constituer l’une des clés de compréhension du millésime 2026 : davantage encore que dans une année régulière, il sera difficile de parler de Bordeaux comme d’un ensemble homogène.
+
+## Des rendements toujours mesurés
+
+Malgré les conditions difficiles, les premières estimations de production sont légèrement supérieures à celles de 2025.
+
+La production bordelaise est actuellement estimée à environ 3,5 millions d’hectolitres, soit une progression de l’ordre de 10 % par rapport à 2025.
+
+Ce rebond doit toutefois être relativisé : la récolte resterait encore environ 11 % inférieure à la moyenne des cinq dernières années.
+
+Les rendements devraient par ailleurs être très variables selon les secteurs et les propriétés. La sécheresse et la chaleur ont souvent produit des baies plus petites, tandis que les pluies intervenues avant et pendant les vendanges ont parfois permis de restaurer une partie du volume de jus.
+
+2026 ne s’annonce donc pas comme un millésime d’abondance, mais plutôt comme une année où la sélection et la qualité des raisins devraient compter davantage que les volumes.
+
+## Merlot et cabernets : des maturités très différentes
+
+Sur la rive droite, le merlot a naturellement été au centre des premières récoltes.
+
+À Troplong Mondot, le choix de commencer dès le 19 août illustre parfaitement l’un des enjeux de 2026 : récolter suffisamment tôt pour préserver le croquant du fruit, la fraîcheur et l’élégance malgré l’avancement très rapide des maturités.
+
+Le cabernet franc et surtout le cabernet sauvignon ont généralement demandé davantage de patience. Les observations réalisées à l’échelle du vignoble montrent une progression plus lente de leur maturité, avec des différences parfois importantes d’une parcelle à l’autre.
+
+Cette situation renforce l’importance des vendanges parcellaires : en 2026, la réussite pourrait dépendre autant de la décision de récolter au bon moment que du potentiel initial du raisin.
+
+## Des pluies venues modifier la fin du cycle
+
+Après la longue période chaude et sèche, le retour de précipitations à l’approche des vendanges a modifié les équilibres.
+
+Dans certaines parcelles, les analyses ont montré une augmentation du poids des baies et du volume de jus. Ces pluies ont également permis à certaines vignes de poursuivre leur maturation après une période de forte contrainte hydrique.
+
+Leur effet doit toutefois être interprété avec nuance : il dépend du terroir, du cépage, de l’état de la vigne et du moment auquel elles sont intervenues.
+
+C’est précisément ce qui rend 2026 particulièrement intéressant à suivre.
+
+## Quel style de vins peut-on attendre ?
+
+Il est encore beaucoup trop tôt pour établir un jugement définitif sur la qualité du millésime. Les vins sont en cours de vinification et les assemblages sont encore loin d’être arrêtés.
+
+Les premiers éléments permettent néanmoins d’identifier quelques tendances.
+
+La petite taille des baies et la concentration des pellicules pourraient favoriser des rouges colorés et structurés. Les conditions chaudes ont également permis d’atteindre rapidement des niveaux importants de sucres et de maturité phénolique.
+
+Dans de nombreuses propriétés, les degrés potentiels semblent toutefois rester relativement contenus, souvent autour de 12,5 à 13,5 % vol., selon les cépages, les terroirs et les dates de récolte.
+
+Mais l’enjeu essentiel sera ailleurs : préserver l’équilibre, la fraîcheur aromatique et la finesse des tanins.
+
+La manière dont chaque propriété aura choisi sa date de vendange, puis conduit les extractions et les vinifications, sera donc déterminante.
+
+## Un millésime qui pourrait révéler les terroirs
+
+Les années chaudes et sèches ont souvent pour effet d’accentuer les différences entre terroirs.
+
+En 2026, les parcelles capables de maintenir une alimentation hydrique régulière semblent avoir disposé d’un avantage important. Les argiles profondes, certains secteurs calcaires disposant de réserves hydriques et les vieilles vignes ont parfois permis de conserver un fonctionnement végétatif satisfaisant malgré les températures élevées.
+
+À l’inverse, les sols très drainants et certaines jeunes vignes ont davantage subi les épisodes de chaleur.
+
+Pour les grands crus bordelais, la sélection parcellaire et le tri devraient donc être particulièrement importants.
+
+## 2003, 2022, 2023, 2025… et maintenant 2026
+
+Bordeaux a déjà connu plusieurs millésimes récents marqués par des températures élevées.
+
+2003 reste naturellement une référence historique lorsqu’il est question de canicule. Plus récemment, 2022, 2023 et 2025 ont également confronté les propriétés bordelaises à des périodes de chaleur et de sécheresse importantes.
+
+Mais comparer directement ces millésimes serait réducteur.
+
+L’état des réserves hydriques, la répartition des précipitations, les températures nocturnes, la durée des épisodes de chaleur et le stade de développement de la vigne au moment où ils surviennent peuvent produire des résultats très différents.
+
+2026 possède donc sa propre identité.
+
+Sa précocité exceptionnelle constitue déjà l’un de ses caractères distinctifs.
+
+## 2026 : la précision plutôt que la puissance
+
+À ce stade, il serait prématuré de placer 2026 dans une hiérarchie des grands millésimes bordelais.
+
+Une chose semble néanmoins déjà acquise : ce millésime ne pourra pas être résumé uniquement par sa chaleur ou sa précocité.
+
+La capacité des propriétés à préserver la fraîcheur, à sélectionner précisément les raisins et à adapter les vinifications à la concentration naturelle du fruit devrait être essentielle.
+
+Dans les meilleurs terroirs, l’enjeu ne sera probablement pas de rechercher davantage de puissance, mais au contraire de conserver l’équilibre, la définition du fruit et la précision.
+
+Chez The Wine Watchers, nous suivrons avec une attention particulière l’évolution des grands terroirs de Pomerol, Saint-Émilion, Pauillac, Saint-Julien, Saint-Estèphe, Margaux et Pessac-Léognan.
+
+Les dégustations des vins en cours d’élevage, puis surtout la campagne des Primeurs 2026 au printemps 2027, permettront d’établir une lecture beaucoup plus précise de ce millésime déjà singulier.
+`,
+  },
+  {
     slug: "primeurs-bordeaux-2025",
     title: "Primeurs Bordeaux 2025 : notre analyse",
     description:
