@@ -84,11 +84,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/blog",
     "/a-propos",
     "/livraison",
-    "/contact",
     "/mentions-legales",
     "/politique-de-confidentialite",
     "/politique-cookies",
-    "/conditions-generales-de-vente",
   ].map((path) => ({
     url: `${siteUrl}${path}`,
     changeFrequency: "weekly",
