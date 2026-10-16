@@ -1,4 +1,6 @@
+
 import type { Metadata } from "next";
+import Script from "next/script";
 
 import "./globals.css";
 import Menu from "./components/Menu";
@@ -61,8 +63,16 @@ export default function RootLayout({
         {children}
         <Footer />
         <CookieBanner />
+
         <Analytics />
         <SpeedInsights />
+
+        {/* Chat en direct The Wine Watchers - tawk.to */}
+        <Script
+          id="tawk-to"
+          src="https://embed.tawk.to/6ace01779c70df34c4fb835b/1k4qbbeqs"
+          strategy="lazyOnload"
+        />
       </body>
     </html>
   );
