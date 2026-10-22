@@ -1,9 +1,14 @@
+
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { createClient } from "@supabase/supabase-js";
 import BoutiqueClient from "../BoutiqueClient";
 
 const SITE_URL = "https://www.thewinewatchers.com";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export const metadata: Metadata = {
   title: {
@@ -39,7 +44,97 @@ const primeursAppellations = [
   { name: "Pessac-Léognan", href: "/appellation/pessac-leognan" },
 ];
 
-export default function Primeurs2025Page() {
+type PrimeurWine = {
+  id: string | number;
+  slug: string | null;
+  name: string | null;
+  category: string | null;
+  hidden_from_site: boolean | null;
+};
+
+function normalize(value: unknown): string {
+  return String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase();
+}
+
+async function getPrimeurs2025(): Promise<PrimeurWine[]> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!url || !key) {
+    console.error("Configuration Supabase manquante.");
+    return [];
+  }
+
+  try {
+    const supabase = createClient(url, key, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    });
+
+    const allWines: PrimeurWine[] = [];
+    const pageSize = 500;
+
+    for (let start = 0; ; start += pageSize) {
+      const { data, error } = await supabase
+        .from("wines")
+        .select("id,slug,name,category,hidden_from_site")
+        .order("id", { ascending: true })
+        .range(start, start + pageSize - 1);
+
+      if (error) {
+        console.error(
+          "Erreur de lecture des Primeurs 2025 :",
+          error.message
+        );
+        return [];
+      }
+
+      const batch = (data ?? []) as PrimeurWine[];
+      allWines.push(...batch);
+
+      if (batch.length < pageSize) break;
+    }
+
+    const primeurs = allWines.filter((wine) => {
+      if (wine.hidden_from_site === true) return false;
+      if (!wine.slug?.trim() || !wine.name?.trim()) return false;
+
+      const category = normalize(wine.category);
+
+      return (
+        category === "primeurs-2025" ||
+        category === "primeurs 2025"
+      );
+    });
+
+    const unique = new Map<string, PrimeurWine>();
+
+    for (const wine of primeurs) {
+      const slug = wine.slug!.trim();
+
+      if (!unique.has(slug)) {
+        unique.set(slug, wine);
+      }
+    }
+
+    return Array.from(unique.values()).sort((a, b) =>
+      String(a.name).localeCompare(String(b.name), "fr")
+    );
+  } catch (error) {
+    console.error("Erreur Supabase Primeurs 2025 :", error);
+    return [];
+  }
+}
+
+export default async function Primeurs2025Page() {
+  const primeurs2025 = await getPrimeurs2025();
+
   return (
     <main className="min-h-screen bg-[#f8f4ee]">
       <section className="relative overflow-hidden bg-[#210909] text-white">
@@ -104,7 +199,7 @@ export default function Primeurs2025Page() {
         />
       </Suspense>
 
-      <section className="mx-auto max-w-7xl px-6 pb-16">
+      <section className="mx-auto max-w-7xl px-6 pb-10">
         <div className="rounded-2xl bg-white p-8 shadow-sm md:p-10">
           <h2 className="font-serif text-3xl text-[#3b1f1f]">
             Acheter des Bordeaux Primeurs 2025
@@ -137,6 +232,37 @@ export default function Primeurs2025Page() {
           </div>
         </div>
       </section>
+
+      {primeurs2025.length > 0 && (
+        <section className="mx-auto max-w-7xl px-6 pb-16">
+          <div className="rounded-2xl bg-white p-8 shadow-sm md:p-10">
+            <h2 className="font-serif text-3xl text-[#3b1f1f]">
+              Les vins disponibles en Primeurs 2025
+            </h2>
+
+            <p className="mt-4 max-w-4xl text-base leading-8 text-[#5b4a43]">
+              Retrouvez directement les fiches de notre sélection de Bordeaux
+              Primeurs 2025, avec les informations relatives à chaque vin et
+              aux conditionnements proposés.
+            </p>
+
+            <ul className="mt-6 grid gap-3 md:grid-cols-2">
+              {primeurs2025.map((wine) => (
+                <li key={wine.slug}>
+                  <Link
+                    href={`/boutique/vin/${encodeURIComponent(
+                      wine.slug!
+                    )}`}
+                    className="block rounded-xl border border-[#d8c6ae] bg-[#f8f4ee] px-5 py-3 text-sm text-[#3b1f1f] transition hover:border-[#8a1f1f] hover:text-[#8a1f1f]"
+                  >
+                    {wine.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
     </main>
   );
 }
