@@ -6,7 +6,9 @@ import BoutiqueClient from "../BoutiqueClient";
 const SITE_URL = "https://www.thewinewatchers.com";
 
 export const metadata: Metadata = {
-  title: "Bordeaux Primeurs 2025",
+  title: {
+    absolute: "Bordeaux Primeurs 2025 | The Wine Watchers",
+  },
   description:
     "Découvrez notre sélection de Bordeaux Primeurs 2025 : grands châteaux, appellations prestigieuses, prix, conditionnements et disponibilités en primeur.",
   alternates: {
