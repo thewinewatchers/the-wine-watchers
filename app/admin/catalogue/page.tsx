@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Suspense, useEffect, useMemo, useState } from "react";
@@ -263,7 +264,6 @@ function getAutomaticWeightKg(packaging?: string | null) {
   return 11;
 }
 
-
 async function readApiResponse(response: Response) {
   const rawText = await response.text();
   const contentType = response.headers.get("content-type") || "";
@@ -336,12 +336,14 @@ function AdminCatalogueContent() {
   const [form, setForm] = useState<WineForm>(emptyForm);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [updatingVisibilityId, setUpdatingVisibilityId] = useState<string | null>(
     null
   );
   const [searchWine, setSearchWine] = useState(initialSearch);
+
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -366,7 +368,6 @@ function AdminCatalogueContent() {
     setWines((data || []) as Wine[]);
     setLoading(false);
   }
-
 
   async function loadCatalogueReferences() {
     const [
@@ -474,6 +475,174 @@ function AdminCatalogueContent() {
   const catalogueSearchQuery = searchWine.trim()
     ? `?search=${encodeURIComponent(searchWine.trim())}`
     : "";
+
+  async function handleExportExcel() {
+    if (exporting) return;
+
+    setExporting(true);
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    try {
+      const ExcelJS = (await import("exceljs")).default;
+      const allWines: Record<string, unknown>[] = [];
+      const batchSize = 500;
+      let offset = 0;
+
+      while (true) {
+        const { data, error } = await supabase
+          .from("wines")
+          .select("*")
+          .order("id", { ascending: true })
+          .range(offset, offset + batchSize - 1);
+
+        if (error) {
+          throw new Error(error.message);
+        }
+
+        const batch = (data || []) as Record<string, unknown>[];
+        allWines.push(...batch);
+
+        if (batch.length < batchSize) break;
+        offset += batchSize;
+      }
+
+      if (allWines.length === 0) {
+        setErrorMessage("Aucun vin disponible pour l'export.");
+        return;
+      }
+
+      const preferredColumns = [
+        "id",
+        "slug",
+        "name",
+        "producer",
+        "appellation",
+        "region",
+        "country",
+        "category",
+        "color",
+        "vintage",
+        "price",
+        "compare_at_price",
+        "stock",
+        "bottle_size",
+        "packaging",
+        "weight_kg",
+        "classification",
+        "rating",
+        "hidden_from_site",
+        "image",
+        "additional_images",
+        "description",
+        "story",
+        "tasting_notes",
+        "nose",
+        "palate",
+        "pairing",
+        "serving_temperature",
+        "aging_potential",
+        "grape_varieties",
+        "soil",
+        "style",
+        "meta_content",
+        "seo_title",
+        "seo_description",
+        "keywords",
+        "created_at",
+      ];
+
+      const allKeys = Array.from(
+        new Set(allWines.flatMap((wine) => Object.keys(wine)))
+      );
+
+      const columns = [
+        ...preferredColumns.filter((key) => allKeys.includes(key)),
+        ...allKeys.filter((key) => !preferredColumns.includes(key)).sort(),
+      ];
+
+      const workbook = new ExcelJS.Workbook();
+      workbook.creator = "The Wine Watchers";
+      workbook.created = new Date();
+
+      const worksheet = workbook.addWorksheet("Catalogue complet", {
+        views: [{ state: "frozen", ySplit: 1 }],
+      });
+
+      worksheet.columns = columns.map((key) => ({
+        header: key,
+        key,
+        width: Math.min(Math.max(key.length + 4, 18), 45),
+      }));
+
+      const headerRow = worksheet.getRow(1);
+      headerRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
+      headerRow.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FF1F1A17" },
+      };
+      headerRow.height = 28;
+      headerRow.alignment = { vertical: "middle" };
+
+      for (const wine of allWines) {
+        const row: Record<string, string | number | boolean | null> = {};
+
+        for (const key of columns) {
+          const value = wine[key];
+
+          if (value === null || value === undefined) {
+            row[key] = null;
+          } else if (
+            typeof value === "string" ||
+            typeof value === "number" ||
+            typeof value === "boolean"
+          ) {
+            row[key] = value;
+          } else {
+            row[key] = JSON.stringify(value);
+          }
+        }
+
+        worksheet.addRow(row);
+      }
+
+      worksheet.autoFilter = {
+        from: { row: 1, column: 1 },
+        to: { row: allWines.length + 1, column: columns.length },
+      };
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer as BlobPart], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const date = new Date().toISOString().slice(0, 10);
+
+      link.href = url;
+      link.download = `the-wine-watchers-catalogue-${date}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+      setSuccessMessage(
+        `Export Excel terminé : ${allWines.length} références exportées.`
+      );
+    } catch (error) {
+      console.error("Erreur export Excel :", error);
+      setErrorMessage(
+        error instanceof Error
+          ? `Erreur export Excel : ${error.message}`
+          : "Erreur inconnue lors de l'export Excel."
+      );
+    } finally {
+      setExporting(false);
+    }
+  }
 
   function handleChange(
     event: React.ChangeEvent<
@@ -784,6 +953,15 @@ function AdminCatalogueContent() {
               Import Excel
             </Link>
 
+            <button
+              type="button"
+              onClick={handleExportExcel}
+              disabled={exporting}
+              className="rounded-full border border-[#8a6a2f] px-5 py-3 text-center text-sm uppercase tracking-[0.18em] text-[#8a6a2f] hover:bg-[#8a6a2f] hover:text-white disabled:opacity-50"
+            >
+              {exporting ? "Export en cours..." : "Export Excel"}
+            </button>
+
             <Link
               href="/boutique/bordeaux"
               className="rounded-full bg-black px-5 py-3 text-center text-sm uppercase tracking-[0.18em] text-white hover:bg-[#8a6a2f]"
@@ -847,6 +1025,7 @@ function AdminCatalogueContent() {
                   ))}
                 </datalist>
               </div>
+
               <input name="country" value={form.country} onChange={handleChange} placeholder="Pays" className="rounded-xl border border-neutral-300 px-4 py-3" />
               <input name="color" value={form.color} onChange={handleChange} placeholder="Couleur" className="rounded-xl border border-neutral-300 px-4 py-3" />
               <input name="vintage" value={form.vintage} onChange={handleChange} placeholder="Millésime" className="rounded-xl border border-neutral-300 px-4 py-3" />
@@ -1098,6 +1277,7 @@ function AdminCatalogueContent() {
     </main>
   );
 }
+
 export default function AdminCataloguePage() {
   return (
     <Suspense fallback={<main className="min-h-screen bg-[#f8f3ea] px-6 py-12 text-[#1f1a17]">Chargement du catalogue...</main>}>
