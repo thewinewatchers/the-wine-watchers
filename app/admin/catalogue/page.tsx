@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Suspense, useEffect, useMemo, useState } from "react";
@@ -343,7 +342,6 @@ function AdminCatalogueContent() {
     null
   );
   const [searchWine, setSearchWine] = useState(initialSearch);
-
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -515,6 +513,7 @@ function AdminCatalogueContent() {
       const preferredColumns = [
         "id",
         "slug",
+        "product_url",
         "name",
         "producer",
         "appellation",
@@ -553,7 +552,10 @@ function AdminCatalogueContent() {
       ];
 
       const allKeys = Array.from(
-        new Set(allWines.flatMap((wine) => Object.keys(wine)))
+        new Set([
+          ...allWines.flatMap((wine) => Object.keys(wine)),
+          "product_url",
+        ])
       );
 
       const columns = [
@@ -572,7 +574,10 @@ function AdminCatalogueContent() {
       worksheet.columns = columns.map((key) => ({
         header: key,
         key,
-        width: Math.min(Math.max(key.length + 4, 18), 45),
+        width:
+          key === "product_url"
+            ? 75
+            : Math.min(Math.max(key.length + 4, 18), 45),
       }));
 
       const headerRow = worksheet.getRow(1);
@@ -589,6 +594,17 @@ function AdminCatalogueContent() {
         const row: Record<string, string | number | boolean | null> = {};
 
         for (const key of columns) {
+          if (key === "product_url") {
+            const slug =
+              typeof wine.slug === "string" ? wine.slug.trim() : "";
+
+            row[key] = slug
+              ? `https://www.thewinewatchers.com/boutique/vin/${encodeURIComponent(slug)}`
+              : null;
+
+            continue;
+          }
+
           const value = wine[key];
 
           if (value === null || value === undefined) {
@@ -604,7 +620,23 @@ function AdminCatalogueContent() {
           }
         }
 
-        worksheet.addRow(row);
+        const excelRow = worksheet.addRow(row);
+        const productUrl = row.product_url;
+
+        if (typeof productUrl === "string" && productUrl) {
+          const urlCell = excelRow.getCell("product_url");
+
+          urlCell.value = {
+            text: productUrl,
+            hyperlink: productUrl,
+            tooltip: "Ouvrir la fiche vin The Wine Watchers",
+          };
+
+          urlCell.font = {
+            color: { argb: "FF0563C1" },
+            underline: true,
+          };
+        }
       }
 
       worksheet.autoFilter = {
@@ -987,7 +1019,6 @@ function AdminCatalogueContent() {
                 {successMessage}
               </div>
             )}
-
             <div className="grid gap-5 md:grid-cols-2">
               <input name="name" value={form.name} onChange={handleChange} placeholder="Nom du vin *" className="rounded-xl border border-neutral-300 px-4 py-3" />
               <div>
