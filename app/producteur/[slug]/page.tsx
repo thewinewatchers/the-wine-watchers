@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { PRODUCER_EDITORIAL_LIBRARY } from "@/lib/producer-editorial";
@@ -34,8 +34,8 @@ function slugify(value: string) {
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/œ/g, "oe")
-    .replace(/æ/g, "ae")
+    .replace(/┼ô/g, "oe")
+    .replace(/├ª/g, "ae")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
@@ -49,7 +49,7 @@ function formatPrice(price?: string | number | null) {
       : Number(
           price
             .toString()
-            .replace(/[€\s]/g, "")
+            .replace(/[Ôé¼\s]/g, "")
             .replace(/\./g, "")
             .replace(",", "."),
         );
@@ -60,7 +60,7 @@ function formatPrice(price?: string | number | null) {
     value.toLocaleString("fr-FR", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    }) + " € HT"
+    }) + " Ôé¼ HT"
   );
 }
 
@@ -70,7 +70,7 @@ function parsePrice(price?: string | number | null) {
 
   const cleaned = price
     .toString()
-    .replace(/[€\s]/g, "")
+    .replace(/[Ôé¼\s]/g, "")
     .replace(/\./g, "")
     .replace(",", ".");
 
@@ -379,7 +379,7 @@ function getWineGroupTitle(wine: Wine) {
   if (vintage) {
     const titleBeforeVintage = originalName
       .replace(
-        new RegExp("\\s+" + escapeRegExp(vintage) + "(?:\\s*[–—-]\\s*.*)?$", "i"),
+        new RegExp("\\s+" + escapeRegExp(vintage) + "(?:\\s*[ÔÇôÔÇö-]\\s*.*)?$", "i"),
         "",
       )
       .trim();
@@ -390,7 +390,7 @@ function getWineGroupTitle(wine: Wine) {
   }
 
   const titleWithoutYear = originalName
-    .replace(/\s+(?:19|20)\d{2}(?:\s*[–—-]\s*.*)?$/i, "")
+    .replace(/\s+(?:19|20)\d{2}(?:\s*[ÔÇôÔÇö-]\s*.*)?$/i, "")
     .replace(/\s+/g, " ")
     .trim();
 
@@ -406,8 +406,7 @@ export async function generateMetadata({
 
   const { data } = await supabase
     .from("wines")
-    .select("producer")
-    .or("hidden_from_site.is.null,hidden_from_site.eq.false");
+    .select("producer");
 
   const producers = Array.from(
     new Set((data || []).map((wine) => wine.producer).filter(Boolean)),
@@ -417,7 +416,7 @@ export async function generateMetadata({
 
   if (!producer) {
     return {
-      title: "Producteur introuvable – The Wine Watchers",
+      title: "Producteur introuvable ÔÇô The Wine Watchers",
       robots: {
         index: false,
         follow: false,
@@ -429,13 +428,13 @@ export async function generateMetadata({
 
   return {
     title: editorialContent
-      ? producer + " – Histoire, terroir et vins | The Wine Watchers"
-      : producer + " – Vins disponibles | The Wine Watchers",
+      ? producer + " ÔÇô Histoire, terroir et vins | The Wine Watchers"
+      : producer + " ÔÇô Vins disponibles | The Wine Watchers",
     description: editorialContent
       ? editorialContent.introduction
-      : "Découvrez les vins disponibles de " +
+      : "D├®couvrez les vins disponibles de " +
         producer +
-        " chez The Wine Watchers : grands crus, millésimes recherchés et bouteilles de collection.",
+        " chez The Wine Watchers : grands crus, mill├®simes recherch├®s et bouteilles de collection.",
     alternates: {
       canonical: SITE_URL + "/producteur/" + slug,
     },
@@ -445,13 +444,13 @@ export async function generateMetadata({
     },
     openGraph: {
       title: editorialContent
-        ? producer + " – Histoire, terroir et vins | The Wine Watchers"
-        : producer + " – Vins disponibles | The Wine Watchers",
+        ? producer + " ÔÇô Histoire, terroir et vins | The Wine Watchers"
+        : producer + " ÔÇô Vins disponibles | The Wine Watchers",
       description: editorialContent
         ? editorialContent.introduction
-        : "Découvrez les vins disponibles de " +
+        : "D├®couvrez les vins disponibles de " +
           producer +
-          " chez The Wine Watchers : grands crus, millésimes recherchés et bouteilles de collection.",
+          " chez The Wine Watchers : grands crus, mill├®simes recherch├®s et bouteilles de collection.",
       url: SITE_URL + "/producteur/" + slug,
       siteName: "The Wine Watchers",
       locale: "fr_FR",
@@ -469,8 +468,7 @@ export default async function ProducteurPage({
 
   const { data: producerData } = await supabase
     .from("wines")
-    .select("producer")
-    .or("hidden_from_site.is.null,hidden_from_site.eq.false");
+    .select("producer");
 
   const producers = Array.from(
     new Set((producerData || []).map((wine) => wine.producer).filter(Boolean)),
@@ -557,7 +555,7 @@ export default async function ProducteurPage({
     "@type": "ItemList",
     name: "Vins de " + producer,
     description:
-      "Sélection de vins disponibles de " + producer + " chez The Wine Watchers.",
+      "S├®lection de vins disponibles de " + producer + " chez The Wine Watchers.",
     url: SITE_URL + "/producteur/" + slug,
     numberOfItems: visibleWines.length,
     itemListElement: visibleWines.map((wine, index) => ({
@@ -622,7 +620,7 @@ export default async function ProducteurPage({
             href="/boutique"
             className="text-sm uppercase tracking-[0.25em] text-[#d8b56d] hover:text-white"
           >
-            ← Retour boutique
+            ÔåÉ Retour boutique
           </Link>
 
           <p className="mt-10 text-sm uppercase tracking-[0.35em] text-[#d8b56d]">
@@ -634,9 +632,9 @@ export default async function ProducteurPage({
           </h1>
 
           <p className="mt-6 max-w-3xl text-base leading-8 text-white/75 md:text-lg">
-            Découvrez les vins disponibles de {producer} chez The Wine Watchers
-            : grands crus, millésimes recherchés, appellations prestigieuses et
-            références de collection.
+            D├®couvrez les vins disponibles de {producer} chez The Wine Watchers
+            : grands crus, mill├®simes recherch├®s, appellations prestigieuses et
+            r├®f├®rences de collection.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
@@ -657,7 +655,7 @@ export default async function ProducteurPage({
         {appellations.length > 0 && (
           <div className="mb-10 rounded-[2rem] border border-[#e1d1bd] bg-white p-8 shadow-sm">
             <p className="text-sm uppercase tracking-[0.28em] text-[#8a6a2f]">
-              Appellations liées
+              Appellations li├®es
             </p>
 
             <div className="mt-5 flex flex-wrap gap-3">
@@ -722,7 +720,7 @@ export default async function ProducteurPage({
 
         <div className="mb-8">
           <p className="text-sm uppercase tracking-[0.28em] text-[#8a6a2f]">
-            Sélection disponible
+            S├®lection disponible
           </p>
 
           <h2 className="mt-3 font-serif text-4xl text-[#24110d]">
@@ -730,9 +728,9 @@ export default async function ProducteurPage({
           </h2>
 
           <p className="mt-4 max-w-3xl text-sm leading-7 text-[#6d5b50]">
-            Retrouvez l’ensemble des vins actuellement disponibles de ce
-            producteur. Consultez les différents millésimes, comparez les
-            appellations et accédez en un clic à la fiche détaillée de chaque
+            Retrouvez lÔÇÖensemble des vins actuellement disponibles de ce
+            producteur. Consultez les diff├®rents mill├®simes, comparez les
+            appellations et acc├®dez en un clic ├á la fiche d├®taill├®e de chaque
             vin.
           </p>
         </div>
@@ -758,7 +756,7 @@ export default async function ProducteurPage({
                     </div>
 
                     <p className="text-xs text-[#7d6b5e]">
-                      {wineGroup.wines.length} millésime
+                      {wineGroup.wines.length} mill├®sime
                       {wineGroup.wines.length > 1 ? "s" : ""}
                     </p>
                   </div>
@@ -884,7 +882,7 @@ export default async function ProducteurPage({
                               href={wineUrl}
                               className="rounded-full bg-[#8a1f1f] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#641313]"
                             >
-                              Détails
+                              D├®tails
                             </Link>
                           </div>
                         </div>
@@ -900,11 +898,11 @@ export default async function ProducteurPage({
         {(regions.length > 0 || appellations.length > 0) && (
           <section className="mt-14 rounded-[2rem] border border-[#e1d1bd] bg-white p-8 shadow-sm">
             <p className="text-sm uppercase tracking-[0.28em] text-[#8a6a2f]">
-              Explorer également
+              Explorer ├®galement
             </p>
 
             <h2 className="mt-3 font-serif text-3xl text-[#24110d]">
-              Poursuivre la découverte
+              Poursuivre la d├®couverte
             </h2>
 
             <div className="mt-6 flex flex-wrap gap-3">
@@ -928,7 +926,7 @@ export default async function ProducteurPage({
                   )}
                   className="rounded-full border border-[#d8b56d]/50 bg-[#fffaf3] px-5 py-2 text-sm text-[#6d5b50] transition hover:border-[#8a1f1f] hover:text-[#8a1f1f]"
                 >
-                  Voir tous les vins de l’appellation {appellation}
+                  Voir tous les vins de lÔÇÖappellation {appellation}
                 </Link>
               ))}
             </div>
@@ -938,3 +936,4 @@ export default async function ProducteurPage({
     </main>
   );
 }
+
