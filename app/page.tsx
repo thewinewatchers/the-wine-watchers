@@ -9,24 +9,40 @@ type Wine = {
   vintage?: string | number | null;
   price?: string | number | null;
   compare_at_price?: string | number | null;
+  image?: string | null;
+  hidden_from_site?: boolean | null;
 };
+
+const categories = [
+  { title: "Bordeaux", slug: "bordeaux" },
+  { title: "Bourgogne", slug: "bourgogne" },
+  { title: "Rhône", slug: "rhone" },
+  { title: "Champagne", slug: "champagne" },
+  { title: "Italie", slug: "italie" },
+  { title: "Espagne", slug: "espagne" },
+  { title: "États-Unis", slug: "usa" },
+  { title: "Primeurs 2025", slug: "primeurs-2025" },
+];
 
 function parsePrice(value?: string | number | null) {
   if (value === undefined || value === null || value === "") return 0;
-  if (typeof value === "number") return value;
 
-  const cleaned = value
-    .toString()
-    .replace(/[€\s]/g, "")
-    .replace(/\./g, "")
-    .replace(",", ".");
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : 0;
+  }
 
-  const parsed = Number(cleaned);
-  return Number.isNaN(parsed) ? 0 : parsed;
+  const raw = String(value).replace(/[€\s]/g, "");
+  const normalized = raw.includes(",")
+    ? raw.replace(/\./g, "").replace(",", ".")
+    : raw;
+
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : 0;
 }
 
 function formatPrice(value?: string | number | null) {
   const price = parsePrice(value);
+
   if (price <= 0) return "Prix sur demande";
 
   return (
@@ -49,326 +65,275 @@ function getDiscountInfo(wine: Wine) {
   return { saving, percent };
 }
 
-async function getOfferWines() {
+function getWineImage(image?: string | null) {
+  const value = String(image || "").trim();
+
+  if (!value) return "";
+
+  if (/^https?:\/\//i.test(value)) {
+    return value;
+  }
+
+  return `/${value.replace(/\\/g, "/").replace(/^\/+/, "")}`;
+}
+
+async function getOfferWines(): Promise<Wine[]> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 
   if (!supabaseUrl || !supabaseKey) return [];
 
   const url =
-    `${supabaseUrl}/rest/v1/wines?select=id,slug,name,vintage,price,compare_at_price,hidden_from_site` +
+    `${supabaseUrl}/rest/v1/wines?select=id,slug,name,vintage,price,compare_at_price,image,hidden_from_site` +
+    `&or=(hidden_from_site.eq.false,hidden_from_site.is.null)` +
     `&compare_at_price=not.is.null&order=created_at.desc&limit=24`;
 
-  const response = await fetch(url, {
-    headers: {
-      apikey: supabaseKey,
-      Authorization: `Bearer ${supabaseKey}`,
-    },
-    next: { revalidate: 3600 },
-  });
+  try {
+    const response = await fetch(url, {
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+      },
+      next: { revalidate: 3600 },
+    });
 
-  if (!response.ok) return [];
+    if (!response.ok) return [];
 
-  const data = (await response.json()) as (Wine & {
-    hidden_from_site?: boolean | null;
-  })[];
+    const data = (await response.json()) as Wine[];
 
-  return data
-    .filter((wine) => wine.hidden_from_site !== true)
-    .filter((wine) => getDiscountInfo(wine))
-    .sort((a, b) => {
-      const discountA = getDiscountInfo(a);
-      const discountB = getDiscountInfo(b);
-      return (discountB?.percent || 0) - (discountA?.percent || 0);
-    })
-    .slice(0, 3);
+    if (!Array.isArray(data)) return [];
+
+    return data
+      .filter((wine) => wine.hidden_from_site !== true)
+      .filter((wine) => getDiscountInfo(wine))
+      .sort((a, b) => {
+        const discountA = getDiscountInfo(a);
+        const discountB = getDiscountInfo(b);
+
+        return (discountB?.percent || 0) - (discountA?.percent || 0);
+      })
+      .slice(0, 3);
+  } catch {
+    return [];
+  }
 }
 
 export default async function Home() {
   const offerWines = await getOfferWines();
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        backgroundImage:
-          "linear-gradient(115deg, rgba(12,8,7,0.92), rgba(28,12,14,0.78), rgba(0,0,0,0.58))",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        textAlign: "center",
-        padding: "34px 22px 70px",
-        fontFamily: "Georgia, serif",
-      }}
-    >
-      <div style={{ maxWidth: 1080, margin: "0 auto", paddingTop: 76 }}>
-        <p
-          style={{
-            letterSpacing: 7,
-            color: "#d6b36a",
-            marginBottom: 22,
-            textTransform: "uppercase",
-            fontSize: 13,
-          }}
-        >
-          The Wine Watchers
-        </p>
+    <main className="min-h-screen bg-white text-stone-800">
+      <div className="mx-auto max-w-6xl px-5 py-8 md:px-8 md:py-10">
+        <section className="grid items-center gap-6 border-b border-stone-200 pb-8 md:grid-cols-[1.3fr_0.7fr] md:gap-10">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-widest text-[#8a1f1f]">
+              The Wine Watchers
+            </p>
 
-        <h1
-          style={{
-            fontSize: "clamp(50px, 8vw, 104px)",
-            color: "#fffaf3",
-            lineHeight: 0.95,
-            marginBottom: 30,
-            textShadow: "0 18px 48px rgba(0,0,0,0.55)",
-          }}
-        >
-          L’Excellence des
-          <br />
-          Grands Crus
-        </h1>
+            <h1 className="mt-3 font-serif text-3xl leading-tight md:text-4xl">
+              Grands vins et bouteilles de collection
+            </h1>
 
-        <p
-          style={{
-            color: "#efe2cf",
-            fontSize: 22,
-            lineHeight: 1.7,
-            maxWidth: 760,
-            margin: "0 auto 42px",
-          }}
-        >
-          Une sélection confidentielle de vins rares et prestigieux destinée aux
-          amateurs, collectionneurs et passionnés de grands terroirs.
-        </p>
+            <p className="mt-4 max-w-xl text-sm leading-7 text-stone-600">
+              Bordeaux, Bourgogne, Champagne et grandes signatures du monde :
+              découvrez notre sélection de vins rares et prestigieux.
+            </p>
 
-        <Link
-          href="/boutique"
-          style={{
-            display: "inline-block",
-            padding: "18px 38px",
-            borderRadius: 999,
-            background: "linear-gradient(135deg, #f0d58a, #c39a42)",
-            color: "#1f1a17",
-            textDecoration: "none",
-            fontWeight: "bold",
-            fontSize: 18,
-            boxShadow: "0 18px 42px rgba(0,0,0,0.32)",
-          }}
-        >
-          Découvrir la collection
-        </Link>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <Link
+                href="/boutique"
+                className="rounded bg-[#8a1f1f] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#641313]"
+              >
+                Découvrir nos vins
+              </Link>
+
+              <Link
+                href="/boutique/primeurs-2025"
+                className="rounded border border-stone-300 px-5 py-3 text-sm font-medium text-[#8a1f1f] transition-colors hover:border-[#8a1f1f]"
+              >
+                Primeurs 2025
+              </Link>
+            </div>
+          </div>
+
+          <div className="relative hidden h-56 overflow-hidden rounded-lg md:block">
+            <Image
+              src="/images/accueil-sommelier.jpg"
+              alt="Sommelier dégustant un grand vin — The Wine Watchers"
+              fill
+              priority
+              sizes="(min-width: 768px) 380px, 100vw"
+              className="object-cover"
+            />
+          </div>
+        </section>
+
+        <section aria-labelledby="regions-title" className="py-6">
+          <h2
+            id="regions-title"
+            className="font-serif text-2xl text-stone-900"
+          >
+            Explorer nos vins
+          </h2>
+
+          <nav
+            aria-label="Régions et Primeurs"
+            className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4"
+          >
+            {categories.map((category) => (
+              <Link
+                key={category.slug}
+                href={`/boutique/${category.slug}`}
+                className="flex items-center justify-between gap-2 rounded border border-stone-200 px-4 py-3 text-sm font-medium text-[#591c24] transition-colors hover:border-[#8a1f1f] hover:bg-stone-50"
+              >
+                {category.title}
+
+                <span aria-hidden="true" className="text-stone-400">
+                  →
+                </span>
+              </Link>
+            ))}
+          </nav>
+        </section>
 
         {offerWines.length > 0 && (
           <section
-            style={{
-              margin: "48px auto 0",
-              maxWidth: 930,
-              borderRadius: 28,
-              border: "1px solid rgba(214,179,106,0.42)",
-              padding: "26px",
-              background: "rgba(20,12,10,0.56)",
-              boxShadow: "0 24px 70px rgba(0,0,0,0.38)",
-              backdropFilter: "blur(8px)",
-            }}
+            aria-labelledby="offers-title"
+            className="border-t border-stone-200 py-6"
           >
-            <h2
-              style={{
-                color: "#d6b36a",
-                letterSpacing: 4,
-                textTransform: "uppercase",
-                fontSize: 12,
-                marginBottom: 22,
-                fontWeight: 400,
-              }}
-            >
-              Nos offres du moment
-            </h2>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2
+                id="offers-title"
+                className="font-serif text-2xl text-stone-900"
+              >
+                Nos offres du moment
+              </h2>
 
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                gap: 16,
-                textAlign: "center",
-              }}
-            >
+              <Link
+                href="/offres"
+                prefetch={false}
+                className="text-sm text-[#8a1f1f] hover:underline"
+              >
+                Toutes les offres →
+              </Link>
+            </div>
+
+            <div className="mt-4 grid gap-4 md:grid-cols-3">
               {offerWines.map((wine) => {
                 const discount = getDiscountInfo(wine);
                 const href = `/boutique/vin/${wine.slug || wine.id}`;
+                const name = wine.name || "Grand vin";
+                const image = getWineImage(wine.image);
+
+                const displayName =
+                  wine.vintage &&
+                  !name.includes(String(wine.vintage))
+                    ? `${name} ${wine.vintage}`
+                    : name;
 
                 return (
-                  <Link
+                  <article
                     key={wine.id}
-                    href={href}
-                    prefetch={false}
-                    style={{
-                      display: "block",
-                      textDecoration: "none",
-                      color: "#fffaf3",
-                      padding: "22px 16px",
-                      borderRadius: 20,
-                      background: "rgba(255,250,243,0.08)",
-                      border: "1px solid rgba(255,250,243,0.14)",
-                    }}
+                    className="flex flex-col rounded-lg border border-stone-200 p-5"
                   >
-                    <h3
-                      style={{
-                        fontSize: 17,
-                        lineHeight: 1.35,
-                        marginBottom: 10,
-                        color: "#fffaf3",
-                      }}
+                    <Link
+                      href={href}
+                      prefetch={false}
+                      className="relative mb-4 flex h-44 items-center justify-center"
+                      aria-label={displayName}
                     >
-                      {wine.name}
-                      {wine.vintage &&
-                      !String(wine.name || "").includes(String(wine.vintage))
-                        ? ` ${wine.vintage}`
-                        : ""}
-                    </h3>
+                      {image ? (
+                        <Image
+                          src={image}
+                          alt={displayName}
+                          fill
+                          sizes="(max-width: 767px) 90vw, 320px"
+                          className="object-contain"
+                        />
+                      ) : (
+                        <span className="text-sm text-stone-400">
+                          Photo à venir
+                        </span>
+                      )}
+                    </Link>
 
-                    <p
-                      style={{
-                        color: "rgba(232,220,203,0.72)",
-                        textDecoration: "line-through",
-                        fontSize: 13,
-                        marginBottom: 3,
-                      }}
-                    >
-                      {formatPrice(wine.compare_at_price)}
-                    </p>
+                    <div className="flex items-start justify-between gap-3">
+                      <Link href={href} prefetch={false}>
+                        <h3 className="font-serif text-xl leading-snug hover:text-[#8a1f1f]">
+                          {displayName}
+                        </h3>
+                      </Link>
 
-                    <p
-                      style={{
-                        color: "#d6b36a",
-                        fontSize: 22,
-                        fontWeight: "bold",
-                        marginBottom: 4,
-                      }}
-                    >
-                      {formatPrice(wine.price)}
-                    </p>
+                      {discount && (
+                        <span className="shrink-0 rounded bg-[#8a1f1f] px-2 py-1 text-xs font-semibold text-white">
+                          −{discount.percent} %
+                        </span>
+                      )}
+                    </div>
 
-                    {discount && (
-                      <p
-                        style={{
-                          color: "#efe2cf",
-                          fontSize: 13,
-                          marginBottom: 10,
-                        }}
-                      >
-                        -{discount.percent}%
+                    <div className="mt-auto pt-5">
+                      <p className="text-xs text-stone-400 line-through">
+                        {formatPrice(wine.compare_at_price)}
                       </p>
-                    )}
 
-                    <span
-                      style={{
-                        color: "#d6b36a",
-                        fontSize: 12,
-                        fontWeight: "bold",
-                        textTransform: "uppercase",
-                        letterSpacing: 2,
-                      }}
-                    >
-                      Découvrir →
-                    </span>
-                  </Link>
+                      <p className="mt-1 text-xl font-semibold text-[#8a1f1f]">
+                        {formatPrice(wine.price)}
+                      </p>
+
+                      <Link
+                        href={href}
+                        prefetch={false}
+                        className="mt-4 block rounded border border-[#8a1f1f] px-3 py-2 text-center text-sm font-medium text-[#8a1f1f] transition-colors hover:bg-[#8a1f1f] hover:text-white"
+                      >
+                        Voir le vin
+                      </Link>
+                    </div>
+                  </article>
                 );
               })}
             </div>
 
-            <div style={{ marginTop: 22 }}>
-              <Link
-                href="/offres"
-                prefetch={false}
-                style={{
-                  color: "#d6b36a",
-                  textDecoration: "none",
-                  fontSize: 12,
-                  fontWeight: "bold",
-                  textTransform: "uppercase",
-                  letterSpacing: 2,
-                }}
-              >
-                Voir toutes les offres →
-              </Link>
-            </div>
+            <p className="mt-3 text-xs leading-5 text-stone-500">
+              Prix affichés hors taxes. TVA calculée lors de la finalisation
+              de la commande.
+            </p>
           </section>
         )}
 
-        <section
-          style={{
-            margin: "50px auto 0",
-            maxWidth: 820,
-            borderRadius: 32,
-            padding: "38px 30px",
-            background:
-              "linear-gradient(145deg, rgba(255,250,243,0.16), rgba(255,250,243,0.07))",
-            border: "1px solid rgba(214,179,106,0.46)",
-            boxShadow: "0 28px 80px rgba(0,0,0,0.42)",
-            backdropFilter: "blur(10px)",
-          }}
-        >
-          <h2
-            style={{
-              color: "#fffaf3",
-              fontSize: "clamp(28px, 4vw, 38px)",
-              marginBottom: 14,
-              lineHeight: 1.15,
-            }}
-          >
-            Recevez nos allocations et offres exclusives
-          </h2>
+        <section className="flex flex-col justify-between gap-4 border-t border-stone-200 py-6 sm:flex-row sm:items-center">
+          <div>
+            <h2 className="font-serif text-xl">
+              Vous recherchez une bouteille précise ?
+            </h2>
 
-          <p
-            style={{
-              color: "#efe2cf",
-              fontSize: 17,
-              lineHeight: 1.65,
-              margin: "0 auto 10px",
-              maxWidth: 600,
-            }}
-          >
-            Primeurs Bordeaux, Bourgognes rares, nouvelles disponibilités et
-            arrivages exceptionnels.
-          </p>
+            <p className="mt-2 text-sm leading-6 text-stone-600">
+              Château, domaine, millésime ou grand format : contactez notre
+              équipe.
+            </p>
+          </div>
 
-          <NewsletterForm />
+          <Link
+            href="/contact"
+            className="shrink-0 text-sm font-medium text-[#8a1f1f] hover:underline"
+          >
+            Nous contacter →
+          </Link>
         </section>
 
         <section
-          style={{
-            margin: "52px auto 0",
-            maxWidth: 760,
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
+          aria-labelledby="newsletter-title"
+          className="mt-2 rounded-lg border border-stone-200 bg-stone-50 p-5 md:p-6"
         >
-          <div
-            style={{
-              width: "100%",
-              borderRadius: 30,
-              padding: 10,
-              background: "rgba(255,250,243,0.10)",
-              border: "1px solid rgba(214,179,106,0.34)",
-              boxShadow: "0 28px 75px rgba(0,0,0,0.46)",
-            }}
-          >
-            <Image
-              src="/images/accueil-sommelier.jpg"
-              alt="Sommelier dégustant un grand vin - The Wine Watchers"
-              width={933}
-              height={800}
-              sizes="(max-width: 760px) 100vw, 760px"
-              style={{
-                display: "block",
-                width: "100%",
-                height: "clamp(300px, 42vw, 430px)",
-                borderRadius: 22,
-                objectFit: "cover",
-                objectPosition: "center center",
-              }}
-            />
-          </div>
+          <h2 id="newsletter-title" className="font-serif text-2xl">
+            Nos allocations et nouvelles disponibilités
+          </h2>
+
+          <p className="mt-2 text-sm leading-6 text-stone-600">
+            Recevez nos offres, nos arrivages et les nouvelles sorties
+            Primeurs.
+          </p>
+
+          <NewsletterForm />
         </section>
       </div>
     </main>

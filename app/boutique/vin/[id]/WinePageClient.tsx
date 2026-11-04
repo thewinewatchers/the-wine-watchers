@@ -82,10 +82,7 @@ function getSessionId() {
 
 function normalizeArray(value?: string[] | string): string[] {
   if (!value) return [];
-
-  if (Array.isArray(value)) {
-    return value.filter(Boolean);
-  }
+  if (Array.isArray(value)) return value.filter(Boolean);
 
   return value
     .split(",")
@@ -100,10 +97,7 @@ function parsePrice(price?: string | number) {
     return Number.isNaN(price) ? 0 : price;
   }
 
-  const raw = String(price)
-    .trim()
-    .replace(/[€\s]/g, "");
-
+  const raw = String(price).trim().replace(/[€\s]/g, "");
   const normalized = raw.includes(",")
     ? raw.replace(/\./g, "").replace(",", ".")
     : raw;
@@ -234,10 +228,7 @@ function getDiscountInfo(
   const saving = compareAtPrice - price;
   const percent = Math.round((saving / compareAtPrice) * 100);
 
-  return {
-    saving,
-    percent,
-  };
+  return { saving, percent };
 }
 
 function categoryToSlug(category?: string) {
@@ -376,65 +367,19 @@ function getMainCategorySlug(wine?: Wine | null) {
 
   return categoryToSlug(wine.category || wine.region || wine.country);
 }
-
 const DEDICATED_APPELLATION_SLUGS = new Set([
-  // Bordeaux
-  "pauillac",
-  "margaux",
-  "saint-julien",
-  "saint-estephe",
-  "pomerol",
-  "saint-emilion",
-  "pessac-leognan",
-  "sauternes",
-
-  // Bourgogne
-  "cote-de-nuits",
-  "cote-de-beaune",
-  "chablis",
-  "meursault",
-  "puligny-montrachet",
-  "gevrey-chambertin",
-  "vosne-romanee",
-  "chambolle-musigny",
-
-  // Rhône
-  "cote-rotie",
-  "hermitage",
-  "cornas",
-  "saint-joseph",
-  "chateauneuf-du-pape",
-  "gigondas",
-
-  // Italie
-  "toscane",
-  "piemont",
-  "barolo",
-  "barbaresco",
-  "brunello-di-montalcino",
-  "bolgheri",
-  "super-toscans",
-
-  // Espagne
-  "ribera-del-duero",
-  "rioja",
-  "priorat",
-  "toro",
-  "rias-baixas",
-
-  // USA
-  "napa-valley",
-  "sonoma",
-  "oakville",
-  "rutherford",
-  "stags-leap-district",
-
-  // Champagne
-  "montagne-de-reims",
-  "vallee-de-la-marne",
-  "cote-des-blancs",
-  "cote-des-bar",
-  "champagne",
+  "pauillac", "margaux", "saint-julien", "saint-estephe",
+  "pomerol", "saint-emilion", "pessac-leognan", "sauternes",
+  "cote-de-nuits", "cote-de-beaune", "chablis", "meursault",
+  "puligny-montrachet", "gevrey-chambertin", "vosne-romanee",
+  "chambolle-musigny", "cote-rotie", "hermitage", "cornas",
+  "saint-joseph", "chateauneuf-du-pape", "gigondas",
+  "toscane", "piemont", "barolo", "barbaresco",
+  "brunello-di-montalcino", "bolgheri", "super-toscans",
+  "ribera-del-duero", "rioja", "priorat", "toro", "rias-baixas",
+  "napa-valley", "sonoma", "oakville", "rutherford",
+  "stags-leap-district", "montagne-de-reims", "vallee-de-la-marne",
+  "cote-des-blancs", "cote-des-bar", "champagne",
 ]);
 
 function getAppellationHref(wine?: Wine | null) {
@@ -447,7 +392,6 @@ function getAppellationHref(wine?: Wine | null) {
   }
 
   const mainCategorySlug = getMainCategorySlug(wine);
-
   if (!mainCategorySlug) return "";
 
   return `/boutique/${mainCategorySlug}?appellation=${encodeURIComponent(
@@ -461,39 +405,16 @@ function getCategoryLabel(wine?: Wine | null) {
   const mainCategorySlug = getMainCategorySlug(wine);
   const currentCategorySlug = categoryToSlug(wine.category);
 
-  if (
-    mainCategorySlug === "usa" &&
-    (!wine.category || currentCategorySlug === "autres")
-  ) {
-    return "USA";
-  }
+  if (!wine.category || currentCategorySlug === "autres") {
+    const labels: Record<string, string> = {
+      usa: "USA",
+      italie: "Grands vins d’Italie",
+      espagne: "Espagne",
+      bourgogne: "Bourgogne",
+      bordeaux: "Bordeaux",
+    };
 
-  if (
-    mainCategorySlug === "italie" &&
-    (!wine.category || currentCategorySlug === "autres")
-  ) {
-    return "Grands vins d’Italie";
-  }
-
-  if (
-    mainCategorySlug === "espagne" &&
-    (!wine.category || currentCategorySlug === "autres")
-  ) {
-    return "Espagne";
-  }
-
-  if (
-    mainCategorySlug === "bourgogne" &&
-    (!wine.category || currentCategorySlug === "autres")
-  ) {
-    return "Bourgogne";
-  }
-
-  if (
-    mainCategorySlug === "bordeaux" &&
-    (!wine.category || currentCategorySlug === "autres")
-  ) {
-    return "Bordeaux";
+    if (labels[mainCategorySlug]) return labels[mainCategorySlug];
   }
 
   return wine.category || wine.country || wine.region || "Grand vin";
@@ -513,16 +434,7 @@ function producerToSlug(producer?: string) {
 }
 
 function appellationToSlug(appellation?: string) {
-  if (!appellation) return "";
-
-  return appellation
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/œ/g, "oe")
-    .replace(/æ/g, "ae")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+  return producerToSlug(appellation);
 }
 
 function getWineUrl(wine: Wine) {
@@ -539,11 +451,9 @@ function InfoCard({
   if (!value && value !== 0) return null;
 
   return (
-    <div className="rounded-[1.5rem] border border-[#e1d1bd] bg-[#fffaf3] p-5 shadow-sm">
-      <p className="text-xs uppercase tracking-[0.24em] text-[#8a6a2f]">
-        {label}
-      </p>
-      <div className="mt-3 text-base font-medium text-[#24110d]">{value}</div>
+    <div className="grid grid-cols-[110px_minmax(0,1fr)] gap-3 border-b border-stone-100 py-2.5 text-sm">
+      <dt className="text-stone-500">{label}</dt>
+      <dd className="min-w-0 text-stone-800">{value}</dd>
     </div>
   );
 }
@@ -558,14 +468,14 @@ function TextSection({
   if (!children) return null;
 
   return (
-    <section className="rounded-[2rem] border border-[#e1d1bd] bg-[#fffaf3] p-8 shadow-sm">
-      <p className="text-sm uppercase tracking-[0.28em] text-[#8a6a2f]">
+    <details className="border-b border-stone-200 py-4">
+      <summary className="cursor-pointer font-serif text-xl text-stone-900">
         {title}
-      </p>
-      <p className="mt-5 whitespace-pre-line text-base leading-8 text-[#6d5b50]">
+      </summary>
+      <p className="mt-4 whitespace-pre-line text-sm leading-7 text-stone-600">
         {children}
       </p>
-    </section>
+    </details>
   );
 }
 
@@ -579,24 +489,24 @@ function RelatedWineList({
   if (!wines || wines.length === 0) return null;
 
   return (
-    <div className="rounded-[1.5rem] border border-[#e1d1bd] bg-white p-5 shadow-sm">
-      <h3 className="font-serif text-xl text-[#24110d]">{title}</h3>
-
-      <div className="mt-4 grid gap-3">
+    <div>
+      <h3 className="font-serif text-lg text-stone-900">{title}</h3>
+      <ul className="mt-3 divide-y divide-stone-100">
         {wines.map((item) => (
-          <Link
-            key={`${item.id}-${item.slug}`}
-            href={getWineUrl(item)}
-            className="rounded-2xl border border-[#eadcca] bg-[#fffaf3] px-4 py-3 text-sm font-medium text-[#6d5b50] transition hover:border-[#8a6a2f] hover:text-[#8a1f1f]"
-          >
-            {item.name}
-            {item.vintage &&
-            !String(item.name || "").includes(String(item.vintage))
-              ? ` ${item.vintage}`
-              : ""}
-          </Link>
+          <li key={`${item.id}-${item.slug}`} className="py-2">
+            <Link
+              href={getWineUrl(item)}
+              className="text-sm leading-6 text-[#8a1f1f] hover:underline"
+            >
+              {item.name}
+              {item.vintage &&
+              !String(item.name || "").includes(String(item.vintage))
+                ? ` ${item.vintage}`
+                : ""}
+            </Link>
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
   );
 }
@@ -799,13 +709,11 @@ export default function WinePage({ initialWine }: { initialWine: Wine }) {
         setWishlistMessage(
           "Connectez-vous pour ajouter ce vin à votre wishlist."
         );
-        setWishlistLoading(false);
         return;
       }
 
       if (isInWishlist) {
         setWishlistMessage("Ce vin est déjà dans votre wishlist.");
-        setWishlistLoading(false);
         return;
       }
 
@@ -822,8 +730,6 @@ export default function WinePage({ initialWine }: { initialWine: Wine }) {
           console.error("Erreur ajout wishlist :", error);
           setWishlistMessage("Impossible d’ajouter ce vin à la wishlist.");
         }
-
-        setWishlistLoading(false);
         return;
       }
 
@@ -853,15 +759,11 @@ export default function WinePage({ initialWine }: { initialWine: Wine }) {
       const winePrice = parsePrice(wine.price);
 
       let currentCart: CartItem[] = [];
-
       const storedCart = localStorage.getItem(CART_KEY);
 
       if (storedCart) {
         const parsedCart = JSON.parse(storedCart);
-
-        if (Array.isArray(parsedCart)) {
-          currentCart = parsedCart;
-        }
+        if (Array.isArray(parsedCart)) currentCart = parsedCart;
       }
 
       const existingIndex = currentCart.findIndex((item) => {
@@ -946,670 +848,439 @@ export default function WinePage({ initialWine }: { initialWine: Wine }) {
   };
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#f8f3ea] px-6 py-20 text-[#24110d]">
-        <div className="mx-auto max-w-5xl rounded-[2rem] border border-[#e1d1bd] bg-white p-10 shadow-sm">
-          <p className="text-sm uppercase tracking-[0.28em] text-[#8a6a2f]">
-            The Wine Watchers
-          </p>
-          <h1 className="mt-4 font-serif text-4xl">Chargement du vin...</h1>
-        </div>
+      <main className="min-h-screen bg-white px-5 py-12 text-stone-700">
+        <p className="mx-auto max-w-6xl">Chargement du vin…</p>
       </main>
     );
   }
 
   if (errorMessage || !wine) {
     return (
-      <main className="min-h-screen bg-[#f8f3ea] px-6 py-20 text-[#24110d]">
-        <div className="mx-auto max-w-5xl rounded-[2rem] border border-[#e1d1bd] bg-white p-10 shadow-sm">
-          <h1 className="mt-4 font-serif text-4xl">
+      <main className="min-h-screen bg-white px-5 py-12 text-stone-800">
+        <div className="mx-auto max-w-6xl">
+          <h1 className="font-serif text-3xl">
             {errorMessage || "Vin introuvable"}
           </h1>
 
           <Link
-            href="/boutique/bordeaux"
-            className="mt-8 inline-flex rounded-full bg-black px-8 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-[#8a6a2f]"
+            href="/boutique"
+            className="mt-5 inline-block text-sm text-[#8a1f1f] hover:underline"
           >
-            Retour boutique
+            ← Retour à la boutique
           </Link>
         </div>
       </main>
     );
   }
 
+  const isPrimeur =
+    categoryToSlug(wine.category) === "primeurs-2025";
+
+  const displayName =
+    vintage && !String(wine.name || "").includes(vintage)
+      ? `${wine.name || "Grand vin"} ${vintage}`
+      : wine.name || "Grand vin";
+
   return (
-    <main className="min-h-screen bg-[#f8f3ea] text-[#24110d]">
-      <section className="relative overflow-hidden bg-[#1c0f0b] text-white">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(216,181,109,0.22),transparent_40%),linear-gradient(135deg,#1c0f0b,#3a1712)]" />
+    <main className="min-h-screen bg-white text-stone-800">
+      <div className="mx-auto max-w-6xl px-5 py-6 md:px-8 md:py-8">
+        <nav
+          aria-label="Fil d’Ariane"
+          className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs leading-6 text-stone-500"
+        >
+          <Link href="/boutique" className="hover:text-[#8a1f1f]">
+            Boutique
+          </Link>
 
-        <div className="relative mx-auto grid max-w-7xl gap-10 px-6 py-12 lg:grid-cols-[0.9fr_1.1fr] lg:py-16">
-          <div className="flex items-center justify-center">
-            <div className="w-full max-w-[460px]">
-              <div className="relative rounded-[2rem] border border-white/10 bg-white/5 p-5 shadow-2xl backdrop-blur">
-                {selectedImage ? (
-                  <>
-                    <img
-                      src={selectedImage}
-                      alt={`${wine.name || "Vin"} - image ${
-                        selectedImageIndex + 1
-                      } - The Wine Watchers`}
-                      className="h-[420px] w-full rounded-[1.5rem] object-contain"
-                    />
+          {categorySlug && (
+            <>
+              <span aria-hidden="true">/</span>
 
-                    {galleryImages.length > 1 && (
-                      <div className="absolute right-8 top-8 rounded-full border border-white/15 bg-black/45 px-3 py-1 text-xs font-semibold tracking-[0.16em] text-white backdrop-blur">
-                        {selectedImageIndex + 1} / {galleryImages.length}
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="flex h-[420px] w-full items-center justify-center rounded-[1.5rem] bg-white/10 text-sm uppercase tracking-[0.2em] text-white/60">
-                    Image à venir
-                  </div>
-                )}
-              </div>
-
-              {galleryImages.length > 1 && (
-                <div className="mt-4 grid grid-cols-4 gap-3 sm:grid-cols-5">
-                  {galleryImages.map((image, index) => (
-                    <button
-                      key={`${image}-${index}`}
-                      type="button"
-                      onClick={() => setSelectedImageIndex(index)}
-                      aria-label={`Afficher l’image ${index + 1} de ${
-                        wine.name || "ce vin"
-                      }`}
-                      className={`overflow-hidden rounded-xl border bg-white/5 p-1 transition ${
-                        selectedImageIndex === index
-                          ? "border-[#d8b56d] ring-2 ring-[#d8b56d]/30"
-                          : "border-white/10 hover:border-white/35"
-                      }`}
-                    >
-                      <img
-                        src={image}
-                        alt={`${wine.name || "Vin"} - miniature ${index + 1}`}
-                        className="h-20 w-full rounded-lg object-contain"
-                      />
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="flex flex-col justify-center">
-            {categorySlug ? (
               <Link
                 href={`/boutique/${categorySlug}`}
-                className="text-sm uppercase tracking-[0.35em] text-[#d8b56d] transition hover:text-white"
+                className="hover:text-[#8a1f1f]"
               >
                 {categoryLabel}
               </Link>
-            ) : (
-              <p className="text-sm uppercase tracking-[0.35em] text-[#d8b56d]">
-                {categoryLabel}
+            </>
+          )}
+
+          <span aria-hidden="true">/</span>
+          <span aria-current="page">{displayName}</span>
+        </nav>
+
+        <section className="mt-6 grid items-start gap-8 md:grid-cols-2 md:gap-12">
+          <div className="min-w-0">
+            <div className="flex items-center justify-center">
+              {selectedImage ? (
+                <img
+                  src={selectedImage}
+                  alt={`${displayName} — photo ${selectedImageIndex + 1}`}
+                  className="h-[280px] w-full object-contain md:h-[380px]"
+                />
+              ) : (
+                <div className="flex h-[280px] w-full items-center justify-center bg-stone-50 text-sm text-stone-400 md:h-[380px]">
+                  Photo à venir
+                </div>
+              )}
+            </div>
+
+            {galleryImages.length > 1 && (
+              <div className="mt-4 flex flex-wrap justify-center gap-2">
+                {galleryImages.map((image, index) => (
+                  <button
+                    key={`${image}-${index}`}
+                    type="button"
+                    onClick={() => setSelectedImageIndex(index)}
+                    aria-label={`Afficher la photo ${index + 1}`}
+                    aria-pressed={selectedImageIndex === index}
+                    className={`rounded border bg-white p-1 transition-colors ${
+                      selectedImageIndex === index
+                        ? "border-[#8a1f1f]"
+                        : "border-stone-200 hover:border-stone-400"
+                    }`}
+                  >
+                    <img
+                      src={image}
+                      alt=""
+                      className="h-14 w-14 object-contain"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="min-w-0">
+            {wine.appellation &&
+              (appellationHref ? (
+                <Link
+                  href={appellationHref}
+                  className="text-sm text-stone-500 hover:text-[#8a1f1f]"
+                >
+                  {wine.appellation}
+                </Link>
+              ) : (
+                <p className="text-sm text-stone-500">
+                  {wine.appellation}
+                </p>
+              ))}
+
+            <h1 className="mt-2 font-serif text-3xl leading-tight md:text-4xl">
+              {displayName}
+            </h1>
+
+            {wine.producer && (
+              <Link
+                href={`/producteur/${producerToSlug(wine.producer)}`}
+                className="mt-3 inline-block text-sm text-[#8a1f1f] underline-offset-4 hover:underline"
+              >
+                {wine.producer}
+              </Link>
+            )}
+
+            {wine.classification && (
+              <p className="mt-2 text-sm text-stone-600">
+                {wine.classification}
               </p>
             )}
 
-            <h1 className="mt-5 font-serif text-xl leading-tight text-white md:text-3xl">
-              {wine.name}
-            </h1>
-
-            <div className="mt-5 flex flex-wrap gap-3 text-sm text-white/75">
-              {wine.producer && (
-                <Link
-                  href={`/producteur/${producerToSlug(wine.producer)}`}
-                  className="underline underline-offset-4 transition hover:text-[#d8b56d]"
-                >
-                  Producteur : {wine.producer}
-                </Link>
-              )}
-
-              {wine.appellation && appellationHref && (
-                <Link
-                  href={appellationHref}
-                  className="underline underline-offset-4 transition hover:text-[#d8b56d]"
-                >
-                  • {wine.appellation}
-                </Link>
-              )}
-
-              {wine.appellation && !appellationHref && (
-                <span>• {wine.appellation}</span>
-              )}
-
-              {wine.region && regionSlug && (
-                <Link
-                  href={`/boutique/${regionSlug}`}
-                  className="underline underline-offset-4 transition hover:text-[#d8b56d]"
-                >
-                  • {wine.region}
-                </Link>
-              )}
-
-              {vintage && (
-                <Link
-                  href={`/millesime/${vintage}`}
-                  className="underline underline-offset-4 transition hover:text-[#d8b56d]"
-                >
-                  • {vintage}
-                </Link>
-              )}
-            </div>
-
-            <div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                <p className="text-xs uppercase tracking-[0.22em] text-[#d8b56d]">
-                  Millésime
-                </p>
-                <p className="mt-2 text-white">
-                  {vintage ? (
+            <dl className="mt-5">
+              <InfoCard
+                label="Millésime"
+                value={
+                  vintage ? (
                     <Link
                       href={`/millesime/${vintage}`}
-                      className="underline underline-offset-4 transition hover:text-[#d8b56d]"
+                      className="underline-offset-4 hover:text-[#8a1f1f] hover:underline"
                     >
                       {vintage}
                     </Link>
-                  ) : (
-                    "Non renseigné"
-                  )}
-                </p>
-              </div>
+                  ) : undefined
+                }
+              />
 
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                <p className="text-xs uppercase tracking-[0.22em] text-[#d8b56d]">
-                  Classification
-                </p>
-                <p className="mt-2 text-white">
-                  {wine.classification || "Non renseignée"}
-                </p>
-              </div>
+              <InfoCard label="Format" value={wine.bottle_size} />
 
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                <p className="text-xs uppercase tracking-[0.22em] text-[#d8b56d]">
-                  Flaconnage
-                </p>
-                <p className="mt-2 text-white">
-                  {wine.bottle_size || "Non renseigné"}
-                </p>
-              </div>
+              <InfoCard
+                label="Conditionnement"
+                value={wine.packaging ? packagingInfo.display : undefined}
+              />
 
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                <p className="text-xs uppercase tracking-[0.22em] text-[#d8b56d]">
-                  Conditionnement
-                </p>
-                <p className="mt-2 text-white">{packagingInfo.display}</p>
-              </div>
+              <InfoCard label="Note" value={wine.rating} />
+            </dl>
 
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                <p className="text-xs uppercase tracking-[0.22em] text-[#d8b56d]">
-                  Prix HT
-                </p>
+            <div className="mt-6">
+              {discountInfo && (
+                <div className="mb-1 flex flex-wrap items-center gap-3">
+                  <p className="text-sm text-stone-400 line-through">
+                    {formatPrice(wine.compare_at_price)}
+                  </p>
 
-                {discountInfo ? (
-                  <div className="mt-2">
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#d8b56d]">
-                      🏷️ Offre exceptionnelle
-                    </p>
-                    <p className="mt-2 text-sm text-white/50 line-through">
-                      {formatPrice(wine.compare_at_price)}
-                    </p>
-                    <p className="text-lg font-semibold text-white">
-                      {formatPrice(wine.price)}
-                    </p>
-                    <p className="mt-1 text-xs text-[#f5dfaa]">
-                      Vous économisez {formatPrice(discountInfo.saving)} (-
-                      {discountInfo.percent} %)
-                    </p>
-                  </div>
-                ) : (
-                  <p className="mt-2 text-white">{formatPrice(wine.price)}</p>
-                )}
-              </div>
+                  <span className="rounded bg-[#8a1f1f] px-2 py-1 text-xs font-semibold text-white">
+                    −{discountInfo.percent} %
+                  </span>
+                </div>
+              )}
 
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                <p className="text-xs uppercase tracking-[0.22em] text-[#d8b56d]">
-                  Disponibilité
+              <p className="text-3xl font-semibold text-[#8a1f1f]">
+                {formatPrice(wine.price)}
+              </p>
+
+              <p className="mt-2 text-xs leading-5 text-stone-500">
+                Prix pour le conditionnement indiqué. TVA calculée lors
+                de la finalisation de la commande.
+              </p>
+
+              <p
+                className={`mt-4 text-sm ${
+                  isAvailable ? "text-green-800" : "text-stone-500"
+                }`}
+              >
+                {isAvailable
+                  ? formatAvailableStock(stock, wine.packaging)
+                  : "Épuisé"}
+              </p>
+
+              {isPrimeur && (
+                <p className="mt-2 text-sm leading-6 text-[#8a1f1f]">
+                  Vin en précommande. Livraison estimée en 2027.
+                  Sans frais de livraison.
                 </p>
-                <p className="mt-2 text-white">
-                  {isAvailable
-                    ? formatAvailableStock(stock, wine.packaging)
+              )}
+            </div>
+
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+              <button
+                type="button"
+                onClick={addToCart}
+                disabled={!isAvailable || addingToCart}
+                className="rounded bg-[#8a1f1f] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#641313] disabled:cursor-not-allowed disabled:bg-stone-300"
+              >
+                {addingToCart
+                  ? "Réservation…"
+                  : isAvailable
+                    ? "Ajouter au panier"
                     : "Épuisé"}
-                </p>
-              </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={addToWishlist}
+                disabled={wishlistLoading || isInWishlist}
+                className="rounded border border-stone-300 px-5 py-3 text-sm text-stone-700 transition-colors hover:border-[#8a1f1f] hover:text-[#8a1f1f] disabled:cursor-default disabled:opacity-60"
+              >
+                {wishlistLoading
+                  ? "Ajout…"
+                  : isInWishlist
+                    ? "♡ Dans ma wishlist"
+                    : "♡ Ajouter à ma wishlist"}
+              </button>
             </div>
 
             {cartMessage && (
-              <p className="mt-5 rounded-2xl border border-[#d8b56d]/40 bg-black/20 px-5 py-3 text-sm text-[#f5dfaa]">
+              <p role="status" className="mt-3 text-sm text-[#8a1f1f]">
                 {cartMessage}
               </p>
             )}
 
             {wishlistMessage && (
-              <p className="mt-5 rounded-2xl border border-white/20 bg-white/10 px-5 py-3 text-sm text-[#f5dfaa]">
+              <p role="status" className="mt-3 text-sm text-[#8a1f1f]">
                 {wishlistMessage}
               </p>
             )}
 
-            <div className="mt-8 flex flex-wrap gap-4">
-              <button
-                type="button"
-                onClick={addToCart}
-                disabled={!isAvailable || addingToCart}
-                className={`rounded-full px-8 py-3.5 text-sm font-semibold uppercase tracking-[0.18em] transition ${
-                  isAvailable && !addingToCart
-                    ? "bg-[#d8b56d] text-[#24110d] hover:bg-white"
-                    : "cursor-not-allowed bg-neutral-500 text-white"
-                }`}
-              >
-                {addingToCart
-                  ? "Réservation..."
-                  : isAvailable
-                  ? "Ajouter au panier"
-                  : "Épuisé"}
-              </button>
-
-              <button
-                type="button"
-                onClick={addToWishlist}
-                disabled={wishlistLoading || isInWishlist}
-                className={`rounded-full border px-8 py-3.5 text-sm font-semibold uppercase tracking-[0.18em] transition ${
-                  isInWishlist
-                    ? "cursor-not-allowed border-[#d8b56d] bg-[#d8b56d] text-[#24110d]"
-                    : "border-white/30 text-white hover:border-[#d8b56d] hover:text-[#d8b56d]"
-                }`}
-              >
-                {wishlistLoading
-                  ? "Ajout..."
-                  : isInWishlist
-                  ? "Dans ma wishlist"
-                  : "♡ Ajouter à ma wishlist"}
-              </button>
-
+            <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs">
               <Link
                 href="/panier"
-                className="rounded-full border border-white/30 px-8 py-3.5 text-sm font-semibold uppercase tracking-[0.18em] text-white transition hover:border-[#d8b56d] hover:text-[#d8b56d]"
+                className="text-[#8a1f1f] hover:underline"
               >
-                Voir le panier
+                Voir le panier →
               </Link>
-            </div>
 
-            <div className="mt-6 flex flex-wrap gap-4 text-sm">
               <Link
-                href="/boutique"
-                className="text-[#d8b56d] transition hover:text-white"
+                href="/livraison"
+                className="text-stone-500 hover:underline"
               >
-                ← Retour Boutique
+                Livraison et retours
               </Link>
-
-              {categorySlug && (
-                <Link
-                  href={`/boutique/${categorySlug}`}
-                  className="text-[#d8b56d] transition hover:text-white"
-                >
-                  Retour {categoryLabel}
-                </Link>
-              )}
             </div>
-          </div>
-        </div>
-      </section>
 
-      <section className="mx-auto max-w-7xl px-6 py-12">
-        <div className="grid items-start gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          <InfoCard
-            label="Millésime"
-            value={
-              vintage ? (
-                <Link
-                  href={`/millesime/${vintage}`}
-                  className="underline underline-offset-4 transition hover:text-[#8a1f1f]"
-                >
-                  {vintage}
-                </Link>
-              ) : (
-                "-"
-              )
-            }
-          />
-
-          <InfoCard
-            label="Stock disponible"
-            value={
-              isAvailable
-                ? formatRemainingStock(stock, wine.packaging)
-                : "Épuisé"
-            }
-          />
-
-          <InfoCard label="Flaconnage" value={wine.bottle_size} />
-          <InfoCard
-            label="Conditionnement"
-            value={packagingInfo.display}
-          />
-          <InfoCard label="Note" value={wine.rating} />
-
-          <InfoCard
-            label="Région"
-            value={
-              wine.region && regionSlug ? (
-                <Link
-                  href={`/boutique/${regionSlug}`}
-                  className="underline underline-offset-4 transition hover:text-[#8a1f1f]"
-                >
-                  {wine.region}
-                </Link>
-              ) : (
-                wine.region
-              )
-            }
-          />
-
-          <InfoCard
-            label="Appellation"
-            value={
-              wine.appellation && appellationHref ? (
-                <Link
-                  href={appellationHref}
-                  className="underline underline-offset-4 transition hover:text-[#8a1f1f]"
-                >
-                  {wine.appellation}
-                </Link>
-              ) : (
-                wine.appellation
-              )
-            }
-          />
-
-          <InfoCard
-            label="Domaine"
-            value={
-              wine.producer ? (
-                <Link
-                  href={`/producteur/${producerToSlug(wine.producer)}`}
-                  className="underline underline-offset-4 transition hover:text-[#8a1f1f]"
-                >
-                  {wine.producer}
-                </Link>
-              ) : (
-                wine.producer
-              )
-            }
-          />
-
-          <InfoCard label="Pays" value={wine.country} />
-          <InfoCard label="Couleur" value={wine.color} />
-          <InfoCard label="Classification" value={wine.classification} />
-          <InfoCard label="Style" value={wine.style} />
-          <InfoCard label="Sol" value={wine.soil} />
-        </div>
-
-      </section>
-
-      <section className="mx-auto max-w-7xl px-6 pb-16">
-        <div className="grid gap-8">
-          <TextSection title="Description complète">
-            {wine.description}
-          </TextSection>
-
-          <TextSection title="Histoire du vin">{wine.story}</TextSection>
-
-          <TextSection title="Nez">{wine.nose}</TextSection>
-
-          <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_0.45fr]">
-            <TextSection title="Bouche">{wine.palate}</TextSection>
-
-            {grapeVarieties.length > 0 && (
-              <section className="rounded-[2rem] border border-[#e1d1bd] bg-[#fffaf3] p-8 shadow-sm">
-                <p className="text-sm uppercase tracking-[0.28em] text-[#8a6a2f]">
-                  Cépages
-                </p>
-
-                <div className="mt-5 flex flex-wrap gap-2">
-                  {grapeVarieties.map((grape) => (
-                    <span
-                      key={grape}
-                      className="rounded-full border border-[#dfcfb8] bg-white px-4 py-2 text-sm text-[#6d5b50]"
-                    >
-                      {grape}
-                    </span>
-                  ))}
-                </div>
-              </section>
+            {isAvailable && (
+              <p className="mt-3 text-xs leading-5 text-stone-500">
+                Stock réservé pendant 30 minutes lors de l’ajout au panier.
+              </p>
             )}
           </div>
+        </section>
 
-          <div className="grid items-start gap-8 lg:grid-cols-2">
-            <TextSection title="Température de service">
-              {wine.serving_temperature}
-            </TextSection>
+        <div className="mt-10 border-t border-stone-200">
+          {wine.description && (
+            <section className="border-b border-stone-200 py-6">
+              <h2 className="font-serif text-2xl">
+                Présentation du vin
+              </h2>
 
-            <TextSection title="Potentiel de garde">
-              {wine.aging_potential}
-            </TextSection>
-          </div>
-
-          <TextSection title="Accords mets-vins">{wine.pairing}</TextSection>
-        </div>
-
-        <div className="mt-8 grid items-start gap-6 lg:grid-cols-2">
-          {wine.meta_content && (
-            <section className="rounded-[2rem] border border-[#e1d1bd] bg-[#fffaf3] p-8 shadow-sm lg:col-span-2">
-              <p className="text-sm uppercase tracking-[0.28em] text-[#8a6a2f]">
-                L’Avis The Wine Watchers
-              </p>
-
-              <p className="mt-5 whitespace-pre-line text-base leading-8 text-[#6d5b50]">
-                {wine.meta_content}
+              <p className="mt-4 whitespace-pre-line text-sm leading-7 text-stone-600">
+                {wine.description}
               </p>
             </section>
+          )}
+
+          <TextSection title="L’Avis The Wine Watchers">
+            {wine.meta_content}
+          </TextSection>
+
+          <TextSection title="Histoire du domaine et du vin">
+            {wine.story}
+          </TextSection>
+
+          {(wine.country ||
+            wine.region ||
+            wine.color ||
+            wine.style ||
+            wine.soil ||
+            grapeVarieties.length > 0) && (
+            <details className="border-b border-stone-200 py-4">
+              <summary className="cursor-pointer font-serif text-xl text-stone-900">
+                Caractéristiques du vin
+              </summary>
+
+              <dl className="mt-4 grid gap-x-8 md:grid-cols-2">
+                <InfoCard label="Pays" value={wine.country} />
+
+                <InfoCard
+                  label="Région"
+                  value={
+                    wine.region && regionSlug ? (
+                      <Link
+                        href={`/boutique/${regionSlug}`}
+                        className="hover:text-[#8a1f1f] hover:underline"
+                      >
+                        {wine.region}
+                      </Link>
+                    ) : (
+                      wine.region
+                    )
+                  }
+                />
+
+                <InfoCard label="Couleur" value={wine.color} />
+
+                <InfoCard
+                  label="Cépages"
+                  value={grapeVarieties.join(", ")}
+                />
+
+                <InfoCard label="Style" value={wine.style} />
+                <InfoCard label="Sol" value={wine.soil} />
+              </dl>
+            </details>
           )}
 
           {tastingNotes.length > 0 && (
-            <section className="rounded-[2rem] border border-[#e1d1bd] bg-[#fffaf3] p-8 shadow-sm lg:col-span-2">
-              <p className="text-sm uppercase tracking-[0.28em] text-[#8a6a2f]">
+            <details className="border-b border-stone-200 py-4">
+              <summary className="cursor-pointer font-serif text-xl text-stone-900">
                 Notes de dégustation
-              </p>
+              </summary>
 
-              <div className="mt-7 grid items-start gap-4">
-                {tastingNotes.map((note) => (
+              <div className="mt-4 space-y-4">
+                {tastingNotes.map((note, index) => (
                   <p
-                    key={note}
-                    className="rounded-[1.75rem] border border-[#dfcfb8] bg-white px-6 py-5 text-base leading-8 text-[#6d5b50]"
+                    key={`${index}-${note}`}
+                    className="whitespace-pre-line text-sm leading-7 text-stone-600"
                   >
-                    {note
-                      .replace(
-                        /(\d{2,3}\/100\s+[A-Z]+)\s+(\d{2,3}(?:-\d{2,3})?\s+[A-Z]+)\s*:/,
-                        "$1\n$2 :"
-                      )
-                      .split("\n")
-                      .map((line) => (
-                        <span key={line} className="block">
-                          {line}
-                        </span>
-                      ))}
+                    {note}
                   </p>
                 ))}
               </div>
-            </section>
+            </details>
           )}
 
-          <section className="rounded-[2rem] border border-[#e1d1bd] bg-[#fffaf3] p-6 shadow-sm lg:col-span-2">
-            <h2 className="font-serif text-2xl text-[#24110d]">
-              Commander ce vin
-            </h2>
+          <TextSection title="Nez">{wine.nose}</TextSection>
+          <TextSection title="Bouche">{wine.palate}</TextSection>
 
-            <p className="mt-3 text-sm leading-6 text-[#6d5b50]">
-              {isAvailable
-                ? "Stock réservé temporairement pendant 30 minutes lors de l’ajout au panier. TVA calculée automatiquement lors du paiement."
-                : "Ce vin est actuellement épuisé."}
-            </p>
+          <TextSection title="Accords mets et vins">
+            {wine.pairing}
+          </TextSection>
 
-            <div className="mt-5 flex flex-wrap gap-3">
-              <button
-                type="button"
-                onClick={addToCart}
-                disabled={!isAvailable || addingToCart}
-                className={`inline-block rounded-full px-8 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition ${
-                  isAvailable && !addingToCart
-                    ? "bg-[#8a1f1f] hover:bg-[#641313]"
-                    : "cursor-not-allowed bg-neutral-500"
-                }`}
-              >
-                {addingToCart
-                  ? "Réservation..."
-                  : isAvailable
-                  ? "Ajouter au panier"
-                  : "Épuisé"}
-              </button>
+          <TextSection title="Température de service">
+            {wine.serving_temperature}
+          </TextSection>
 
-              <button
-                type="button"
-                onClick={addToWishlist}
-                disabled={wishlistLoading || isInWishlist}
-                className={`inline-block rounded-full border px-8 py-3 text-sm font-semibold uppercase tracking-[0.16em] transition ${
-                  isInWishlist
-                    ? "cursor-not-allowed border-[#8a1f1f] bg-[#8a1f1f] text-white"
-                    : "border-[#8a1f1f] text-[#8a1f1f] hover:bg-[#8a1f1f] hover:text-white"
-                }`}
-              >
-                {wishlistLoading
-                  ? "Ajout..."
-                  : isInWishlist
-                  ? "Dans ma wishlist"
-                  : "♡ Wishlist"}
-              </button>
-            </div>
-
-            {cartMessage && (
-              <p className="mt-4 text-sm text-[#8a1f1f]">{cartMessage}</p>
-            )}
-
-            {wishlistMessage && (
-              <p className="mt-4 text-sm text-[#8a1f1f]">
-                {wishlistMessage}
-              </p>
-            )}
-          </section>
+          <TextSection title="Potentiel de garde">
+            {wine.aging_potential}
+          </TextSection>
         </div>
-      </section>
 
-      <section className="mx-auto max-w-7xl px-6 pb-8">
-        <div className="rounded-[2rem] border border-[#e1d1bd] bg-white p-8 shadow-sm">
-          <p className="text-sm uppercase tracking-[0.28em] text-[#8a6a2f]">
-            Maillage interne
-          </p>
+        <section className="mt-8 border-b border-stone-200 pb-6">
+          <h2 className="font-serif text-xl">Explorer la sélection</h2>
 
-          <h2 className="mt-3 font-serif text-3xl text-[#24110d]">
-            Explorer davantage
-          </h2>
-
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
+          <div className="mt-3 flex flex-wrap gap-x-6 gap-y-3 text-sm">
             {wine.producer && (
               <Link
                 href={`/producteur/${producerToSlug(wine.producer)}`}
-                className="rounded-[1.5rem] border border-[#e1d1bd] bg-[#fffaf3] px-5 py-4 text-sm font-semibold leading-6 text-[#6d5b50] transition hover:border-[#8a1f1f] hover:text-[#8a1f1f]"
+                className="text-[#8a1f1f] hover:underline"
               >
-                Voir tous les vins du domaine {wine.producer}
+                Tous les vins de {wine.producer}
               </Link>
             )}
 
             {wine.appellation && appellationHref && (
               <Link
                 href={appellationHref}
-                className="rounded-[1.5rem] border border-[#e1d1bd] bg-[#fffaf3] px-5 py-4 text-sm font-semibold leading-6 text-[#6d5b50] transition hover:border-[#8a1f1f] hover:text-[#8a1f1f]"
+                className="text-[#8a1f1f] hover:underline"
               >
-                Voir tous les vins de l’appellation {wine.appellation}
+                {wine.appellation}
               </Link>
-            )}
-
-            {regionSlug && (
-              <Link
-                href={`/boutique/${regionSlug}`}
-                className="rounded-[1.5rem] border border-[#e1d1bd] bg-[#fffaf3] px-5 py-4 text-sm font-semibold leading-6 text-[#6d5b50] transition hover:border-[#8a1f1f] hover:text-[#8a1f1f]"
-              >
-                Voir tous les vins de {categoryLabel}
-              </Link>
-            )}
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-6 pb-20">
-        <div className="rounded-[2.5rem] border border-[#e1d1bd] bg-[#fffaf3] p-8 shadow-sm">
-          <p className="text-sm uppercase tracking-[0.28em] text-[#8a6a2f]">
-            Suggestions
-          </p>
-
-          <h2 className="mt-3 font-serif text-3xl text-[#24110d]">
-            Voir aussi
-          </h2>
-
-          <p className="mt-4 max-w-3xl text-sm leading-7 text-[#6d5b50]">
-            Découvrez d’autres grands vins proches de cette sélection : même
-            domaine, même appellation, même millésime ou sélection Bordeaux
-            Primeurs 2025.
-          </p>
-
-          <div className="mt-8 grid gap-6 lg:grid-cols-3">
-            <RelatedWineList
-              title={
-                wine.producer
-                  ? `Autres vins du domaine ${wine.producer}`
-                  : "Autres vins du même domaine"
-              }
-              wines={sameProducerWines}
-            />
-
-            <RelatedWineList
-              title={
-                wine.appellation
-                  ? `Autres vins de ${wine.appellation}`
-                  : "Autres vins de la même appellation"
-              }
-              wines={sameAppellationWines}
-            />
-
-            <RelatedWineList
-              title={
-                vintage
-                  ? `Autres vins du millésime ${vintage}`
-                  : "Autres vins du même millésime"
-              }
-              wines={sameVintageWines}
-            />
-          </div>
-
-          <div className="mt-8 flex flex-wrap gap-3">
-            {(categorySlug === "bordeaux" ||
-              categorySlug === "primeurs-2025") && (
-              <>
-                <Link
-                  href="/boutique/bordeaux"
-                  className="rounded-full border border-[#8a6a2f]/40 bg-white px-5 py-3 text-sm font-semibold text-[#6d5b50] transition hover:border-[#8a1f1f] hover:text-[#8a1f1f]"
-                >
-                  Tous les Bordeaux
-                </Link>
-
-                <Link
-                  href="/boutique/primeurs-2025"
-                  className="rounded-full border border-[#8a6a2f]/40 bg-white px-5 py-3 text-sm font-semibold text-[#6d5b50] transition hover:border-[#8a1f1f] hover:text-[#8a1f1f]"
-                >
-                  Bordeaux Primeurs 2025
-                </Link>
-              </>
             )}
 
             {categorySlug && (
               <Link
                 href={`/boutique/${categorySlug}`}
-                className="rounded-full border border-[#8a6a2f]/40 bg-white px-5 py-3 text-sm font-semibold text-[#6d5b50] transition hover:border-[#8a1f1f] hover:text-[#8a1f1f]"
+                className="text-[#8a1f1f] hover:underline"
               >
-                Tous les vins {categoryLabel}
+                {categoryLabel}
+              </Link>
+            )}
+
+            {(categorySlug === "bordeaux" ||
+              categorySlug === "primeurs-2025") && (
+              <Link
+                href="/boutique/primeurs-2025"
+                className="text-[#8a1f1f] hover:underline"
+              >
+                Primeurs 2025
               </Link>
             )}
           </div>
-        </div>
-      </section>
+        </section>
+
+        {(sameProducerWines.length > 0 ||
+          sameAppellationWines.length > 0 ||
+          sameVintageWines.length > 0) && (
+          <section className="py-8">
+            <h2 className="font-serif text-2xl">À découvrir également</h2>
+
+            <div className="mt-5 grid items-start gap-8 lg:grid-cols-3">
+              <RelatedWineList
+                title="Du même domaine"
+                wines={sameProducerWines}
+              />
+
+              <RelatedWineList
+                title="De la même appellation"
+                wines={sameAppellationWines}
+              />
+
+              <RelatedWineList
+                title={vintage ? `Millésime ${vintage}` : "Du même millésime"}
+                wines={sameVintageWines}
+              />
+            </div>
+          </section>
+        )}
+      </div>
     </main>
   );
 }

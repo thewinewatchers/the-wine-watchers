@@ -1,4 +1,3 @@
-
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -216,13 +215,16 @@ type PageProps = {
   }>;
 };
 
+function isCategoryKey(slug: string): slug is CategoryKey {
+  return Object.prototype.hasOwnProperty.call(categories, slug);
+}
+
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const category = categories[slug as CategoryKey];
 
-  if (!category) {
+  if (!isCategoryKey(slug)) {
     return {
       title: "Catégorie introuvable | The Wine Watchers",
       robots: {
@@ -232,6 +234,7 @@ export async function generateMetadata({
     };
   }
 
+  const category = categories[slug];
   const canonicalUrl = `${SITE_URL}/boutique/${slug}`;
 
   return {
@@ -258,64 +261,68 @@ export async function generateMetadata({
 export default async function BoutiqueCategoryPage({
   params,
 }: PageProps) {
-  const resolvedParams = await params;
-  const slug = resolvedParams.slug as CategoryKey;
-  const category = categories[slug];
+  const { slug } = await params;
 
-  if (!category) {
+  if (!isCategoryKey(slug)) {
     notFound();
   }
 
+  const category = categories[slug];
   const appellationsToShow = popularAppellations[slug] || [];
 
   return (
-    <main className="min-h-screen bg-[#f8f4ee]">
-      <section className="relative overflow-hidden bg-[#210909] text-white">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_35%),linear-gradient(135deg,#2a0d0d,#120505)]" />
-
-        <div className="relative mx-auto max-w-7xl px-6 py-20 md:py-28">
+    <main className="min-h-screen bg-white text-stone-800">
+      <header className="mx-auto max-w-7xl px-5 pb-5 pt-7 md:px-6">
+        <nav
+          aria-label="Fil d’Ariane"
+          className="mb-4 text-sm text-stone-500"
+        >
           <Link
             href="/boutique"
-            className="mb-8 inline-block text-sm uppercase tracking-[0.25em] text-[#d8b56d] transition hover:text-white"
+            className="transition hover:text-[#8a1f1f]"
           >
-            ← Retour boutique
+            Boutique
           </Link>
 
-          <p className="mb-4 text-sm uppercase tracking-[0.35em] text-[#d8b56d]">
-            The Wine Watchers
+          <span aria-hidden="true" className="mx-2">
+            /
+          </span>
+
+          <span aria-current="page">{category.title}</span>
+        </nav>
+
+        <h1 className="font-serif text-3xl text-stone-900 md:text-4xl">
+          {category.title}
+        </h1>
+
+        <p className="mt-2 text-sm leading-6 text-stone-600">
+          {category.description}
+        </p>
+
+        {slug === "primeurs-2025" && (
+          <p className="mt-2 text-sm leading-6 text-[#8a1f1f]">
+            Vins en précommande · Livraison estimée en 2027 · Sans frais de
+            livraison.
           </p>
+        )}
 
-          <h1 className="max-w-4xl font-serif text-4xl font-semibold leading-tight md:text-6xl">
-            {category.title}
-          </h1>
-
-          <p className="mt-6 max-w-2xl text-base leading-8 text-white/75 md:text-lg">
-            {category.description}
-          </p>
-        </div>
-      </section>
-
-      {appellationsToShow.length > 0 && (
-        <section className="mx-auto max-w-7xl px-6 pt-10">
-          <div className="rounded-2xl bg-white p-6 shadow-sm">
-            <h2 className="mb-4 font-serif text-2xl text-[#3b1f1f]">
-              Appellations populaires
-            </h2>
-
-            <div className="flex flex-wrap gap-3">
-              {appellationsToShow.map((appellation) => (
-                <Link
-                  key={appellation.name}
-                  href={appellation.href}
-                  className="rounded-full border border-[#d8b56d]/50 bg-[#f8f4ee] px-4 py-2 text-sm font-medium text-[#3b1f1f] transition hover:border-[#3b1f1f] hover:bg-[#3b1f1f] hover:text-white"
-                >
-                  {appellation.name}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+        {appellationsToShow.length > 0 && (
+          <nav
+            aria-label="Appellations"
+            className="mt-4 flex flex-wrap gap-x-5 gap-y-2 border-t border-stone-200 pt-4"
+          >
+            {appellationsToShow.map((appellation) => (
+              <Link
+                key={appellation.name}
+                href={appellation.href}
+                className="text-sm text-[#8a1f1f] underline-offset-4 hover:underline"
+              >
+                {appellation.name}
+              </Link>
+            ))}
+          </nav>
+        )}
+      </header>
 
       <BoutiqueClient
         slug={slug}
@@ -325,96 +332,89 @@ export default async function BoutiqueCategoryPage({
 
       {slug === "champagne" && (
         <section
-          aria-labelledby="champagne-editorial-title"
-          className="mx-auto max-w-7xl px-6 py-16 md:py-20"
+          aria-label="Présentation de notre sélection de champagnes"
+          className="mx-auto max-w-7xl px-5 py-8 md:px-6"
         >
-          <div className="rounded-3xl border border-[#e5d8c5] bg-white px-7 py-10 shadow-sm md:px-14 md:py-14">
-            <p className="mb-4 text-xs uppercase tracking-[0.3em] text-[#a47c38]">
-              L'univers des grands champagnes
-            </p>
+          <details className="border-t border-stone-200 pt-5">
+            <summary className="cursor-pointer font-serif text-xl text-[#8a1f1f]">
+              En savoir plus sur nos champagnes
+            </summary>
 
-            <h2
-              id="champagne-editorial-title"
-              className="mb-8 font-serif text-3xl text-[#3b1f1f] md:text-4xl"
-            >
-              Les grands champagnes sélectionnés par The Wine Watchers
-            </h2>
+            <div className="mt-6 space-y-6 text-sm leading-7 text-stone-600">
+              <h2 className="font-serif text-2xl text-stone-900">
+                Les grands champagnes sélectionnés par The Wine Watchers
+              </h2>
 
-            <div className="space-y-8 text-base leading-8 text-[#594a43]">
               <div>
-                <h3 className="mb-3 font-serif text-2xl text-[#3b1f1f]">
+                <h3 className="mb-2 font-serif text-xl text-stone-900">
                   Les grandes maisons de Champagne
                 </h3>
+
                 <p>
                   Le Champagne occupe une place singulière dans
-                  l'univers des grands vins. Derrière chaque
-                  cuvée se trouvent une histoire, un savoir-faire
-                  et une recherche constante d'équilibre entre
-                  finesse, fraîcheur et profondeur. Les grandes
-                  maisons champenoises ont construit leur
-                  réputation sur la régularité de leur style,
-                  la précision de leurs assemblages et leur
-                  capacité à élaborer des vins d'une remarquable
-                  longévité.
+                  l&apos;univers des grands vins. Derrière chaque cuvée se
+                  trouvent une histoire, un savoir-faire et une recherche
+                  constante d&apos;équilibre entre finesse, fraîcheur et
+                  profondeur. Les grandes maisons champenoises ont construit
+                  leur réputation sur la régularité de leur style, la
+                  précision de leurs assemblages et leur capacité à élaborer
+                  des vins d&apos;une remarquable longévité.
                 </p>
               </div>
 
               <div>
-                <h3 className="mb-3 font-serif text-2xl text-[#3b1f1f]">
+                <h3 className="mb-2 font-serif text-xl text-stone-900">
                   La diversité des terroirs champenois
                 </h3>
+
                 <p>
-                  La personnalité des grands champagnes repose
-                  également sur la diversité de leurs origines.
-                  La Montagne de Reims est notamment réputée
-                  pour ses pinots noirs structurés, tandis que
-                  la Côte des Blancs offre au chardonnay des
-                  conditions privilégiées pour exprimer tension,
-                  élégance et minéralité. La Vallée de la Marne
-                  et la Côte des Bar enrichissent cette mosaïque
-                  de terroirs, chacun apportant sa propre
+                  La personnalité des grands champagnes repose également sur
+                  la diversité de leurs origines. La Montagne de Reims est
+                  notamment réputée pour ses pinots noirs structurés, tandis
+                  que la Côte des Blancs offre au chardonnay des conditions
+                  privilégiées pour exprimer tension, élégance et minéralité.
+                  La Vallée de la Marne et la Côte des Bar enrichissent cette
+                  mosaïque de terroirs, chacun apportant sa propre
                   interprétation du vignoble champenois.
                 </p>
               </div>
 
               <div>
-                <h3 className="mb-3 font-serif text-2xl text-[#3b1f1f]">
+                <h3 className="mb-2 font-serif text-xl text-stone-900">
                   Champagnes millésimés et cuvées de prestige
                 </h3>
+
                 <p>
-                  Les champagnes millésimés traduisent le
-                  caractère d'une année particulière. Élaborés
-                  à partir de raisins récoltés au cours d'un
-                  même millésime, ils révèlent avec le temps
-                  une complexité aromatique et une profondeur
-                  remarquables. Les cuvées de prestige
-                  représentent quant à elles une expression
-                  particulièrement ambitieuse du savoir-faire
-                  des maisons et des vignerons, associant
+                  Les champagnes millésimés traduisent le caractère
+                  d&apos;une année particulière. Élaborés à partir de raisins
+                  récoltés au cours d&apos;un même millésime, ils révèlent
+                  avec le temps une complexité aromatique et une profondeur
+                  remarquables. Les cuvées de prestige représentent quant à
+                  elles une expression particulièrement ambitieuse du
+                  savoir-faire des maisons et des vignerons, associant
                   sélection rigoureuse, précision et potentiel
-                  d'évolution.
+                  d&apos;évolution.
                 </p>
               </div>
 
               <div>
-                <h3 className="mb-3 font-serif text-2xl text-[#3b1f1f]">
+                <h3 className="mb-2 font-serif text-xl text-stone-900">
                   La sélection The Wine Watchers
                 </h3>
+
                 <p>
-                  Chez The Wine Watchers, nous privilégions
-                  les champagnes dont la personnalité, la
-                  qualité d'élaboration et le potentiel de
-                  garde justifient une place parmi les grandes
-                  références du vignoble. Des cuvées
-                  emblématiques de la Maison Salon aux
-                  champagnes de Louis Roederer, notre sélection
-                  met en lumière des signatures reconnues
-                  pour leur exigence et leur capacité à
-                  traverser les années avec élégance.
+                  Chez The Wine Watchers, nous privilégions les champagnes
+                  dont la personnalité, la qualité d&apos;élaboration et le
+                  potentiel de garde justifient une place parmi les grandes
+                  références du vignoble. Des cuvées emblématiques de la
+                  Maison Salon aux champagnes de Louis Roederer, notre
+                  sélection met en lumière des signatures reconnues pour
+                  leur exigence et leur capacité à traverser les années avec
+                  élégance.
                 </p>
               </div>
             </div>
-          </div>
+          </details>
         </section>
       )}
     </main>

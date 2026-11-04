@@ -5,201 +5,162 @@ const categories = [
   {
     title: "Bordeaux",
     slug: "bordeaux",
-    image: "/images/boutique-hero.png",
-    text: "Premiers Grands Crus Classés, Médoc, Pomerol, Saint-Émilion et grandes signatures bordelaises.",
+    image: "/images/Margaux.jpg",
+    text: "Médoc, Pomerol, Saint-Émilion et grands crus classés.",
   },
   {
     title: "Bourgogne",
     slug: "bourgogne",
-    image: "/images/romanee-conti-caisse.png",
-    text: "Domaines recherchés, grands crus, premiers crus et appellations de collection.",
-  },
-  {
-    title: "Primeurs 2025",
-    slug: "primeurs-2025",
-    image: "/images/boutique-hero.png",
-    text: "Campagne Bordeaux Primeurs 2025, allocations, sorties et disponibilités.",
-  },
-  {
-    title: "Italie",
-    slug: "italie",
-    image: "/images/boutique-hero.png",
-    text: "Super Toscans, Piémont, Bolgheri et grandes cuvées italiennes.",
-  },
-  {
-    title: "Espagne",
-    slug: "espagne",
-    image: "/images/boutique-hero.png",
-    text: "Rioja, Ribera del Duero, Priorat et grandes références espagnoles.",
+    image: "/images/Romanee.jpg",
+    text: "Grands domaines, premiers crus et grands crus.",
   },
   {
     title: "Rhône",
     slug: "rhone",
-    image: "/images/boutique-hero.png",
-    text: "Hermitage, Côte-Rôtie, Châteauneuf-du-Pape et grandes Syrah.",
-  },
-  {
-    title: "États-Unis",
-    slug: "usa",
-    image: "/images/boutique-hero.png",
-    text: "Napa Valley, grandes cuvées californiennes et domaines emblématiques comme Opus One.",
+    image: "/images/vin-rhone.jpg",
+    text: "Côte-Rôtie, Hermitage et Châteauneuf-du-Pape.",
   },
   {
     title: "Champagne",
     slug: "champagne",
     image: "/images/champagne.jpg",
-    text: "Grandes maisons, cuvées de prestige, champagnes millésimés et vignerons d’exception.",
+    text: "Grandes maisons et cuvées de prestige.",
+  },
+  {
+    title: "Italie",
+    slug: "italie",
+    image: "/images/cave-vin-italie.jpg",
+    text: "Piémont, Toscane et grandes signatures italiennes.",
+  },
+  {
+    title: "Espagne",
+    slug: "espagne",
+    image: "/images/vin-rouge-jambon-espagne.jpg",
+    text: "Rioja, Ribera del Duero et Priorat.",
+  },
+  {
+    title: "États-Unis",
+    slug: "usa",
+    image: "/images/opus-one-caisse.png",
+    text: "Napa Valley et grands vins californiens.",
+  },
+  {
+    title: "Primeurs 2025",
+    slug: "primeurs-2025",
+    image: "/images/bordeaux-degustation-primeur.jpg",
+    text: "Bordeaux en précommande. Livraison estimée en 2027.",
   },
 ];
 
 export default function BoutiquePage() {
   return (
-    <main>
-      <section className="bg-[#160604] px-6 py-16 text-white md:py-24">
-        <div className="relative mx-auto grid max-w-7xl gap-12 md:grid-cols-[0.95fr_1.05fr] md:items-center">
-          <div>
-            <p className="text-sm uppercase tracking-[0.42em] text-[#d8b56d]">
-              The Wine Watchers
-            </p>
+    <main className="min-h-screen bg-white text-[#292524]">
+      <div className="mx-auto max-w-6xl px-5 py-8 md:px-8 md:py-12">
+        <nav
+          aria-label="Fil d’Ariane"
+          className="text-sm text-stone-500"
+        >
+          <Link
+            href="/"
+            className="transition hover:text-[#8a1f1f]"
+          >
+            Accueil
+          </Link>
 
-            <h1 className="mt-7 font-serif text-5xl font-semibold leading-tight md:text-7xl">
-              Une maison dédiée aux grands vins.
-            </h1>
+          <span aria-hidden="true" className="mx-2">
+            /
+          </span>
 
-            <p className="mt-7 max-w-2xl text-lg leading-9 text-white/72">
-              Bordeaux, Bourgogne, Primeurs, domaines rares et bouteilles de
-              collection sélectionnés avec exigence.
-            </p>
+          <span aria-current="page">Boutique</span>
+        </nav>
 
-            <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-              <Link
-                href="/boutique/bordeaux"
-                className="rounded-full bg-[#d8b56d] px-9 py-4 text-center text-sm font-semibold uppercase tracking-[0.16em] text-[#160604] transition hover:bg-white"
-              >
-                Explorer la boutique
-              </Link>
+        <header className="mt-6 border-b border-stone-200 pb-6">
+          <h1 className="font-serif text-3xl md:text-4xl">
+            Nos vins
+          </h1>
 
-              <Link
-                href="/boutique/primeurs-2025"
-                className="rounded-full border border-[#d8b56d]/50 px-9 py-4 text-center text-sm font-semibold uppercase tracking-[0.16em] text-[#d8b56d] transition hover:bg-[#d8b56d] hover:text-[#160604]"
-              >
-                Primeurs 2025
-              </Link>
-            </div>
-          </div>
+          <p className="mt-3 max-w-2xl text-base leading-7 text-stone-600">
+            Retrouvez notre sélection de grands vins par région et découvrez
+            les Primeurs 2025.
+          </p>
+        </header>
 
-          <div className="relative">
-            <div className="absolute -inset-5 rounded-[3rem] bg-[#d8b56d]/10 blur-2xl" />
+        <section aria-labelledby="regions-title" className="py-7">
+          <h2
+            id="regions-title"
+            className="mb-5 text-lg font-semibold"
+          >
+            Choisir une région
+          </h2>
 
-            <div className="relative h-[420px] overflow-hidden rounded-[2.5rem] border border-white/15 bg-white/5 p-3 shadow-2xl md:h-[540px]">
-              <div className="relative h-full w-full overflow-hidden rounded-[2rem]">
-                <Image
-                  src="/images/boutique-hero.png"
-                  alt="Sélection de grands vins The Wine Watchers"
-                  fill
-                  priority
-                  sizes="(max-width: 768px) 100vw, 54vw"
-                  className="object-cover"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-[#f7f1e8] px-6 py-18 text-[#24110d] md:py-20">
-        <div className="mx-auto max-w-7xl">
-          <div className="mb-12 max-w-3xl">
-            <p className="text-sm uppercase tracking-[0.35em] text-[#8a6a2f]">
-              Sélections
-            </p>
-
-            <h2 className="mt-4 font-serif text-4xl leading-tight md:text-5xl">
-              Choisissez votre univers.
-            </h2>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {categories.map((category) => (
               <Link
                 key={category.slug}
                 href={`/boutique/${category.slug}`}
-                className="group overflow-hidden rounded-[2rem] border border-[#dfceb7] bg-[#fffaf3] shadow-sm transition hover:-translate-y-1 hover:border-[#d8b56d] hover:shadow-2xl"
+                className="group flex flex-col overflow-hidden rounded-lg border border-stone-200 bg-white transition-colors hover:border-[#8a1f1f] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#8a1f1f]"
               >
-                <div className="relative h-56 overflow-hidden">
+                <div className="relative h-36 overflow-hidden bg-stone-50">
                   <Image
                     src={category.image}
                     alt={category.title}
                     fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
-                    className="object-cover transition duration-700 group-hover:scale-105"
+                    sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 280px"
+                    className={
+                      category.slug === "usa"
+                        ? "object-contain p-2"
+                        : "object-cover"
+                    }
                   />
-
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#160604]/85 via-[#160604]/20 to-transparent" />
-
-                  <h3 className="absolute bottom-6 left-6 font-serif text-4xl text-white">
-                    {category.title}
-                  </h3>
                 </div>
 
-                <div className="p-7">
-                  <p className="min-h-20 text-sm leading-7 text-[#6d5b50]">
+                <div className="flex flex-1 flex-col p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="font-serif text-xl text-[#591c24]">
+                      {category.title}
+                    </h3>
+
+                    <span
+                      aria-hidden="true"
+                      className="text-stone-400 transition-colors group-hover:text-[#8a1f1f]"
+                    >
+                      →
+                    </span>
+                  </div>
+
+                  <p className="mt-2 text-sm leading-6 text-stone-600">
                     {category.text}
                   </p>
-
-                  <span className="mt-6 inline-block text-sm font-semibold uppercase tracking-[0.16em] text-[#8a1f1f]">
-                    Voir la sélection →
-                  </span>
                 </div>
               </Link>
             ))}
           </div>
+        </section>
+
+        <div className="flex flex-col gap-5 border-t border-stone-200 py-6 sm:flex-row sm:items-center sm:justify-between">
+          <Link
+            href="/offres"
+            className="text-sm font-semibold text-[#8a1f1f] underline-offset-4 hover:underline"
+          >
+            Découvrir nos offres du moment →
+          </Link>
+
+          <p className="text-sm leading-6 text-stone-600">
+            Une bouteille précise ?{" "}
+            <Link
+              href="/contact"
+              className="font-medium text-[#8a1f1f] underline underline-offset-4"
+            >
+              Contacte notre équipe
+            </Link>
+          </p>
         </div>
-      </section>
 
-      <section className="bg-[#fffaf3] px-6 py-16 text-[#24110d]">
-        <div className="mx-auto max-w-7xl rounded-[2.5rem] border border-[#dfceb7] bg-[#120706] p-8 text-white md:p-12">
-          <div className="grid gap-10 md:grid-cols-[0.9fr_1.1fr] md:items-center">
-            <div>
-              <p className="text-sm uppercase tracking-[0.35em] text-[#d8b56d]">
-                Service
-              </p>
-
-              <h2 className="mt-4 font-serif text-4xl leading-tight">
-                Vous recherchez une bouteille précise ?
-              </h2>
-
-              <p className="mt-5 text-base leading-8 text-white/70">
-                Château, domaine, format, millésime ou allocation spécifique :
-                nous pouvons vous accompagner dans votre recherche.
-              </p>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              {[
-                "Recherche sur demande",
-                "Grands domaines",
-                "Provenance suivie",
-                "Paiement sécurisé",
-              ].map((item) => (
-                <div
-                  key={item}
-                  className="rounded-2xl border border-white/10 bg-white/5 p-5 text-sm font-semibold text-white"
-                >
-                  {item}
-                </div>
-              ))}
-
-              <Link
-                href="/contact"
-                className="rounded-2xl bg-[#d8b56d] p-5 text-center text-sm font-semibold uppercase tracking-[0.16em] text-[#160604] transition hover:bg-white sm:col-span-2"
-              >
-                Nous contacter
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+        <p className="text-xs leading-6 text-stone-500">
+          Prix affichés hors taxes. TVA calculée lors de la finalisation de
+          la commande.
+        </p>
+      </div>
     </main>
   );
 }

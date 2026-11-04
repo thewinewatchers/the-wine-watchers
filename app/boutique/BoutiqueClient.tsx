@@ -99,7 +99,9 @@ function getSearchWords(value?: string | number | null) {
 
 function getWineSearchFields(wine: Wine) {
   return {
-    name: normalize([wine.name, wine.title, wine.chateau].filter(Boolean).join(" ")),
+    name: normalize(
+      [wine.name, wine.title, wine.chateau].filter(Boolean).join(" ")
+    ),
     producer: normalize(wine.producer),
     other: normalize(
       [
@@ -215,11 +217,10 @@ function parsePrice(price?: string | number) {
   if (price === undefined || price === null || price === "") return 0;
   if (typeof price === "number") return price;
 
-  const cleaned = price
-    .toString()
-    .replace(/[€\s]/g, "")
-    .replace(/\./g, "")
-    .replace(",", ".");
+  const raw = price.toString().replace(/[€\s\u00a0\u202f]/g, "");
+  const cleaned = raw.includes(",")
+    ? raw.replace(/\./g, "").replace(",", ".")
+    : raw;
 
   const value = Number(cleaned);
   return Number.isNaN(value) ? 0 : value;
@@ -276,7 +277,6 @@ function getWineHref(wine: Wine) {
   return `/boutique/vin/${wine.slug || wine.id}`;
 }
 
-
 function slugify(value?: string | number | null) {
   return String(value ?? "")
     .toLowerCase()
@@ -287,7 +287,6 @@ function slugify(value?: string | number | null) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
-
 const KNOWN_APPELLATION_SLUGS = new Set([
   "aloxe-corton",
   "auxey-duresses",
@@ -432,7 +431,10 @@ function getAppellationHref(appellation: string, categorySlug: string) {
 function getProducerHref(producer: string) {
   const producerSlug = slugify(producer);
 
-  if (producerSlug === "domaine-armand-rousseau" || producerSlug === "armand-rousseau") {
+  if (
+    producerSlug === "domaine-armand-rousseau" ||
+    producerSlug === "armand-rousseau"
+  ) {
     return "/producteur/armand-rousseau";
   }
 
@@ -476,7 +478,10 @@ function removeWordsFromTitle(title: string, value?: string | number | null) {
   if (!normalizedValue) return title;
 
   return title.replace(
-    new RegExp(`(^|\\s|[–—-])${escapeRegExp(normalizedValue)}(?=$|\\s|[–—-])`, "gi"),
+    new RegExp(
+      `(^|\\s|[–—-])${escapeRegExp(normalizedValue)}(?=$|\\s|[–—-])`,
+      "gi"
+    ),
     " "
   );
 }
@@ -520,142 +525,116 @@ function WineCard({
 }) {
   const image = getWineImage(wine);
   const name = getWineName(wine);
-  const vintage = getWineVintage(wine);
+  const vintage = String(getWineVintage(wine));
   const price = getWinePrice(wine);
-  const discountInfo = getDiscountInfo(price, wine.compare_at_price);
-  const location = wine.appellation || wine.region || categoryTitle;
-  const wineHref = getWineHref(wine);
+  const discount = getDiscountInfo(price, wine.compare_at_price);
+  const href = getWineHref(wine);
+  const stock = wine.stock ?? wine.quantity;
+  const knownStock =
+    stock !== undefined &&
+    stock !== null &&
+    String(stock).trim() !== "" &&
+    Number.isFinite(Number(stock));
 
   return (
-    <article className="group overflow-hidden rounded-[1.7rem] border border-[#dfcfb8] bg-[#fffaf3] shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#d8b56d] hover:shadow-xl">
-      <Link href={wineHref} className="block">
-        <div className="relative flex h-[245px] items-center justify-center overflow-hidden bg-[#efe3d2] p-6">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(216,181,109,0.24),transparent_38%)]" />
+    <article className="flex h-full flex-col overflow-hidden rounded-lg border border-stone-200 bg-white transition-colors hover:border-[#8a1f1f]">
+      <Link
+        href={href}
+        className="relative flex h-44 items-center justify-center p-3"
+        aria-label={name}
+      >
+        {discount && (
+          <span className="absolute left-3 top-3 rounded bg-[#8a1f1f] px-2 py-1 text-xs font-semibold text-white">
+            −{discount.percent} %
+          </span>
+        )}
 
-          {discountInfo && (
-            <div className="absolute left-4 top-4 z-20 rounded-full bg-[#8a1f1f] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-white shadow-sm">
-              -{discountInfo.percent} %
-            </div>
-          )}
+        {wine.rating && (
+          <span className="absolute right-3 top-3 rounded bg-stone-100 px-2 py-1 text-xs text-stone-700">
+            {wine.rating}
+          </span>
+        )}
 
-          {wine.rating && (
-            <div className="absolute right-4 top-4 z-10 rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-semibold text-[#8a1f1f] shadow-sm">
-              {wine.rating}
-            </div>
-          )}
-
-          {image ? (
-            <Image
-              src={image}
-              alt={`Bouteille de ${name} - The Wine Watchers`}
-              width={205}
-              height={205}
-              sizes="205px"
-              className="relative z-10 h-auto max-h-[205px] w-auto object-contain transition duration-500 group-hover:scale-105"
-            />
-          ) : (
-            <div className="relative z-10 flex h-full w-full items-center justify-center rounded-2xl border border-dashed border-[#cdbb9f] text-sm text-[#8a6a2f]">
-              Image non disponible
-            </div>
-          )}
-        </div>
+        {image ? (
+          <Image
+            src={image}
+            alt={name}
+            width={180}
+            height={160}
+            sizes="180px"
+            className="max-h-40 w-auto max-w-full object-contain"
+          />
+        ) : (
+          <span className="text-sm text-stone-400">Photo à venir</span>
+        )}
       </Link>
 
-      <div className="p-5">
+      <div className="flex flex-1 flex-col p-4 pt-2">
         {wine.appellation ? (
           <Link
             href={getAppellationHref(wine.appellation, categorySlug)}
-            className="mb-3 block rounded-full bg-[#24110d]/90 px-3 py-1.5 text-center text-[10px] uppercase tracking-[0.16em] text-[#d8b56d] transition hover:bg-[#8a1f1f]"
+            className="text-xs text-stone-500 hover:text-[#8a1f1f]"
           >
             {wine.appellation}
           </Link>
         ) : (
-          <p className="mb-3 rounded-full bg-[#24110d]/90 px-3 py-1.5 text-center text-[10px] uppercase tracking-[0.16em] text-[#d8b56d]">
-            {location}
+          <p className="text-xs text-stone-500">
+            {wine.region || categoryTitle}
           </p>
         )}
 
-        <div className="mb-3 flex flex-wrap items-center gap-2">
-         
-          {wine.classification && (
-            <span className="rounded-full border border-[#dfcfb8] bg-white px-3 py-1 text-[11px] text-[#6d5b50]">
-              {wine.classification}
-            </span>
-          )}
-
-          {wine.bottle_size && (
-            <span className="rounded-full border border-[#dfcfb8] bg-white px-3 py-1 text-[11px] text-[#6d5b50]">
-              {wine.bottle_size}
-            </span>
-          )}
-
-          {wine.packaging && (
-            <span className="rounded-full border border-[#dfcfb8] bg-white px-3 py-1 text-[11px] text-[#6d5b50]">
-              {wine.packaging}
-            </span>
-          )}
-        </div>
-
-        <Link href={wineHref}>
-          <h3 className="min-h-[64px] font-serif text-sm leading-tight text-[#24110d] transition group-hover:text-[#8a1f1f]">
+        <Link href={href} className="mt-2 hover:text-[#8a1f1f]">
+          <h3 className="font-serif text-lg leading-snug">
             {name}
+            {vintage && !name.includes(vintage) ? ` ${vintage}` : ""}
           </h3>
         </Link>
 
-        {wine.producer ? (
+        {wine.producer && (
           <Link
             href={getProducerHref(wine.producer)}
-            className="mt-3 block truncate text-[11px] uppercase tracking-[0.18em] text-[#b08a43] transition hover:text-[#8a1f1f]"
+            className="mt-1 text-xs text-stone-500 hover:text-[#8a1f1f]"
           >
             {wine.producer}
           </Link>
-        ) : wine.region ? (
-          <p className="mt-3 truncate text-[11px] uppercase tracking-[0.18em] text-[#b08a43]">
-            {wine.region}
+        )}
+
+        <p className="mt-3 text-xs leading-5 text-stone-600">
+          {[wine.bottle_size, wine.packaging].filter(Boolean).join(" · ")}
+        </p>
+
+        {wine.classification && (
+          <p className="text-xs leading-5 text-stone-500">
+            {wine.classification}
           </p>
-        ) : null}
+        )}
 
-        <div className="mt-5 flex items-end justify-between gap-2 border-t border-[#eadfce] pt-4">
-          <div className="min-w-0">
-            <p className="text-[10px] uppercase tracking-[0.2em] text-[#8a6a2f]">
-              Prix
+        <div className="mt-auto pt-4">
+          {discount && (
+            <p className="text-xs text-stone-400 line-through">
+              {formatPrice(wine.compare_at_price)}
             </p>
+          )}
 
-            {price ? (
-              discountInfo ? (
-                <div className="mt-1">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#8a6a2f]">
-                    🏷️ Offre exceptionnelle
-                  </p>
+          <p className="text-lg font-semibold text-[#8a1f1f]">
+            {formatPrice(price) || "Prix sur demande"}
+          </p>
 
-                  <p className="mt-1 text-sm text-[#9b8c7d] line-through">
-                    {formatPrice(wine.compare_at_price)}
-                  </p>
-
-                  <p className="whitespace-nowrap font-serif text-[1.35rem] text-[#8a1f1f] xl:text-[1.45rem]">
-                    {formatPrice(price)}
-                  </p>
-
-                  <p className="mt-1 whitespace-nowrap text-[11px] text-[#6d5b50]">
-                    Vous économisez {formatPrice(discountInfo.saving)} (-
-                    {discountInfo.percent}%)
-                  </p>
-                </div>
-              ) : (
-                <p className="mt-1 whitespace-nowrap font-serif text-[1.35rem] text-[#8a1f1f] xl:text-[1.45rem]">
-                  {formatPrice(price)}
-                </p>
-              )
-            ) : (
-              <p className="mt-2 text-sm text-[#6d5b50]">Sur demande</p>
-            )}
-          </div>
+          <p className="mt-1 text-xs text-stone-500">
+            {categorySlug === "primeurs-2025"
+              ? "En précommande"
+              : knownStock
+                ? Number(stock) > 0
+                  ? `${stock} unité${Number(stock) > 1 ? "s" : ""} disponible${Number(stock) > 1 ? "s" : ""}`
+                  : "Indisponible"
+                : "Disponibilité sur la fiche"}
+          </p>
 
           <Link
-            href={wineHref}
-            className="shrink-0 rounded-full bg-[#8a1f1f] px-3.5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#641313]"
+            href={href}
+            className="mt-3 block rounded border border-[#8a1f1f] px-3 py-2 text-center text-sm font-medium text-[#8a1f1f] transition-colors hover:bg-[#8a1f1f] hover:text-white"
           >
-            Détails
+            Voir le vin
           </Link>
         </div>
       </div>
@@ -666,7 +645,6 @@ function WineCard({
 export default function BoutiqueClient({
   slug,
   categoryTitle,
-  appellations,
 }: BoutiqueClientProps) {
   const searchParams = useSearchParams();
   const selectedAppellationFromUrl = searchParams.get("appellation");
@@ -736,7 +714,6 @@ export default function BoutiqueClient({
 
     return wines.filter((wine) => {
       if (!isVisibleWine(wine)) return false;
-
       if (showAllWines) return true;
 
       const wineCategory = normalize(wine.category);
@@ -776,17 +753,15 @@ export default function BoutiqueClient({
         .map((wine) => wine.vintage || wine.millesime)
     ).sort((a, b) => Number(b) - Number(a));
   }, [categoryWines]);
-
   const filteredWines = useMemo(() => {
-    const normalizedSearch = normalize(search);
-
     const winesToFilter = isAllSelectionsPage(slug, categoryTitle)
       ? wines.filter(isVisibleWine)
       : search
         ? wines.filter(isVisibleWine)
         : categoryWines;
 
-    return winesToFilter.filter((wine) => {
+    return winesToFilter
+      .filter((wine) => {
         if (!isVisibleWine(wine)) return false;
 
         const wineAppellation = normalize(wine.appellation);
@@ -807,7 +782,9 @@ export default function BoutiqueClient({
           ? wineVintage === normalize(selectedVintage)
           : true;
 
-        const matchesSearch = search ? wineMatchesSearch(wine, search) : true;
+        const matchesSearch = search
+          ? wineMatchesSearch(wine, search)
+          : true;
 
         return (
           matchesAppellation &&
@@ -830,14 +807,12 @@ export default function BoutiqueClient({
           const rankA = getBordeauxAppellationRank(a);
           const rankB = getBordeauxAppellationRank(b);
 
-          if (rankA !== rankB) {
-            return rankA - rankB;
-          }
+          if (rankA !== rankB) return rankA - rankB;
 
-          const nameA = normalize(getWineName(a));
-          const nameB = normalize(getWineName(b));
-
-          return nameA.localeCompare(nameB, "fr");
+          return normalize(getWineName(a)).localeCompare(
+            normalize(getWineName(b)),
+            "fr"
+          );
         }
 
         if (slug === "primeurs-2025") {
@@ -848,10 +823,10 @@ export default function BoutiqueClient({
             return appellationA.localeCompare(appellationB, "fr");
           }
 
-          const nameA = normalize(a.name || a.title || "");
-          const nameB = normalize(b.name || b.title || "");
-
-          return nameA.localeCompare(nameB, "fr");
+          return normalize(a.name || a.title || "").localeCompare(
+            normalize(b.name || b.title || ""),
+            "fr"
+          );
         }
 
         if (slug === "bourgogne") {
@@ -872,9 +847,7 @@ export default function BoutiqueClient({
           const nameA = normalize(a.name || a.title || "");
           const nameB = normalize(b.name || b.title || "");
 
-          if (nameA !== nameB) {
-            return nameA.localeCompare(nameB, "fr");
-          }
+          if (nameA !== nameB) return nameA.localeCompare(nameB, "fr");
 
           const vintageA = Number(a.vintage || a.millesime || 0);
           const vintageB = Number(b.vintage || b.millesime || 0);
@@ -909,14 +882,18 @@ export default function BoutiqueClient({
     filteredWines.forEach((wine) => {
       const producerTitle =
         String(wine.producer || "").trim() || "Producteur non précisé";
+
       const groupsByAppellation =
         slug === "bordeaux" || slug === "primeurs-2025";
+
       const appellationTitle = groupsByAppellation
         ? getBordeauxAppellationTitle(wine)
         : "";
+
       const appellationRank = groupsByAppellation
         ? getBordeauxAppellationRank(wine)
         : 0;
+
       const producerKey = normalize(
         groupsByAppellation
           ? `${appellationTitle}-${producerTitle}`
@@ -952,7 +929,10 @@ export default function BoutiqueClient({
         const groupsByAppellation =
           slug === "bordeaux" || slug === "primeurs-2025";
 
-        if (groupsByAppellation && a.appellationRank !== b.appellationRank) {
+        if (
+          groupsByAppellation &&
+          a.appellationRank !== b.appellationRank
+        ) {
           return a.appellationRank - b.appellationRank;
         }
 
@@ -985,7 +965,11 @@ export default function BoutiqueClient({
   }, [filteredWines, slug]);
 
   const groupedPages = useMemo(() => {
-    type WineGroup = { title: string; wines: Wine[] };
+    type WineGroup = {
+      title: string;
+      wines: Wine[];
+    };
+
     type ProducerGroup = {
       title: string;
       appellationTitle: string;
@@ -1039,34 +1023,7 @@ export default function BoutiqueClient({
   }, [groupedFilteredWines]);
 
   const totalPages = Math.max(1, groupedPages.length);
-
   const groupedPaginatedWines = groupedPages[currentPage - 1] || [];
-
-  const primeurAppellationGroups = useMemo(() => {
-    if (slug !== "primeurs-2025") return [];
-
-    const groups: {
-      title: string;
-      producers: typeof groupedPaginatedWines;
-    }[] = [];
-
-    groupedPaginatedWines.forEach((producerGroup) => {
-      const existingGroup = groups.find(
-        (group) => group.title === producerGroup.appellationTitle
-      );
-
-      if (existingGroup) {
-        existingGroup.producers.push(producerGroup);
-      } else {
-        groups.push({
-          title: producerGroup.appellationTitle || "Autres",
-          producers: [producerGroup],
-        });
-      }
-    });
-
-    return groups;
-  }, [groupedPaginatedWines, slug]);
 
   function resetFilters() {
     setSearch("");
@@ -1077,357 +1034,190 @@ export default function BoutiqueClient({
   }
 
   return (
-    <section className="relative overflow-visible bg-[#f7f1e8] px-6 pb-28">
-      <div className="pointer-events-none absolute inset-0 overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(216,181,109,0.20),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(138,31,31,0.10),transparent_32%)]" />
-
-      <div className="relative mx-auto max-w-7xl">
-        <div className="relative z-30 mb-10 rounded-[2rem] border border-[#e1d1bd] bg-[#fffaf3]/90 p-6 shadow-sm backdrop-blur md:p-8">
-          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
-            <div>
-              <p className="text-sm uppercase tracking-[0.3em] text-[#8a6a2f]">
-                Vins disponibles
-              </p>
-
-              <h2 className="mt-3 font-serif text-4xl leading-tight text-[#24110d] md:text-5xl">
-                {search
-                  ? `Recherche : ${search}`
-                  : selectedAppellation
-                  ? selectedAppellation
-                  : `Sélection ${categoryTitle}`}
-              </h2>
-
-              <p className="mt-4 max-w-2xl text-base leading-8 text-[#6d5b50]">
-                Recherchez précisément un vin, puis affinez par appellation,
-                classification ou millésime.
-              </p>
-            </div>
-
-            <div className="rounded-full border border-[#d8c6ae] bg-white px-5 py-3 text-sm text-[#6d5b50] shadow-sm">
-              {filteredWines.length} vin{filteredWines.length > 1 ? "s" : ""}{" "}
-              affiché{filteredWines.length > 1 ? "s" : ""}
-            </div>
-          </div>
-
-          <div className="mt-8 grid gap-4 lg:grid-cols-[2fr_1fr_1fr_0.8fr]">
-            <div className="relative">
-              <div className="pointer-events-none absolute inset-y-0 left-5 flex items-center text-[#8a6a2f]">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  className="h-5 w-5"
-                  aria-hidden="true"
-                >
-                  <circle cx="11" cy="11" r="7" />
-                  <path d="m20 20-3.5-3.5" />
-                </svg>
-              </div>
-
+    <section className="bg-white px-5 pb-12 text-stone-800 md:px-6">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-6 border-y border-stone-200 py-4">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <label className="text-xs font-medium text-stone-600">
+              Rechercher
               <input
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 type="search"
-                placeholder="Rechercher un vin, une appellation, un millésime..."
-                autoComplete="off"
-                className="w-full rounded-full border border-[#d8c6ae] bg-white py-3 pl-13 pr-12 text-sm text-[#24110d] outline-none transition placeholder:text-[#9b8c7d] focus:border-[#8a1f1f] focus:ring-4 focus:ring-[#8a1f1f]/10"
+                placeholder="Nom, domaine, millésime…"
+                className="mt-1 block w-full rounded border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-900 focus:border-[#8a1f1f]"
               />
+            </label>
 
-              {search && (
+            <label className="text-xs font-medium text-stone-600">
+              Appellation
+              <select
+                value={selectedAppellation}
+                onChange={(event) =>
+                  setSelectedAppellation(event.target.value)
+                }
+                className="mt-1 block w-full rounded border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-900"
+              >
+                <option value="">Toutes les appellations</option>
+                {appellationOptions.map((value) => (
+                  <option key={value} value={value}>
+                    {value}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="text-xs font-medium text-stone-600">
+              Classification
+              <select
+                value={selectedClassification}
+                onChange={(event) =>
+                  setSelectedClassification(event.target.value)
+                }
+                className="mt-1 block w-full rounded border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-900"
+              >
+                <option value="">Toutes les classifications</option>
+                {classificationOptions.map((value) => (
+                  <option key={value} value={value}>
+                    {value}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="text-xs font-medium text-stone-600">
+              Millésime
+              <select
+                value={selectedVintage}
+                onChange={(event) => setSelectedVintage(event.target.value)}
+                className="mt-1 block w-full rounded border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-900"
+              >
+                <option value="">Tous les millésimes</option>
+                {vintageOptions.map((value) => (
+                  <option key={value} value={value}>
+                    {value}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-sm">
+            <p role="status">
+              {loading
+                ? "Chargement…"
+                : `${filteredWines.length} référence${filteredWines.length > 1 ? "s" : ""}`}
+            </p>
+
+            <div className="flex flex-wrap gap-4">
+              {slug === "bordeaux" && (
+                <Link
+                  href="/boutique/primeurs-2025"
+                  className="text-[#8a1f1f] hover:underline"
+                >
+                  Primeurs 2025
+                </Link>
+              )}
+
+              {(search ||
+                selectedAppellation ||
+                selectedClassification ||
+                selectedVintage) && (
                 <button
                   type="button"
-                  onClick={() => setSearch("")}
-                  className="absolute inset-y-0 right-4 flex items-center text-xl text-[#8a6a2f] transition hover:text-[#8a1f1f]"
-                  aria-label="Effacer la recherche"
+                  onClick={resetFilters}
+                  className="text-[#8a1f1f] hover:underline"
                 >
-                  ×
+                  Effacer les filtres
                 </button>
               )}
             </div>
-
-            <select
-              value={selectedAppellation}
-              onChange={(event) => setSelectedAppellation(event.target.value)}
-              className="rounded-full border border-[#d8c6ae] bg-white px-5 py-3 text-sm text-[#24110d] outline-none transition focus:border-[#8a1f1f]"
-            >
-              <option value="">Toutes les appellations</option>
-              {appellationOptions.map((appellation) => (
-                <option key={appellation} value={appellation}>
-                  {appellation}
-                </option>
-              ))}
-            </select>
-
-            <select
-              value={selectedClassification}
-              onChange={(event) =>
-                setSelectedClassification(event.target.value)
-              }
-              className="rounded-full border border-[#d8c6ae] bg-white px-5 py-3 text-sm text-[#24110d] outline-none transition focus:border-[#8a1f1f]"
-            >
-              <option value="">Toutes les classifications</option>
-              {classificationOptions.map((classification) => (
-                <option key={classification} value={classification}>
-                  {classification}
-                </option>
-              ))}
-            </select>
-
-            <select
-              value={selectedVintage}
-              onChange={(event) => setSelectedVintage(event.target.value)}
-              className="rounded-full border border-[#d8c6ae] bg-white px-5 py-3 text-sm text-[#24110d] outline-none transition focus:border-[#8a1f1f]"
-            >
-              <option value="">Millésimes</option>
-              {vintageOptions.map((vintage) => (
-                <option key={vintage} value={vintage}>
-                  {vintage}
-                </option>
-              ))}
-            </select>
-
-            {slug === "bordeaux" && (
-              <Link
-                href="/boutique/primeurs-2025"
-                className="rounded-full border border-[#8a1f1f] bg-white px-5 py-3 text-center text-sm font-semibold text-[#8a1f1f] transition hover:bg-[#8a1f1f] hover:text-white"
-              >
-                Primeurs 2025
-              </Link>
-            )}
           </div>
 
-          <div className="mt-5 flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              onClick={resetFilters}
-              className="rounded-full border border-[#8a1f1f] px-5 py-2.5 text-sm font-semibold text-[#8a1f1f] transition hover:bg-[#8a1f1f] hover:text-white"
-            >
-              Réinitialiser les filtres
-            </button>
-          </div>
+          {search && (
+            <p className="mt-2 text-xs text-stone-500">
+              La recherche porte sur toutes les régions.
+            </p>
+          )}
         </div>
 
-        {appellationEditorial && (
-          <EditorialBlock
-            title={appellationEditorial.title}
-            text={appellationEditorial.opinion}
-          />
-        )}
-
-        {loading && (
-          <div className="rounded-[2rem] border border-[#e5d8c7] bg-[#fffaf3] p-10 text-center shadow-sm">
-            <p className="text-[#6d5b50]">Chargement des vins...</p>
-          </div>
-        )}
-
         {!loading && errorMessage && (
-          <div className="rounded-[2rem] border border-red-200 bg-white p-10 text-center shadow-sm">
-            <p className="font-medium text-red-700">
-              Erreur Supabase : {errorMessage}
-            </p>
-          </div>
+          <p role="alert" className="py-8 text-center text-red-700">
+            Impossible de charger les vins. Merci de réessayer dans
+            quelques instants.
+          </p>
         )}
 
         {!loading && !errorMessage && filteredWines.length === 0 && (
-          <div className="rounded-[2rem] border border-[#e5d8c7] bg-[#fffaf3] p-10 text-center shadow-sm">
-            <p className="text-sm uppercase tracking-[0.25em] text-[#8a6a2f]">
-              Aucun vin affiché
-            </p>
-
-            <h3 className="mt-3 font-serif text-3xl text-[#24110d]">
-              Aucun vin trouvé pour cette sélection
-            </h3>
-          </div>
+          <p className="py-8 text-center text-stone-600">
+            Aucun vin ne correspond à ces critères.
+          </p>
         )}
 
-        {!loading &&
-          !errorMessage &&
-          groupedPaginatedWines.length > 0 && (
-            <>
-              {slug === "primeurs-2025" ? (
-                <div className="space-y-9">
-                  {primeurAppellationGroups.map((appellationGroup) => (
-                    <section key={appellationGroup.title}>
-                      <div className="mb-5 rounded-xl border border-[#8a1f1f]/30 bg-[#8a1f1f] px-5 py-2.5 shadow-sm">
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                          <p className="text-[9px] font-semibold uppercase tracking-[0.24em] text-white/60">
-                            Appellation
-                          </p>
-
-                          <h2 className="font-serif text-2xl text-white">
-                            {appellationGroup.title}
-                          </h2>
-                        </div>
-                      </div>
-
-                      <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
-                        {appellationGroup.producers.flatMap((producerGroup) =>
-                          producerGroup.wineGroups.flatMap((wineGroup) =>
-                            wineGroup.wines.map((wine) => (
-                              <section
-                                key={`${producerGroup.title}-${wineGroup.title}-${wine.id}`}
-                                className="min-w-0"
-                              >
-                                <div className="mb-3 rounded-xl border border-[#d8b56d]/40 bg-[#24110d] px-4 py-2 shadow-sm">
-                                  <p className="text-[8px] font-semibold uppercase tracking-[0.2em] text-white/45">
-                                    Producteur
-                                  </p>
-
-                                  <Link
-                                    href={getProducerHref(producerGroup.title)}
-                                    className="block transition hover:text-white"
-                                  >
-                                    <h3 className="mt-0.5 truncate font-serif text-lg text-[#d8b56d]">
-                                      {producerGroup.title}
-                                    </h3>
-                                  </Link>
-                                </div>
-
-                                <div className="mb-3 rounded-xl border border-[#d8c6ae] bg-[#fffaf3] px-4 py-2 shadow-sm">
-                                  <p className="text-[8px] font-semibold uppercase tracking-[0.2em] text-[#8a6a2f]">
-                                    Vin
-                                  </p>
-
-                                  <h4 className="mt-0.5 truncate font-serif text-base text-[#24110d]">
-                                    {wineGroup.title}
-                                  </h4>
-                                </div>
-
-                                <WineCard
-                                  wine={wine}
-                                  categoryTitle={categoryTitle}
-                                  categorySlug={slug}
-                                />
-                              </section>
-                            ))
-                          )
-                        )}
-                      </div>
-                    </section>
-                  ))}
-                </div>
-              ) : (
-                <div className="space-y-9">
-                  {groupedPaginatedWines.map((producerGroup, producerIndex) => {
-                    const previousGroup =
-                      groupedPaginatedWines[producerIndex - 1];
-                    const showAppellationBanner =
-                      slug === "bordeaux" &&
-                      (!previousGroup ||
-                        previousGroup.appellationTitle !==
-                          producerGroup.appellationTitle);
-
-                    return (
-                      <div key={`${producerGroup.title}-${producerIndex}`}>
-                        {showAppellationBanner && (
-                          <div className="mb-5 rounded-xl border border-[#8a1f1f]/30 bg-[#8a1f1f] px-5 py-3 shadow-sm">
-                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                              <p className="text-[9px] font-semibold uppercase tracking-[0.24em] text-white/60">
-                                Appellation
-                              </p>
-
-                              <h2 className="font-serif text-2xl text-white md:text-3xl">
-                                {producerGroup.appellationTitle}
-                              </h2>
-                            </div>
-                          </div>
-                        )}
-
-                        <section className="space-y-5">
-                          <div className="rounded-xl border border-[#d8b56d]/40 bg-[#24110d] px-5 py-3 shadow-sm">
-                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                              <p className="text-[9px] font-semibold uppercase tracking-[0.24em] text-white/50">
-                                Producteur
-                              </p>
-
-                              <Link
-                                href={getProducerHref(producerGroup.title)}
-                                className="block transition hover:text-white"
-                              >
-                                <h3 className="font-serif text-2xl text-[#d8b56d] md:text-3xl">
-                                  {producerGroup.title}
-                                </h3>
-                              </Link>
-                            </div>
-                          </div>
-
-                          <div className="space-y-6">
-                            {producerGroup.wineGroups.map(
-                              (wineGroup, wineIndex) => (
-                                <section
-                                  key={`${producerGroup.title}-${wineGroup.title}-${wineIndex}`}
-                                >
-                                  <div className="mb-4 rounded-xl border border-[#d8c6ae] bg-[#fffaf3] px-5 py-3 shadow-sm">
-                                    <div className="flex flex-wrap items-center justify-between gap-2">
-                                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                                        <p className="text-[9px] font-semibold uppercase tracking-[0.22em] text-[#8a6a2f]">
-                                          Vin
-                                        </p>
-
-                                        <h4 className="font-serif text-xl leading-tight text-[#24110d] md:text-2xl">
-                                          {wineGroup.title}
-                                        </h4>
-                                      </div>
-
-                                      <p className="text-xs text-[#7d6b5e]">
-                                        {wineGroup.wines.length} millésime
-                                        {wineGroup.wines.length > 1 ? "s" : ""}
-                                      </p>
-                                    </div>
-                                  </div>
-
-                                  <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
-                                    {wineGroup.wines.map((wine) => (
-                                      <WineCard
-                                        key={wine.id}
-                                        wine={wine}
-                                        categoryTitle={categoryTitle}
-                                        categorySlug={slug}
-                                      />
-                                    ))}
-                                  </div>
-                                </section>
-                              )
-                            )}
-                          </div>
-                        </section>
-                      </div>
-                    );
-                  })}
-                </div>
+        {!loading && !errorMessage && groupedPaginatedWines.length > 0 && (
+          <>
+            <div className="grid items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {groupedPaginatedWines.flatMap((producer) =>
+                producer.wineGroups.flatMap((group) =>
+                  group.wines.map((wine) => (
+                    <WineCard
+                      key={wine.id}
+                      wine={wine}
+                      categoryTitle={categoryTitle}
+                      categorySlug={slug}
+                    />
+                  ))
+                )
               )}
+            </div>
 
-              {totalPages > 1 && (
-                <div className="mt-12 flex flex-wrap items-center justify-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setCurrentPage((page) => Math.max(1, page - 1))
-                    }
-                    disabled={currentPage === 1}
-                    className="rounded-full border border-[#d8c6ae] bg-[#fffaf3] px-5 py-3 text-sm font-semibold text-[#24110d] transition hover:border-[#8a1f1f] disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    ← Précédent
-                  </button>
+            {totalPages > 1 && (
+              <nav
+                aria-label="Pagination des vins"
+                className="mt-8 flex flex-wrap items-center justify-center gap-4 text-sm"
+              >
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCurrentPage((page) => Math.max(1, page - 1))
+                  }
+                  disabled={currentPage === 1}
+                  className="rounded border border-stone-300 px-4 py-2 hover:border-[#8a1f1f] disabled:opacity-40"
+                >
+                  ← Précédent
+                </button>
 
-                  <span className="rounded-full border border-[#d8c6ae] bg-white px-5 py-3 text-sm text-[#6d5b50]">
-                    Page {currentPage} / {totalPages}
-                  </span>
+                <span aria-live="polite">
+                  Page {currentPage} / {totalPages}
+                </span>
 
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setCurrentPage((page) => Math.min(totalPages, page + 1))
-                    }
-                    disabled={currentPage === totalPages}
-                    className="rounded-full border border-[#d8c6ae] bg-[#fffaf3] px-5 py-3 text-sm font-semibold text-[#24110d] transition hover:border-[#8a1f1f] disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    Suivant →
-                  </button>
-                </div>
-              )}
-            </>
-          )}
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCurrentPage((page) => Math.min(totalPages, page + 1))
+                  }
+                  disabled={currentPage === totalPages}
+                  className="rounded border border-stone-300 px-4 py-2 hover:border-[#8a1f1f] disabled:opacity-40"
+                >
+                  Suivant →
+                </button>
+              </nav>
+            )}
+          </>
+        )}
+
+        {appellationEditorial && (
+          <details className="mt-8 border-t border-stone-200 pt-4">
+            <summary className="cursor-pointer text-sm text-[#8a1f1f]">
+              En savoir plus sur {selectedAppellation}
+            </summary>
+
+            <EditorialBlock
+              title={appellationEditorial.title}
+              text={appellationEditorial.opinion}
+            />
+          </details>
+        )}
       </div>
     </section>
   );

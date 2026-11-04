@@ -57,7 +57,6 @@ function normalizeVintage(value: string | number | null) {
   if (value === null || value === undefined) return null;
 
   const normalizedValue = String(value).trim();
-
   if (!/^\d{4}$/.test(normalizedValue)) return null;
 
   const year = Number(normalizedValue);
@@ -81,7 +80,6 @@ async function getAvailableVintages(): Promise<VintageItem[]> {
       "Erreur lors du chargement des millésimes :",
       error.message
     );
-
     return [];
   }
 
@@ -91,17 +89,13 @@ async function getAvailableVintages(): Promise<VintageItem[]> {
     if (wine.hidden_from_site === true) continue;
 
     const year = normalizeVintage(wine.vintage);
-
     if (!year) continue;
 
     vintageCounts.set(year, (vintageCounts.get(year) ?? 0) + 1);
   }
 
   return Array.from(vintageCounts.entries())
-    .map(([year, count]) => ({
-      year,
-      count,
-    }))
+    .map(([year, count]) => ({ year, count }))
     .sort((a, b) => Number(b.year) - Number(a.year));
 }
 
@@ -111,8 +105,8 @@ function groupVintagesByDecade(vintages: VintageItem[]) {
   for (const vintage of vintages) {
     const decadeStart = Math.floor(Number(vintage.year) / 10) * 10;
     const decadeLabel = `Années ${decadeStart}`;
-
     const existingGroup = groups.get(decadeLabel) ?? [];
+
     existingGroup.push(vintage);
     groups.set(decadeLabel, existingGroup);
   }
@@ -124,11 +118,9 @@ function groupVintagesByDecade(vintages: VintageItem[]) {
 }
 
 function getVintageLabel(year: string) {
-  if (year === "2025") {
-    return "Millésime 2025 · Primeurs";
-  }
-
-  return `Millésime ${year}`;
+  return year === "2025"
+    ? "Millésime 2025 · Primeurs"
+    : `Millésime ${year}`;
 }
 
 function getWineCountLabel(count: number) {
@@ -186,392 +178,115 @@ export default async function MillesimesPage() {
       },
     ],
   };
+
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        background:
-          "linear-gradient(135deg, #16080b 0%, #241015 48%, #12070a 100%)",
-        color: "#ffffff",
-      }}
-    >
+    <main className="min-h-screen bg-white text-stone-800">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(collectionPageJsonLd),
+          __html: JSON.stringify(collectionPageJsonLd).replace(
+            /</g,
+            "\\u003c"
+          ),
         }}
       />
 
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(breadcrumbJsonLd),
+          __html: JSON.stringify(breadcrumbJsonLd).replace(
+            /</g,
+            "\\u003c"
+          ),
         }}
       />
 
-      <section
-        style={{
-          padding: "88px 24px 72px",
-          borderBottom: "1px solid rgba(255,255,255,0.08)",
-          background:
-            "radial-gradient(circle at top, rgba(140, 82, 96, 0.22), transparent 48%)",
-        }}
-      >
-        <div
-          style={{
-            width: "100%",
-            maxWidth: "1180px",
-            margin: "0 auto",
-          }}
+      <div className="mx-auto max-w-6xl px-5 py-8 md:px-8 md:py-10">
+        <nav
+          aria-label="Fil d’Ariane"
+          className="flex flex-wrap items-center gap-2 text-sm text-stone-500"
         >
-          <nav
-            aria-label="Fil d’Ariane"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              flexWrap: "wrap",
-              marginBottom: "30px",
-              color: "rgba(255,255,255,0.68)",
-              fontSize: "14px",
-            }}
-          >
-            <Link
-              href="/"
-              style={{
-                color: "rgba(255,255,255,0.72)",
-                textDecoration: "none",
-              }}
-            >
-              Accueil
-            </Link>
+          <Link href="/" className="hover:text-[#8a1f1f]">
+            Accueil
+          </Link>
+          <span aria-hidden="true">/</span>
+          <span aria-current="page">Millésimes</span>
+        </nav>
 
-            <span aria-hidden="true">/</span>
+        <header className="mt-6 border-b border-stone-200 pb-6">
+          <h1 className="font-serif text-3xl md:text-4xl">
+            Grands vins par millésime
+          </h1>
 
-            <span style={{ color: "#ffffff" }}>Millésimes</span>
-          </nav>
+          <p className="mt-3 max-w-3xl text-sm leading-7 text-stone-600">
+            Explorez notre sélection de grands vins classés par année et
+            retrouvez les bouteilles disponibles parmi les plus prestigieux
+            domaines de Bordeaux, Bourgogne, Rhône, Italie, Espagne et des
+            grandes régions viticoles du monde.
+          </p>
 
-          <div
-            style={{
-              maxWidth: "840px",
-            }}
-          >
-            <p
-              style={{
-                margin: "0 0 14px",
-                color: "#d8b7bf",
-                fontSize: "13px",
-                fontWeight: 700,
-                letterSpacing: "0.18em",
-                textTransform: "uppercase",
-              }}
-            >
-              The Wine Watchers
-            </p>
+          <p className="mt-4 text-sm text-stone-500">
+            {vintages.length} millésime{vintages.length > 1 ? "s" : ""}
+            {" · "}
+            {totalWines} vin{totalWines > 1 ? "s" : ""} disponible
+            {totalWines > 1 ? "s" : ""}
+          </p>
+        </header>
 
-            <h1
-              style={{
-                margin: 0,
-                fontFamily: "Georgia, 'Times New Roman', serif",
-                fontSize: "clamp(42px, 7vw, 76px)",
-                lineHeight: 1.02,
-                fontWeight: 500,
-                letterSpacing: "-0.03em",
-              }}
-            >
-              Grands vins par millésime
-            </h1>
-
-            <p
-              style={{
-                margin: "28px 0 0",
-                maxWidth: "760px",
-                color: "rgba(255,255,255,0.76)",
-                fontSize: "18px",
-                lineHeight: 1.8,
-              }}
-            >
-              Explorez notre sélection de grands vins classés par année et
-              retrouvez les bouteilles disponibles parmi les plus prestigieux
-              domaines de Bordeaux, Bourgogne, Rhône, Italie, Espagne et des
-              grandes régions viticoles du monde.
-            </p>
-
-            <div
-              style={{
-                display: "flex",
-                gap: "14px",
-                flexWrap: "wrap",
-                marginTop: "34px",
-              }}
-            >
-              <div
-                style={{
-                  padding: "12px 18px",
-                  border: "1px solid rgba(255,255,255,0.14)",
-                  borderRadius: "999px",
-                  background: "rgba(255,255,255,0.04)",
-                  color: "rgba(255,255,255,0.86)",
-                  fontSize: "14px",
-                }}
-              >
-                {vintages.length} millésime
-                {vintages.length > 1 ? "s" : ""}
-              </div>
-
-              <div
-                style={{
-                  padding: "12px 18px",
-                  border: "1px solid rgba(255,255,255,0.14)",
-                  borderRadius: "999px",
-                  background: "rgba(255,255,255,0.04)",
-                  color: "rgba(255,255,255,0.86)",
-                  fontSize: "14px",
-                }}
-              >
-                {totalWines} vin{totalWines > 1 ? "s" : ""} disponible
-                {totalWines > 1 ? "s" : ""}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section
-        style={{
-          padding: "70px 24px 96px",
-        }}
-      >
-        <div
-          style={{
-            width: "100%",
-            maxWidth: "1180px",
-            margin: "0 auto",
-          }}
-        >
+        <div className="py-6">
           {vintageGroups.length === 0 ? (
-            <div
-              style={{
-                padding: "48px 28px",
-                border: "1px solid rgba(255,255,255,0.12)",
-                borderRadius: "24px",
-                background: "rgba(255,255,255,0.035)",
-                textAlign: "center",
-              }}
-            >
-              <h2
-                style={{
-                  margin: 0,
-                  fontFamily: "Georgia, 'Times New Roman', serif",
-                  fontSize: "32px",
-                  fontWeight: 500,
-                }}
-              >
+            <div className="rounded-lg border border-stone-200 p-6">
+              <h2 className="font-serif text-2xl">
                 Aucun millésime disponible
               </h2>
 
-              <p
-                style={{
-                  margin: "16px auto 0",
-                  maxWidth: "620px",
-                  color: "rgba(255,255,255,0.68)",
-                  lineHeight: 1.7,
-                }}
-              >
+              <p className="mt-3 text-sm leading-7 text-stone-600">
                 Les vins actuellement visibles dans le catalogue ne disposent
                 pas encore d’un millésime exploitable.
               </p>
 
               <Link
                 href="/boutique"
-                style={{
-                  display: "inline-flex",
-                  marginTop: "26px",
-                  padding: "13px 22px",
-                  borderRadius: "999px",
-                  background: "#ffffff",
-                  color: "#1c0b0f",
-                  textDecoration: "none",
-                  fontWeight: 700,
-                }}
+                className="mt-4 inline-block text-sm text-[#8a1f1f] hover:underline"
               >
-                Voir le catalogue
+                Voir le catalogue →
               </Link>
             </div>
           ) : (
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "64px",
-              }}
-            >
+            <div className="space-y-7">
               {vintageGroups.map((group) => (
                 <section key={group.label}>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "flex-end",
-                      justifyContent: "space-between",
-                      gap: "20px",
-                      flexWrap: "wrap",
-                      marginBottom: "24px",
-                    }}
-                  >
-                    <div>
-                      <p
-                        style={{
-                          margin: "0 0 8px",
-                          color: "#c99ca7",
-                          fontSize: "12px",
-                          fontWeight: 700,
-                          letterSpacing: "0.16em",
-                          textTransform: "uppercase",
-                        }}
-                      >
-                        Sélection par année
-                      </p>
+                  <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+                    <h2 className="font-serif text-2xl">{group.label}</h2>
 
-                      <h2
-                        style={{
-                          margin: 0,
-                          fontFamily: "Georgia, 'Times New Roman', serif",
-                          fontSize: "clamp(30px, 4vw, 46px)",
-                          fontWeight: 500,
-                        }}
-                      >
-                        {group.label}
-                      </h2>
-                    </div>
-
-                    <p
-                      style={{
-                        margin: 0,
-                        color: "rgba(255,255,255,0.58)",
-                        fontSize: "14px",
-                      }}
-                    >
+                    <p className="text-xs text-stone-500">
                       {group.items.length} année
                       {group.items.length > 1 ? "s" : ""}
                     </p>
                   </div>
 
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns:
-                        "repeat(auto-fit, minmax(230px, 1fr))",
-                      gap: "18px",
-                    }}
-                  >
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                     {group.items.map((vintage) => (
                       <Link
                         key={vintage.year}
                         href={`/millesime/${vintage.year}`}
-                        style={{
-                          display: "block",
-                          position: "relative",
-                          minHeight: "210px",
-                          padding: "26px",
-                          overflow: "hidden",
-                          border: "1px solid rgba(255,255,255,0.11)",
-                          borderRadius: "22px",
-                          background:
-                            "linear-gradient(145deg, rgba(255,255,255,0.075), rgba(255,255,255,0.025))",
-                          color: "#ffffff",
-                          textDecoration: "none",
-                          boxShadow: "0 18px 45px rgba(0,0,0,0.16)",
-                        }}
+                        className="group rounded-lg border border-stone-200 p-4 transition-colors hover:border-[#8a1f1f] hover:bg-stone-50"
                       >
-                        <div
-                          aria-hidden="true"
-                          style={{
-                            position: "absolute",
-                            right: "-18px",
-                            bottom: "-30px",
-                            fontFamily: "Georgia, 'Times New Roman', serif",
-                            fontSize: "96px",
-                            lineHeight: 1,
-                            color: "rgba(255,255,255,0.035)",
-                            pointerEvents: "none",
-                          }}
-                        >
-                          {vintage.year}
-                        </div>
+                        <h3 className="font-serif text-xl text-[#591c24]">
+                          {getVintageLabel(vintage.year)}
+                        </h3>
 
-                        <div
-                          style={{
-                            position: "relative",
-                            zIndex: 1,
-                            display: "flex",
-                            minHeight: "158px",
-                            flexDirection: "column",
-                            justifyContent: "space-between",
-                          }}
-                        >
-                          <div>
-                            <p
-                              style={{
-                                margin: 0,
-                                color: "#d4aab4",
-                                fontSize: "12px",
-                                fontWeight: 700,
-                                letterSpacing: "0.14em",
-                                textTransform: "uppercase",
-                              }}
-                            >
-                              Découvrir
-                            </p>
+                        <div className="mt-3 flex items-center justify-between gap-3">
+                          <span className="text-xs text-stone-500">
+                            {getWineCountLabel(vintage.count)}
+                          </span>
 
-                            <h3
-                              style={{
-                                margin: "12px 0 0",
-                                fontFamily:
-                                  "Georgia, 'Times New Roman', serif",
-                                fontSize: "32px",
-                                fontWeight: 500,
-                                lineHeight: 1.15,
-                              }}
-                            >
-                              {getVintageLabel(vintage.year)}
-                            </h3>
-                          </div>
-
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                              gap: "14px",
-                              marginTop: "24px",
-                            }}
+                          <span
+                            aria-hidden="true"
+                            className="text-stone-400 group-hover:text-[#8a1f1f]"
                           >
-                            <span
-                              style={{
-                                color: "rgba(255,255,255,0.66)",
-                                fontSize: "14px",
-                              }}
-                            >
-                              {getWineCountLabel(vintage.count)}
-                            </span>
-
-                            <span
-                              aria-hidden="true"
-                              style={{
-                                display: "inline-flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                width: "38px",
-                                height: "38px",
-                                border: "1px solid rgba(255,255,255,0.17)",
-                                borderRadius: "50%",
-                                background: "rgba(255,255,255,0.055)",
-                                fontSize: "18px",
-                              }}
-                            >
-                              →
-                            </span>
-                          </div>
+                            →
+                          </span>
                         </div>
                       </Link>
                     ))}
@@ -580,87 +295,32 @@ export default async function MillesimesPage() {
               ))}
             </div>
           )}
-
-          <section
-            style={{
-              marginTop: "76px",
-              padding: "38px",
-              border: "1px solid rgba(255,255,255,0.1)",
-              borderRadius: "26px",
-              background: "rgba(255,255,255,0.035)",
-            }}
-          >
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-                gap: "34px",
-                alignItems: "center",
-              }}
-            >
-              <div>
-                <p
-                  style={{
-                    margin: "0 0 10px",
-                    color: "#c99ca7",
-                    fontSize: "12px",
-                    fontWeight: 700,
-                    letterSpacing: "0.16em",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  Comprendre les millésimes
-                </p>
-
-                <h2
-                  style={{
-                    margin: 0,
-                    fontFamily: "Georgia, 'Times New Roman', serif",
-                    fontSize: "clamp(28px, 4vw, 42px)",
-                    fontWeight: 500,
-                    lineHeight: 1.15,
-                  }}
-                >
-                  Chaque année révèle une expression différente du terroir
-                </h2>
-              </div>
-
-              <div>
-                <p
-                  style={{
-                    margin: 0,
-                    color: "rgba(255,255,255,0.7)",
-                    fontSize: "16px",
-                    lineHeight: 1.8,
-                  }}
-                >
-                  Le millésime traduit les conditions climatiques d’une année,
-                  mais aussi les choix du domaine, le terroir et la maturité des
-                  raisins. Parcourir les vins par année permet de comparer les
-                  styles, les régions, les producteurs et les potentiels de
-                  garde.
-                </p>
-
-                <Link
-                  href="/boutique"
-                  style={{
-                    display: "inline-flex",
-                    marginTop: "24px",
-                    padding: "13px 22px",
-                    borderRadius: "999px",
-                    background: "#ffffff",
-                    color: "#1c0b0f",
-                    textDecoration: "none",
-                    fontWeight: 700,
-                  }}
-                >
-                  Explorer tous les vins
-                </Link>
-              </div>
-            </div>
-          </section>
         </div>
-      </section>
+
+        <section className="mt-3 border-t border-stone-200 pt-6">
+          <p className="text-xs font-medium uppercase tracking-widest text-[#8a1f1f]">
+            Comprendre les millésimes
+          </p>
+
+          <h2 className="mt-3 font-serif text-2xl">
+            Chaque année révèle une expression différente du terroir
+          </h2>
+
+          <p className="mt-3 max-w-3xl text-sm leading-7 text-stone-600">
+            Le millésime traduit les conditions climatiques d’une année,
+            mais aussi les choix du domaine, le terroir et la maturité des
+            raisins. Parcourir les vins par année permet de comparer les
+            styles, les régions, les producteurs et les potentiels de garde.
+          </p>
+
+          <Link
+            href="/boutique"
+            className="mt-5 inline-block rounded bg-[#8a1f1f] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#641313]"
+          >
+            Explorer tous les vins
+          </Link>
+        </section>
+      </div>
     </main>
   );
 }
