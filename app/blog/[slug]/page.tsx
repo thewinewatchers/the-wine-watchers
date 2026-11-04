@@ -329,132 +329,135 @@ export default async function BlogArticlePage({ params }: Props) {
   const links = articleLinks[post.slug];
 
   return (
-    <main className="min-h-screen bg-[#f8f3eb] text-neutral-900">
-      <section className="bg-[#170606] px-6 py-16 text-white">
-        <div className="mx-auto max-w-5xl">
-          <Link
-            href="/blog"
-            className="mb-10 inline-flex text-sm text-[#d8b56d] transition hover:text-white"
-          >
-            ← Retour au blog
+    <main className="min-h-screen bg-white text-stone-800">
+      <div className="mx-auto max-w-6xl px-5 py-8 md:px-8 md:py-10">
+        <nav
+          aria-label="Fil d’Ariane"
+          className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs leading-6 text-stone-500"
+        >
+          <Link href="/" className="hover:text-[#8a1f1f]">
+            Accueil
           </Link>
 
-          <p className="mb-4 text-sm uppercase tracking-[0.35em] text-[#d8b56d]">
-            {post.category}
-          </p>
+          <span aria-hidden="true">/</span>
 
-          <h1 className="max-w-4xl font-serif text-4xl font-semibold leading-tight md:text-6xl">
-            {post.title}
-          </h1>
+          <Link href="/blog" className="hover:text-[#8a1f1f]">
+            Blog
+          </Link>
 
-          <p className="mt-6 max-w-3xl text-base leading-8 text-neutral-200">
-            {post.description}
-          </p>
+          <span aria-hidden="true">/</span>
+          <span aria-current="page">{post.title}</span>
+        </nav>
 
-          <p className="mt-6 text-xs uppercase tracking-[0.25em] text-[#d8b56d]">
-            {post.date}
-          </p>
-        </div>
-      </section>
+        <article className="mx-auto mt-6 max-w-4xl">
+          <header className="border-b border-stone-200 pb-6">
+            <p className="text-xs font-medium text-[#8a1f1f]">
+              {post.category}
+            </p>
 
-      <section className="px-6 py-12">
-        <div className="mx-auto max-w-5xl">
-          <div className="mb-10 overflow-hidden rounded-3xl border border-[#d8b56d]/40 bg-[#2a0d0d] shadow-lg">
-            <div className="flex min-h-[260px] items-center justify-center bg-[radial-gradient(circle_at_top_left,#8B1E2D,transparent_35%),linear-gradient(135deg,#170606,#2a0d0d,#5b111b)] px-8 text-center">
-              <div>
-                <p className="mb-4 text-sm uppercase tracking-[0.4em] text-[#d8b56d]">
-                  The Wine Watchers
+            <h1 className="mt-3 font-serif text-3xl leading-tight md:text-4xl">
+              {post.title}
+            </h1>
+
+            <p className="mt-4 text-base leading-7 text-stone-600">
+              {post.description}
+            </p>
+
+            <p className="mt-4 text-xs text-stone-500">
+              {post.date}
+            </p>
+          </header>
+
+          <div className="py-6 text-base leading-8 text-stone-700">
+            {contentBlocks.map((block, index) =>
+              block.type === "heading" ? (
+                <h2
+                  key={index}
+                  className="mb-4 mt-8 font-serif text-2xl leading-snug text-stone-900 first:mt-0"
+                >
+                  {block.text}
+                </h2>
+              ) : (
+                <p key={index} className="mb-5 last:mb-0">
+                  {block.text}
                 </p>
-                <p className="font-serif text-3xl text-white md:text-5xl">
-                  Journal des grands vins
-                </p>
-              </div>
-            </div>
+              )
+            )}
           </div>
 
-          <article className="rounded-3xl border border-[#e7d8c5] bg-white p-8 shadow-sm md:p-14">
-            <h2 className="mb-8 font-serif text-3xl font-semibold text-neutral-950 md:text-4xl">
-              {post.title}
-            </h2>
-
-            <div className="text-base leading-8 text-neutral-800 md:text-lg">
-              {contentBlocks.map((block, index) =>
-                block.type === "heading" ? (
-                  <h2
-                    key={index}
-                    className="mb-5 mt-12 font-serif text-2xl font-semibold leading-tight text-[#5b111b] md:text-3xl"
-                  >
-                    {block.text}
-                  </h2>
-                ) : (
-                  <p key={index} className="mb-7">
-                    {block.text}
-                  </p>
-                )
-              )}
-            </div>
-
-            {links && (
-              <section className="mt-12 rounded-2xl border border-[#e7d8c5] bg-[#f8f3eb] p-6">
-                <h3 className="mb-5 font-serif text-2xl font-semibold text-neutral-950">
-                  Pour aller plus loin
-                </h3>
-
-                <div className="grid gap-6 md:grid-cols-2">
-                  <div>
-                    <h4 className="mb-3 text-sm font-semibold uppercase tracking-[0.25em] text-[#8B1E2D]">
-                      Sur The Wine Watchers
-                    </h4>
-
-                    <ul className="space-y-3 text-sm leading-6">
-                      {links.internal.map((link) => (
-                        <li key={link.href}>
-                          <Link
-                            href={link.href}
-                            className="font-medium text-neutral-800 underline decoration-[#8B1E2D]/40 underline-offset-4 transition hover:text-[#8B1E2D]"
-                          >
-                            {link.label}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div>
-                    <h4 className="mb-3 text-sm font-semibold uppercase tracking-[0.25em] text-[#8B1E2D]">
-                      Sources utiles
-                    </h4>
-
-                    <ul className="space-y-3 text-sm leading-6">
-                      {links.external.map((link) => (
-                        <li key={link.href}>
-                          <a
-                            href={link.href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="font-medium text-neutral-800 underline decoration-[#8B1E2D]/40 underline-offset-4 transition hover:text-[#8B1E2D]"
-                          >
-                            {link.label}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </section>
-            )}
-
-            <div className="mt-12 border-t border-[#e7d8c5] pt-8">
-              <Link
-                href="/blog"
-                className="inline-flex rounded-full border border-[#8B1E2D] px-5 py-2 text-sm font-semibold text-[#8B1E2D] transition hover:bg-[#8B1E2D] hover:text-white"
+          {links && (
+            <section
+              aria-labelledby="further-reading-title"
+              className="border-t border-stone-200 py-6"
+            >
+              <h2
+                id="further-reading-title"
+                className="font-serif text-2xl text-stone-900"
               >
-                ← Retour au blog
-              </Link>
-            </div>
-          </article>
-        </div>
-      </section>
+                Pour aller plus loin
+              </h2>
+
+              <div className="mt-5 grid items-start gap-6 md:grid-cols-2">
+                <div>
+                  <h3 className="mb-3 text-sm font-semibold text-stone-800">
+                    Sur The Wine Watchers
+                  </h3>
+
+                  <ul className="space-y-2 text-sm leading-6">
+                    {links.internal.map((link) => (
+                      <li key={link.href}>
+                        <Link
+                          href={link.href}
+                          className="text-[#8a1f1f] underline-offset-4 hover:underline"
+                        >
+                          {link.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div>
+                  <h3 className="mb-3 text-sm font-semibold text-stone-800">
+                    Sources utiles
+                  </h3>
+
+                  <ul className="space-y-2 text-sm leading-6">
+                    {links.external.map((link) => (
+                      <li key={link.href}>
+                        <a
+                          href={link.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#8a1f1f] underline-offset-4 hover:underline"
+                        >
+                          {link.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </section>
+          )}
+
+          <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-stone-200 pt-5 text-sm">
+            <Link
+              href="/blog"
+              className="font-medium text-[#8a1f1f] hover:underline"
+            >
+              ← Retour au blog
+            </Link>
+
+            <Link
+              href="/boutique"
+              className="text-[#8a1f1f] hover:underline"
+            >
+              Découvrir nos vins →
+            </Link>
+          </footer>
+        </article>
+      </div>
     </main>
   );
 }
