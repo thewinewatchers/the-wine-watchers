@@ -1,11 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { useState } from "react";
+import type { FormEvent } from "react";
 
 const CONTACT_EMAIL = "contact@thewinewatchers.com";
 const CONTACT_PHONE = "+34 972 15 08 78";
 const CONTACT_ADDRESS = "Riera Ginjolers,99 17480 Roses";
+
+const inputClass =
+  "w-full min-w-0 rounded border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:border-[#8a1f1f] focus:outline-none focus:ring-2 focus:ring-[#8a1f1f]/10";
 
 export default function ContactPage() {
   const [nom, setNom] = useState("");
@@ -21,6 +25,8 @@ export default function ContactPage() {
 
   async function envoyerDemande(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (sending) return;
 
     setSending(true);
     setFeedback("");
@@ -49,7 +55,6 @@ export default function ContactPage() {
           result?.error ||
             "Une erreur est survenue lors de l’envoi de votre demande."
         );
-        setSending(false);
         return;
       }
 
@@ -73,208 +78,246 @@ export default function ContactPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f7f1e8] text-[#24110d]">
-      {/* HERO */}
-      <section className="relative overflow-hidden bg-[#170606] text-white">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(216,181,109,0.22),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(138,31,31,0.35),transparent_36%),linear-gradient(135deg,#2a0d0d,#100303)]" />
-
-        <div className="relative mx-auto max-w-7xl px-6 py-20 md:py-28">
-          <Link
-            href="/boutique"
-            className="mb-8 inline-block text-sm uppercase tracking-[0.25em] text-[#d8b56d] transition hover:text-white"
-          >
-            ← Retour boutique
+    <main className="min-h-screen bg-white text-stone-800">
+      <div className="mx-auto max-w-6xl px-5 py-8 md:px-8 md:py-10">
+        <nav
+          aria-label="Fil d’Ariane"
+          className="flex flex-wrap items-center gap-2 text-sm text-stone-500"
+        >
+          <Link href="/" className="hover:text-[#8a1f1f]">
+            Accueil
           </Link>
 
-          <p className="mb-4 text-sm uppercase tracking-[0.35em] text-[#d8b56d]">
-            The Wine Watchers
-          </p>
+          <span aria-hidden="true">/</span>
+          <span aria-current="page">Contact</span>
+        </nav>
 
-          <h1 className="max-w-4xl font-serif text-4xl font-semibold leading-tight md:text-6xl">
-            Contact & recherche personnalisée
+        <header className="mt-6 border-b border-stone-200 pb-6">
+          <h1 className="font-serif text-3xl md:text-4xl">
+            Contact et recherche personnalisée
           </h1>
 
-          <p className="mt-6 max-w-2xl text-base leading-8 text-white/75 md:text-lg">
+          <p className="mt-3 max-w-3xl text-sm leading-7 text-stone-600">
             Vous recherchez un château, un domaine, un millésime ou une
             allocation spécifique ? Complétez le formulaire et envoyez-nous
             votre demande.
           </p>
-        </div>
-      </section>
+        </header>
 
-      {/* CONTACT CONTENT */}
-      <section className="mx-auto grid max-w-7xl gap-10 px-6 py-16 md:grid-cols-[0.9fr_1.1fr] md:py-24">
-        {/* INFOS SOCIÉTÉ */}
-        <div className="rounded-[2rem] border border-[#e1d1bd] bg-[#fffaf3] p-8 shadow-sm md:p-10">
-          <p className="text-sm uppercase tracking-[0.28em] text-[#8a6a2f]">
-            The Wine Watchers
-          </p>
+        <div className="grid items-start gap-8 py-6 lg:grid-cols-[0.8fr_1.2fr] lg:gap-12">
+          <section aria-labelledby="contact-details-title">
+            <h2
+              id="contact-details-title"
+              className="font-serif text-2xl"
+            >
+              Une demande spécifique ?
+            </h2>
 
-          <h2 className="mt-4 font-serif text-4xl text-[#24110d]">
-            Une demande spécifique ?
-          </h2>
+            <p className="mt-3 text-sm leading-7 text-stone-600">
+              Indiquez le vin recherché, le millésime souhaité, le format,
+              la quantité et toute information utile. Nous reviendrons vers
+              vous avec les disponibilités possibles.
+            </p>
 
-          <p className="mt-6 text-base leading-8 text-[#6d5b50]">
-            Indiquez le vin recherché, le millésime souhaité, le format, la
-            quantité et toute information utile. Nous reviendrons vers vous avec
-            les disponibilités possibles.
-          </p>
+            <dl className="mt-5 space-y-5 border-t border-stone-200 pt-5">
+              <div>
+                <dt className="text-xs font-medium text-stone-500">
+                  Email
+                </dt>
 
-          <div className="mt-8 space-y-6 border-t border-[#eadfce] pt-8">
-            <div>
-              <p className="text-sm uppercase tracking-[0.2em] text-[#8a6a2f]">
-                Email
-              </p>
+                <dd className="mt-1 text-sm">
+                  <a
+                    href={`mailto:${CONTACT_EMAIL}`}
+                    className="break-words text-[#8a1f1f] underline-offset-4 hover:underline"
+                  >
+                    {CONTACT_EMAIL}
+                  </a>
+                </dd>
+              </div>
 
-              <a
-                href={`mailto:${CONTACT_EMAIL}`}
-                className="mt-2 inline-block font-serif text-2xl text-[#24110d] transition hover:text-[#8a1f1f]"
-              >
-                {CONTACT_EMAIL}
-              </a>
-            </div>
+              <div>
+                <dt className="text-xs font-medium text-stone-500">
+                  Téléphone
+                </dt>
 
-            <div>
-              <p className="text-sm uppercase tracking-[0.2em] text-[#8a6a2f]">
-                Téléphone
-              </p>
+                <dd className="mt-1 text-sm">
+                  <a
+                    href="tel:+34972150878"
+                    className="text-[#8a1f1f] underline-offset-4 hover:underline"
+                  >
+                    {CONTACT_PHONE}
+                  </a>
+                </dd>
+              </div>
 
-              <p className="mt-2 font-serif text-2xl text-[#24110d]">
-                {CONTACT_PHONE}
-              </p>
-            </div>
+              <div>
+                <dt className="text-xs font-medium text-stone-500">
+                  Adresse
+                </dt>
 
-            <div>
-              <p className="text-sm uppercase tracking-[0.2em] text-[#8a6a2f]">
-                Adresse
-              </p>
+                <dd className="mt-1 text-sm leading-6 text-stone-600">
+                  {CONTACT_ADDRESS}
+                </dd>
+              </div>
 
-              <p className="mt-2 text-base leading-7 text-[#6d5b50]">
-                {CONTACT_ADDRESS}
-              </p>
-            </div>
+              <div>
+                <dt className="text-xs font-medium text-stone-500">
+                  Spécialités
+                </dt>
 
-            <div>
-              <p className="text-sm uppercase tracking-[0.2em] text-[#8a6a2f]">
-                Spécialités
-              </p>
+                <dd className="mt-1 text-sm leading-6 text-stone-600">
+                  Bordeaux, Bourgogne, Rhône, Italie, Espagne, USA et
+                  Primeurs.
+                </dd>
+              </div>
+            </dl>
 
-              <p className="mt-2 text-base leading-7 text-[#6d5b50]">
-                Bordeaux, Bourgogne, Rhône, Italie, Espagne, USA et Primeurs.
-              </p>
-            </div>
-          </div>
-        </div>
+            <Link
+              href="/boutique"
+              className="mt-6 inline-block text-sm font-medium text-[#8a1f1f] hover:underline"
+            >
+              Découvrir nos vins →
+            </Link>
+          </section>
 
-        {/* FORMULAIRE */}
-        <form
-          onSubmit={envoyerDemande}
-          className="rounded-[2rem] border border-[#e1d1bd] bg-[#fffaf3] p-8 shadow-sm md:p-10"
-        >
-          <p className="text-sm uppercase tracking-[0.28em] text-[#8a6a2f]">
-            Formulaire
-          </p>
-
-          <h2 className="mt-4 font-serif text-4xl text-[#24110d]">
-            Votre demande
-          </h2>
-
-          <div className="mt-8 grid gap-5">
-            <label className="grid gap-2">
-              <span className="font-semibold">Nom *</span>
-              <input
-                value={nom}
-                onChange={(event) => setNom(event.target.value)}
-                type="text"
-                required
-                className="rounded-2xl border border-[#d8cbbb] bg-white px-4 py-3 outline-none transition focus:border-[#8a1f1f]"
-                placeholder="Votre nom"
-              />
-            </label>
-
-            <label className="grid gap-2">
-              <span className="font-semibold">Email *</span>
-              <input
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                type="email"
-                required
-                className="rounded-2xl border border-[#d8cbbb] bg-white px-4 py-3 outline-none transition focus:border-[#8a1f1f]"
-                placeholder="votre@email.com"
-              />
-            </label>
-
-            <label className="grid gap-2">
-              <span className="font-semibold">Téléphone</span>
-              <input
-                value={telephone}
-                onChange={(event) => setTelephone(event.target.value)}
-                type="tel"
-                className="rounded-2xl border border-[#d8cbbb] bg-white px-4 py-3 outline-none transition focus:border-[#8a1f1f]"
-                placeholder="Votre numéro de téléphone"
-              />
-            </label>
-
-            <label className="grid gap-2">
-              <span className="font-semibold">Vin recherché</span>
-              <input
-                value={vinRecherche}
-                onChange={(event) => setVinRecherche(event.target.value)}
-                type="text"
-                className="rounded-2xl border border-[#d8cbbb] bg-white px-4 py-3 outline-none transition focus:border-[#8a1f1f]"
-                placeholder="Ex : Château Lafite Rothschild 2018"
-              />
-            </label>
-
-            <label className="grid gap-2">
-              <span className="font-semibold">Quantité souhaitée</span>
-              <input
-                value={quantite}
-                onChange={(event) => setQuantite(event.target.value)}
-                type="text"
-                className="rounded-2xl border border-[#d8cbbb] bg-white px-4 py-3 outline-none transition focus:border-[#8a1f1f]"
-                placeholder="Ex : 1 bouteille, 3 bouteilles, caisse de 6..."
-              />
-            </label>
-
-            <label className="grid gap-2">
-              <span className="font-semibold">Message *</span>
-              <textarea
-                value={message}
-                onChange={(event) => setMessage(event.target.value)}
-                rows={6}
-                required
-                className="resize-none rounded-2xl border border-[#d8cbbb] bg-white px-4 py-3 outline-none transition focus:border-[#8a1f1f]"
-                placeholder="Indiquez le millésime, le format, la quantité, le délai souhaité ou toute information utile."
-              />
-            </label>
-          </div>
-
-          {feedback && (
-            <div className="mt-6 rounded-2xl border border-green-200 bg-green-50 p-4 text-sm leading-6 text-green-800">
-              {feedback}
-            </div>
-          )}
-
-          {errorMessage && (
-            <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm leading-6 text-red-800">
-              {errorMessage}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={sending}
-            className="mt-8 rounded-full bg-[#8a1f1f] px-8 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#641313] disabled:cursor-not-allowed disabled:opacity-60"
+          <section
+            aria-labelledby="contact-form-title"
+            className="min-w-0 rounded-lg border border-stone-200 p-5 md:p-6"
           >
-            {sending ? "Envoi en cours..." : "Envoyer la demande"}
-          </button>
+            <h2
+              id="contact-form-title"
+              className="font-serif text-2xl"
+            >
+              Votre demande
+            </h2>
 
-          <p className="mt-5 text-sm leading-6 text-[#6d5b50]">
-            Votre demande sera envoyée directement à The Wine Watchers.
-          </p>
-        </form>
-      </section>
+            <p className="mt-2 text-xs text-stone-500">
+              Les champs marqués d’un astérisque sont obligatoires.
+            </p>
+
+            <form
+              onSubmit={envoyerDemande}
+              aria-labelledby="contact-form-title"
+              aria-busy={sending}
+              className="mt-5"
+            >
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="grid min-w-0 gap-2">
+                  <span className="text-sm font-medium">Nom *</span>
+                  <input
+                    name="nom"
+                    value={nom}
+                    onChange={(event) => setNom(event.target.value)}
+                    type="text"
+                    autoComplete="name"
+                    required
+                    className={inputClass}
+                    placeholder="Votre nom"
+                  />
+                </label>
+
+                <label className="grid min-w-0 gap-2">
+                  <span className="text-sm font-medium">Email *</span>
+                  <input
+                    name="email"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    type="email"
+                    autoComplete="email"
+                    required
+                    className={inputClass}
+                    placeholder="votre@email.com"
+                  />
+                </label>
+
+                <label className="grid min-w-0 gap-2 sm:col-span-2">
+                  <span className="text-sm font-medium">Téléphone</span>
+                  <input
+                    name="telephone"
+                    value={telephone}
+                    onChange={(event) => setTelephone(event.target.value)}
+                    type="tel"
+                    autoComplete="tel"
+                    className={inputClass}
+                    placeholder="Votre numéro de téléphone"
+                  />
+                </label>
+
+                <label className="grid min-w-0 gap-2">
+                  <span className="text-sm font-medium">Vin recherché</span>
+                  <input
+                    name="vinRecherche"
+                    value={vinRecherche}
+                    onChange={(event) =>
+                      setVinRecherche(event.target.value)
+                    }
+                    type="text"
+                    className={inputClass}
+                    placeholder="Ex : Château Lafite Rothschild 2018"
+                  />
+                </label>
+
+                <label className="grid min-w-0 gap-2">
+                  <span className="text-sm font-medium">
+                    Quantité souhaitée
+                  </span>
+                  <input
+                    name="quantite"
+                    value={quantite}
+                    onChange={(event) => setQuantite(event.target.value)}
+                    type="text"
+                    className={inputClass}
+                    placeholder="Ex : 1 bouteille, caisse de 6…"
+                  />
+                </label>
+
+                <label className="grid min-w-0 gap-2 sm:col-span-2">
+                  <span className="text-sm font-medium">Message *</span>
+                  <textarea
+                    name="message"
+                    value={message}
+                    onChange={(event) => setMessage(event.target.value)}
+                    rows={5}
+                    required
+                    className={`${inputClass} resize-y`}
+                    placeholder="Indiquez le millésime, le format, la quantité, le délai souhaité ou toute information utile."
+                  />
+                </label>
+              </div>
+
+              {feedback && (
+                <div
+                  role="status"
+                  className="mt-4 rounded border border-green-200 bg-green-50 p-3 text-sm leading-6 text-green-800"
+                >
+                  {feedback}
+                </div>
+              )}
+
+              {errorMessage && (
+                <div
+                  role="alert"
+                  className="mt-4 rounded border border-red-200 bg-red-50 p-3 text-sm leading-6 text-red-800"
+                >
+                  {errorMessage}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={sending}
+                className="mt-5 rounded bg-[#8a1f1f] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#641313] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {sending ? "Envoi en cours…" : "Envoyer la demande"}
+              </button>
+
+              <p className="mt-3 text-xs leading-6 text-stone-500">
+                Votre demande sera envoyée directement à The Wine Watchers.
+              </p>
+            </form>
+          </section>
+        </div>
+      </div>
     </main>
   );
 }
