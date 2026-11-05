@@ -952,35 +952,60 @@ export default function WinePage({ initialWine }: { initialWine: Wine }) {
           </div>
 
           <div className="min-w-0">
-            {wine.appellation &&
-              (appellationHref ? (
-                <Link
-                  href={appellationHref}
-                  className="text-sm text-stone-500 hover:text-[#8a1f1f]"
-                >
-                  {wine.appellation}
-                </Link>
-              ) : (
-                <p className="text-sm text-stone-500">
-                  {wine.appellation}
-                </p>
-              ))}
-
-            <h1 className="mt-2 font-serif text-3xl leading-tight md:text-4xl">
+            <h1 className="font-serif text-3xl leading-tight md:text-4xl">
               {displayName}
             </h1>
 
-            {wine.producer && (
-              <Link
-                href={`/producteur/${producerToSlug(wine.producer)}`}
-                className="mt-3 inline-block text-sm text-[#8a1f1f] underline-offset-4 hover:underline"
+            {(wine.producer || wine.appellation) && (
+              <nav
+                aria-label="Producteur et appellation"
+                className="mt-4 grid gap-2"
               >
-                {wine.producer}
-              </Link>
+                {wine.producer && (
+                  <Link
+                    href={`/producteur/${producerToSlug(wine.producer)}`}
+                    className="flex items-center justify-between gap-3 rounded border border-[#8a1f1f]/40 px-4 py-3 text-sm text-[#8a1f1f] transition-colors hover:border-[#8a1f1f] hover:bg-[#fcf7f7] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a1f1f]"
+                  >
+                    <span className="min-w-0">
+                      Voir le producteur :{" "}
+                      <span className="font-semibold">
+                        {wine.producer}
+                      </span>
+                    </span>
+
+                    <span aria-hidden="true" className="shrink-0">
+                      →
+                    </span>
+                  </Link>
+                )}
+
+                {wine.appellation &&
+                  (appellationHref ? (
+                    <Link
+                      href={appellationHref}
+                      className="flex items-center justify-between gap-3 rounded border border-[#8a1f1f]/40 px-4 py-3 text-sm text-[#8a1f1f] transition-colors hover:border-[#8a1f1f] hover:bg-[#fcf7f7] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a1f1f]"
+                    >
+                      <span className="min-w-0">
+                        Voir l’appellation :{" "}
+                        <span className="font-semibold">
+                          {wine.appellation}
+                        </span>
+                      </span>
+
+                      <span aria-hidden="true" className="shrink-0">
+                        →
+                      </span>
+                    </Link>
+                  ) : (
+                    <p className="text-sm text-stone-600">
+                      Appellation : {wine.appellation}
+                    </p>
+                  ))}
+              </nav>
             )}
 
             {wine.classification && (
-              <p className="mt-2 text-sm text-stone-600">
+              <p className="mt-3 text-sm text-stone-600">
                 {wine.classification}
               </p>
             )}
