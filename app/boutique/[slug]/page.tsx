@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import BoutiqueClient from "../BoutiqueClient";
 
 const SITE_URL = "https://www.thewinewatchers.com";
@@ -262,6 +262,10 @@ export default async function BoutiqueCategoryPage({
   params,
 }: PageProps) {
   const { slug } = await params;
+
+  if (slug === "pauillac") {
+    permanentRedirect("/appellation/pauillac");
+  }
 
   if (!isCategoryKey(slug)) {
     notFound();
