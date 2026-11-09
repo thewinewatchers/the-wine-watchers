@@ -8,6 +8,13 @@ const appellationRedirects: Record<string, string> = {
   toscane: "toscana",
   "super-toscans": "toscana-igt",
   "corton-grand-cru": "corton",
+  "clos-de-tart-grand-cru-monopole": "clos-de-tart",
+  "corton-charlemagne-grand-cru": "corton-charlemagne",
+  "romanee-conti-grand-cru": "romanee-conti",
+  "ruchottes-chambertin-grand-cru": "ruchottes-chambertin",
+  "chapelle-chambertin-grand-cru": "chapelle-chambertin",
+  "charmes-chambertin-grand-cru": "charmes-chambertin",
+  "echezeaux-grand-cru": "echezeaux",
 };
 const appellations: Record<
   string,
