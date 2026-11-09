@@ -12,6 +12,9 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const SITE_URL = "https://www.thewinewatchers.com";
 
+const description =
+  "Sélection de grands vins de Bordeaux, Bourgogne, Vallée du Rhône, Italie, Espagne et primeurs.";
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
 
@@ -20,8 +23,7 @@ export const metadata: Metadata = {
     template: "%s | The Wine Watchers",
   },
 
-  description:
-    "Sélection de grands vins de Bordeaux, Bourgogne, Vallée du Rhône, Italie, Espagne et primeurs.",
+  description,
 
   applicationName: "The Wine Watchers",
 
@@ -46,9 +48,45 @@ export const metadata: Metadata = {
     url: SITE_URL,
     siteName: "The Wine Watchers",
     title: "The Wine Watchers",
-    description:
-      "Sélection de grands vins de Bordeaux, Bourgogne, Vallée du Rhône, Italie, Espagne et primeurs.",
+    description,
   },
+};
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${SITE_URL}/#organization`,
+      name: "The Wine Watchers",
+      legalName: "The Wine Watchers SL",
+      url: SITE_URL,
+      logo: `${SITE_URL}/favicon-tww.png`,
+      description:
+        "The Wine Watchers est une boutique en ligne spécialisée dans la sélection et la vente de grands vins de Bordeaux, Bourgogne, Vallée du Rhône, Italie, Espagne et des vins en primeur.",
+      email: "contact@thewinewatchers.com",
+      knowsAbout: [
+        "Grands vins",
+        "Vins de Bordeaux",
+        "Vins de Bourgogne",
+        "Vins de la Vallée du Rhône",
+        "Grands vins italiens",
+        "Grands vins espagnols",
+        "Vins en primeur",
+      ],
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${SITE_URL}/#website`,
+      name: "The Wine Watchers",
+      url: SITE_URL,
+      description,
+      inLanguage: "fr-FR",
+      publisher: {
+        "@id": `${SITE_URL}/#organization`,
+      },
+    },
+  ],
 };
 
 export default function RootLayout({
@@ -59,6 +97,16 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(structuredData).replace(
+              /</g,
+              "\\u003c"
+            ),
+          }}
+        />
+
         <Menu />
         {children}
         <Footer />
