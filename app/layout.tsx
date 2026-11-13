@@ -115,11 +115,11 @@ export default function RootLayout({
         <Analytics />
         <SpeedInsights />
 
-        {/* Chat en direct The Wine Watchers - tawk.to */}
+        {/* Chat en direct The Wine Watchers - Tidio */}
         <Script
-          id="tawk-to"
-          src="https://embed.tawk.to/6ace01779c70df34c4fb835b/1k4qbbeqs"
-          strategy="lazyOnload"
+          id="tidio-chat"
+          src="https://code.tidio.co/brailanb4ayy3udg2lgmhihtfyh6nckv.js"
+          strategy="afterInteractive"
         />
       </body>
     </html>
