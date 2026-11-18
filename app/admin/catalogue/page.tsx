@@ -342,6 +342,7 @@ function AdminCatalogueContent() {
     null
   );
   const [searchWine, setSearchWine] = useState(initialSearch);
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -442,19 +443,27 @@ function AdminCatalogueContent() {
     );
   }, [searchWine, router, searchParams]);
 
+  const categoryOptions = useMemo(() => {
+    const categories = new Set(
+      wines.map((wine) => (wine.category || "").trim()).filter(Boolean)
+    );
+    categories.add("Primeurs 2025");
+    categories.add("Primeurs 2026");
+    return Array.from(categories).sort((a, b) => a.localeCompare(b, "fr"));
+  }, [wines]);
+
   const filteredAdminWines = useMemo(() => {
-    if (!searchWine.trim()) return wines;
-
-    const search = searchWine.toLowerCase();
-
-    return wines.filter((wine) =>
-      [wine.name, wine.producer, wine.appellation, wine.vintage]
+    const search = searchWine.trim().toLocaleLowerCase("fr");
+    return wines.filter((wine) => {
+      if (selectedCategory && wine.category !== selectedCategory) return false;
+      if (!search) return true;
+      return [wine.name, wine.producer, wine.appellation, wine.vintage]
         .filter(Boolean)
         .join(" ")
-        .toLowerCase()
-        .includes(search)
-    );
-  }, [wines, searchWine]);
+        .toLocaleLowerCase("fr")
+        .includes(search);
+    });
+  }, [wines, searchWine, selectedCategory]);
 
   const [producerOptions, setProducerOptions] = useState<string[]>([]);
   const [appellationOptions, setAppellationOptions] = useState<string[]>([]);
@@ -1139,6 +1148,28 @@ function AdminCatalogueContent() {
                 placeholder="Rechercher un vin..."
                 className="w-full rounded-xl border border-neutral-300 px-4 py-3 text-sm"
               />
+            </div>
+
+            <div className="mt-4">
+              <label htmlFor="catalogue-category-filter" className="mb-2 block text-sm font-medium text-neutral-700">
+                Filtrer par catégorie
+              </label>
+              <select
+                id="catalogue-category-filter"
+                value={selectedCategory}
+                onChange={(event) => setSelectedCategory(event.target.value)}
+                className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-sm"
+              >
+                <option value="">Toutes les catégories</option>
+                {categoryOptions.map((category) => (
+                  <option key={category} value={category}>{category}</option>
+                ))}
+              </select>
+              {!loading && (
+                <p className="mt-2 text-xs text-neutral-600">
+                  {filteredAdminWines.length} fiche(s) correspondant aux filtres
+                </p>
+              )}
             </div>
 
             {loading ? (
