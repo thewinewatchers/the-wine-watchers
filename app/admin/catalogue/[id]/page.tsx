@@ -130,6 +130,7 @@ const categoryOptions = [
   "Bordeaux",
   "Bourgogne",
   "Primeurs 2025",
+  "Primeurs 2026",
   "Rhône",
   "Grands vins d’Italie",
   "Espagne",
@@ -520,7 +521,7 @@ export default function AdminEditWinePage() {
       ...previous,
       category: value,
       region:
-        value === "Bordeaux" || value === "Primeurs 2025"
+        value === "Bordeaux" || value === "Primeurs 2025" || value === "Primeurs 2026"
           ? "Bordeaux"
           : value === "Bourgogne"
             ? "Bourgogne"

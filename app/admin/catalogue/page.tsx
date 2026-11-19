@@ -886,7 +886,7 @@ function AdminCatalogueContent() {
       vintage: form.vintage.trim() || null,
       price: parsedPrice,
       compare_at_price: parsedCompareAtPrice,
-      hidden_from_site: false,
+      hidden_from_site: form.category.trim() === "Primeurs 2026",
       bottle_size: form.bottle_size.trim() || null,
       packaging: form.packaging.trim() || null,
       weight_kg: parsedWeight,
@@ -1047,6 +1047,23 @@ function AdminCatalogueContent() {
                 </datalist>
               </div>
 
+              <div>
+                <label htmlFor="new-wine-category" className="mb-2 block text-sm font-medium text-neutral-700">
+                  Catégorie
+                </label>
+                <select
+                  id="new-wine-category"
+                  name="category"
+                  value={form.category}
+                  onChange={handleChange}
+                  className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3"
+                >
+                  <option value="">Sélectionner une catégorie</option>
+                  {categoryOptions.map((category) => (
+                    <option key={category} value={category}>{category}</option>
+                  ))}
+                </select>
+              </div>
               <input name="region" value={form.region} onChange={handleChange} placeholder="Région" className="rounded-xl border border-neutral-300 px-4 py-3" />
 
               <div>
@@ -1088,7 +1105,6 @@ function AdminCatalogueContent() {
                 />
               </div>
 
-              <input name="category" value={form.category} onChange={handleChange} placeholder="Catégorie ex: Bordeaux, Bourgogne" className="rounded-xl border border-neutral-300 px-4 py-3" />
               <input name="slug" value={form.slug} onChange={handleChange} placeholder="Slug personnalisé optionnel" className="rounded-xl border border-neutral-300 px-4 py-3" />
               <input name="rating" value={form.rating} onChange={handleChange} placeholder="Note ex: 98" className="rounded-xl border border-neutral-300 px-4 py-3" />
               <input name="classification" value={form.classification} onChange={handleChange} placeholder="Classification" className="rounded-xl border border-neutral-300 px-4 py-3" />
