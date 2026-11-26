@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { PRODUCER_EDITORIAL_LIBRARY } from "@/lib/producer-editorial";
 
@@ -206,6 +206,14 @@ function getAppellationUrl(
 
   const appellationSlug = slugify(appellation);
 
+  if (appellationSlug === "chambertin-grand-cru") {
+    return "/appellation/chambertin";
+  }
+
+  if (appellationSlug === "clos-des-lambrays-grand-cru") {
+    return "/appellation/clos-des-lambrays";
+  }
+
   if (
     appellationSlug === "aoc-champagne" ||
     appellationSlug === "champagne"
@@ -287,6 +295,11 @@ function wineBelongsToProducerPage(
       searchableValue.includes("-psi-") ||
       searchableValue.endsWith("-psi")
     );
+  }
+
+  if (requestedSlug === "opus-one") {
+    const producerSlug = slugify(wine.producer || "");
+    return producerSlug === "opus-one" || producerSlug === "opus-one-winery";
   }
 
   return wine.producer === producer;
@@ -446,6 +459,10 @@ export async function generateMetadata({ params }: PageProps) {
 }
 export default async function ProducteurPage({ params }: PageProps) {
   const { slug } = await params;
+
+  if (slug === "opus-one-winery") {
+    permanentRedirect("/producteur/opus-one");
+  }
 
   const { data: producerData } = await supabase
     .from("wines")

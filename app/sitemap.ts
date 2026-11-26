@@ -113,7 +113,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "cote-rotie",
     "hermitage",
     "cornas",
-    "toscane",
+    "toscana",
     "barolo",
     "barbaresco",
     "brunello-di-montalcino",
@@ -155,7 +155,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           (producer): producer is string =>
             typeof producer === "string" && producer.trim().length > 0
         )
-        .map((producer) => slugify(producer))
+        .map((producer) => slugify(producer)).map((slug) => slug === "opus-one-winery" ? "opus-one" : slug)
         .filter(Boolean)
     )
   );
