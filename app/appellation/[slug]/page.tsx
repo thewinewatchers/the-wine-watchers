@@ -15,6 +15,8 @@ const appellationRedirects: Record<string, string> = {
   "chapelle-chambertin-grand-cru": "chapelle-chambertin",
   "charmes-chambertin-grand-cru": "charmes-chambertin",
   "echezeaux-grand-cru": "echezeaux",
+  "chambertin-grand-cru": "chambertin",
+  "clos-des-lambrays-grand-cru": "clos-des-lambrays",
 };
 const appellations: Record<
   string,
