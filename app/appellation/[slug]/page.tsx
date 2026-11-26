@@ -1400,6 +1400,21 @@ export async function generateMetadata({
       alternates: {
         canonical: `${SITE_URL}/appellation/${redirectSlug}`,
       },
+      openGraph: {
+        type: "website",
+        locale: "fr_FR",
+        siteName: "The Wine Watchers",
+        url: `${SITE_URL}/appellation/${redirectSlug}`,
+        title: `${targetAppellation.title} | The Wine Watchers`,
+        description: targetAppellation.description,
+        images: [{
+          url: `${SITE_URL}/images/og/accueil.jpg`,
+          width: 1200,
+          height: 630,
+          type: "image/jpeg",
+          alt: "The Wine Watchers – Sélection de grands vins",
+        }],
+      },
       robots: {
         index: true,
         follow: true,
@@ -1424,6 +1439,21 @@ export async function generateMetadata({
     description: appellation.description,
     alternates: {
       canonical: `${SITE_URL}/appellation/${slug}`,
+    },
+    openGraph: {
+      type: "website",
+      locale: "fr_FR",
+      siteName: "The Wine Watchers",
+      url: `${SITE_URL}/appellation/${slug}`,
+      title: `${appellation.title} | The Wine Watchers`,
+      description: appellation.description,
+      images: [{
+        url: `${SITE_URL}/images/og/accueil.jpg`,
+        width: 1200,
+        height: 630,
+        type: "image/jpeg",
+        alt: "The Wine Watchers – Sélection de grands vins",
+      }],
     },
     robots: {
       index: true,

@@ -311,6 +311,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       url,
       title,
       description: post.description,
+      publishedTime: post.datePublished,
+      images: [
+        {
+          url: `${SITE_URL}${post.image}`,
+          width: 1200,
+          height: 630,
+          type: "image/jpeg",
+          alt: post.title,
+        },
+      ],
     },
   };
 }
@@ -351,6 +361,8 @@ export default async function BlogArticlePage({ params }: Props) {
     mainEntityOfPage: { "@type": "WebPage", "@id": url },
     headline: post.title,
     description: post.description,
+    datePublished: post.datePublished,
+    image: [`${SITE_URL}${post.image}`],
     articleSection: post.category,
     inLanguage: "fr-FR",
     publisher: {

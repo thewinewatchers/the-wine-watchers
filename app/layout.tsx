@@ -40,6 +40,15 @@ export const metadata: Metadata = {
     siteName: "The Wine Watchers",
     title: "The Wine Watchers",
     description,
+    images: [
+      {
+        url: `${SITE_URL}/images/og/accueil.jpg`,
+        width: 1200,
+        height: 630,
+        type: "image/jpeg",
+        alt: "The Wine Watchers – Sélection de grands vins",
+      },
+    ],
   },
 };
 

@@ -17,6 +17,15 @@ export const metadata: Metadata = {
     url: "https://www.thewinewatchers.com/blog",
     title,
     description,
+    images: [
+      {
+        url: "https://www.thewinewatchers.com/images/og/accueil.jpg",
+        width: 1200,
+        height: 630,
+        type: "image/jpeg",
+        alt: "Blog des grands vins – The Wine Watchers",
+      },
+    ],
   },
 };
 

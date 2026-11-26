@@ -11,6 +11,15 @@ export const metadata: Metadata = {
     url: "https://www.thewinewatchers.com/",
     title: "Grands vins et vins rares | The Wine Watchers",
     description: "Sélection de grands vins, vins rares et bouteilles de collection de Bordeaux, Bourgogne, Champagne et grandes régions viticoles. Découvrez nos offres et primeurs.",
+    images: [
+      {
+        url: "https://www.thewinewatchers.com/images/og/accueil.jpg",
+        width: 1200,
+        height: 630,
+        type: "image/jpeg",
+        alt: "Sommelier dégustant un grand vin — The Wine Watchers",
+      },
+    ],
   },
 };
 

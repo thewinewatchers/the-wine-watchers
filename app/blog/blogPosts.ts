@@ -6,6 +6,8 @@ export const blogPosts = [
     description:
       "Vendanges exceptionnellement précoces, chaleur, sécheresse et maturités contrastées : découvrez les premières tendances du millésime 2026 à Bordeaux.",
     date: "18 septembre 2026",
+    datePublished: "2026-09-18",
+    image: "/images/og/vendanges-bordeaux.jpg",
     category: "Bordeaux",
     content: `
 À Bordeaux, les vendanges 2026 resteront sans doute comme l’une des récoltes les plus précoces de l’histoire récente du vignoble.
@@ -151,6 +153,8 @@ Les dégustations des vins en cours d’élevage, puis surtout la campagne des P
     description:
       "Analyse du millésime Bordeaux Primeurs 2025, des premières tendances et des critères à observer pour sélectionner les grands vins de la campagne.",
     date: "20 juin 2026",
+    datePublished: "2026-06-20",
+    image: "/images/og/primeurs-bordeaux.jpg",
     category: "Primeurs",
     content: `
 La campagne des Primeurs Bordeaux 2025 s'inscrit dans un contexte particulièrement observé par les amateurs de grands vins.
@@ -176,6 +180,8 @@ Les Primeurs 2025 doivent donc être abordés avec discernement, dans une logiqu
     description:
       "Les principes essentiels pour bâtir une cave cohérente autour des grands terroirs de Bordeaux, Bourgogne, Rhône, Italie et Espagne.",
     date: "20 juin 2026",
+    datePublished: "2026-06-20",
+    image: "/images/og/cave-grands-vins.jpg",
     category: "Guide",
     content: `
 Constituer une cave de grands vins est avant tout une démarche de passion, de patience et de cohérence.
@@ -203,6 +209,8 @@ La construction d'une cave de grands vins doit donc être progressive. Elle repo
     description:
       "Retour sur les millésimes les plus marquants de Pauillac et sur les caractéristiques qui font la réputation mondiale de cette appellation.",
     date: "20 juin 2026",
+    datePublished: "2026-06-20",
+    image: "/images/og/pauillac.jpg",
     category: "Appellations",
     content: `
 Pauillac est l'une des appellations les plus prestigieuses du Médoc et l'un des grands symboles de Bordeaux.
@@ -228,6 +236,8 @@ Une cave dédiée aux grands Bordeaux réserve souvent une place particulière �
     description:
       "Découvrez l'histoire, le terroir et le style unique de l'un des plus grands noms de Bordeaux.",
     date: "21 juin 2026",
+    datePublished: "2026-06-21",
+    image: "/images/og/lafite-rothschild.jpg",
     category: "Bordeaux",
     content: `
 Parmi les grands noms du vignoble bordelais, Château Lafite Rothschild occupe une place à part. Situé au cœur de l'appellation Pauillac, ce Premier Grand Cru Classé de 1855 est devenu au fil des siècles l'un des symboles les plus prestigieux du vin français.
@@ -255,6 +265,8 @@ Aujourd'hui encore, Lafite demeure l'une des propriétés les plus admirées au 
     description:
       "Découvrez l'histoire, les terroirs et la réputation mondiale du Domaine de la Romanée-Conti, référence absolue de la Bourgogne.",
     date: "21 juin 2026",
+    datePublished: "2026-06-21",
+    image: "/images/og/romanee-conti.jpg",
     category: "Bourgogne",
     content: `
 Le Domaine de la Romanée-Conti, souvent désigné par les amateurs sous l'acronyme DRC, occupe une place unique dans l'univers des grands vins.

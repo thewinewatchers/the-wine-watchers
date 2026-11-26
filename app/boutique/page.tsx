@@ -13,6 +13,15 @@ export const metadata: Metadata = {
     url: "https://www.thewinewatchers.com/boutique",
     title: "Acheter des grands vins en ligne | The Wine Watchers",
     description: "Découvrez notre catalogue de grands vins de Bordeaux, Bourgogne, Rhône, Champagne, Italie, Espagne et États-Unis. Vins rares et Primeurs 2025.",
+    images: [
+      {
+        url: "https://www.thewinewatchers.com/images/og/boutique.jpg",
+        width: 1200,
+        height: 630,
+        type: "image/jpeg",
+        alt: "Boutique de grands vins – The Wine Watchers",
+      },
+    ],
   },
 };
 
