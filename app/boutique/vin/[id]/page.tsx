@@ -234,7 +234,9 @@ export default async function WinePage({ params }: Props) {
       ...(price > 0 ? { price: price.toFixed(2) } : {}),
       availability:
         Number(wine.stock || 0) > 0
-          ? "https://schema.org/InStock"
+          ? slugify(wine.category).includes("primeur")
+            ? "https://schema.org/PreOrder"
+            : "https://schema.org/InStock"
           : "https://schema.org/OutOfStock",
       itemCondition: "https://schema.org/NewCondition",
     },
