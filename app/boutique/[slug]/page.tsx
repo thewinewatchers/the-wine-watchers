@@ -209,6 +209,17 @@ const popularAppellations: Record<
 
 type CategoryKey = keyof typeof categories;
 
+const categoryOgImages: Record<CategoryKey, string> = {
+  bordeaux: "chateau-margaux.jpg",
+  bourgogne: "romanee-conti.jpg",
+  rhone: "rhone.jpg",
+  italie: "cave-grands-vins.jpg",
+  espagne: "espagne.jpg",
+  usa: "opus-one.jpg",
+  champagne: "champagne.jpg",
+  "primeurs-2025": "primeurs-bordeaux.jpg",
+};
+
 type PageProps = {
   params: Promise<{
     slug: string;
@@ -254,6 +265,15 @@ export async function generateMetadata({
       siteName: "The Wine Watchers",
       locale: "fr_FR",
       type: "website",
+      images: [
+        {
+          url: `${SITE_URL}/images/og/${categoryOgImages[slug]}`,
+          width: 1200,
+          height: 630,
+          type: "image/jpeg",
+          alt: `${category.title} - The Wine Watchers`,
+        },
+      ],
     },
   };
 }

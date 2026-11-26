@@ -33,6 +33,42 @@ type PageProps = {
 
 const SITE_URL = "https://www.thewinewatchers.com";
 
+const PRODUCER_OG_IMAGES: Record<string, string> = {
+  "domaine-trapet": "domaine-trapet.jpg",
+  "trapet": "domaine-trapet.jpg",
+  "domaine-armand-rousseau": "armand-rousseau.jpg",
+  "armand-rousseau": "armand-rousseau.jpg",
+  "clos-des-lambrays": "clos-des-lambrays.jpg",
+  "domaine-des-lambrays": "clos-des-lambrays.jpg",
+  "clos-de-tart": "clos-de-tart.jpg",
+  "domaine-du-clos-de-tart": "clos-de-tart.jpg",
+  "opus-one": "opus-one.jpg",
+  "opus-one-winery": "opus-one.jpg",
+  "petrus": "petrus.jpg",
+  "chateau-petrus": "petrus.jpg",
+  "chateau-margaux": "chateau-margaux.jpg",
+  "chateau-mouton-rothschild": "mouton-rothschild.jpg",
+  "chateau-haut-brion": "haut-brion.jpg",
+  "chateau-angelus": "angelus.jpg",
+  "chateau-palmer": "palmer.jpg",
+  "tenuta-san-guido": "tenuta-san-guido.jpg",
+  "dominio-de-pingus": "dominio-de-pingus.jpg",
+  "dominio-pingus": "dominio-de-pingus.jpg",
+  "domaine-georges-roumier": "georges-roumier.jpg",
+  "georges-roumier": "georges-roumier.jpg",
+  "domaine-g-roumier": "georges-roumier.jpg",
+  "domaine-coche-dury": "coche-dury.jpg",
+  "coche-dury": "coche-dury.jpg",
+  "domaine-de-la-romanee-conti": "romanee-conti.jpg",
+  "romanee-conti": "romanee-conti.jpg",
+  "chateau-lafite-rothschild": "lafite-rothschild.jpg",
+  "lafite-rothschild": "lafite-rothschild.jpg",
+  "mouton-rothschild": "mouton-rothschild.jpg",
+  "haut-brion": "haut-brion.jpg",
+  "angelus": "angelus.jpg",
+  "palmer": "palmer.jpg",
+};
+
 function slugify(value: string) {
   return value
     .toLowerCase()
@@ -437,6 +473,9 @@ export async function generateMetadata({ params }: PageProps) {
     ? editorialContent.introduction
     : `Découvrez les vins disponibles de ${producer} chez The Wine Watchers : grands crus, millésimes recherchés et bouteilles de collection.`;
 
+  const ogImage = PRODUCER_OG_IMAGES[slug] ||
+    PRODUCER_OG_IMAGES[slugify(producer)] || "accueil.jpg";
+
   return {
     title,
     description,
@@ -454,6 +493,13 @@ export async function generateMetadata({ params }: PageProps) {
       siteName: "The Wine Watchers",
       locale: "fr_FR",
       type: "website",
+      images: [{
+        url: `${SITE_URL}/images/og/${ogImage}`,
+        width: 1200,
+        height: 630,
+        type: "image/jpeg",
+        alt: ogImage === "accueil.jpg" ? "The Wine Watchers – Sélection de grands vins" : producer,
+      }],
     },
   };
 }
