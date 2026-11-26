@@ -278,6 +278,67 @@ export async function generateMetadata({
   };
 }
 
+type CategoryWineLink = {
+  id: string;
+  slug: string | null;
+  name: string | null;
+  category: string | null;
+  vintage: string | number | null;
+  packaging: string | null;
+  bottle_size: string | null;
+};
+
+function normalizeCategory(value: string | null | undefined) {
+  return String(value ?? "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[’']/g, "")
+    .replace(/-/g, " ")
+    .trim();
+}
+
+async function getCategoryWineLinks(slug: CategoryKey): Promise<CategoryWineLink[]> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) return [];
+
+  const accepted = new Set([
+    normalizeCategory(slug),
+    normalizeCategory(categories[slug].title),
+  ]);
+  const unique = new Map<string, CategoryWineLink>();
+  const pageSize = 500;
+
+  try {
+    for (let start = 0; ; start += pageSize) {
+      const response = await fetch(
+        `${url}/rest/v1/wines?select=id,slug,name,category,vintage,packaging,bottle_size&or=(hidden_from_site.eq.false,hidden_from_site.is.null)&order=id.asc&offset=${start}&limit=${pageSize}`,
+        {
+          headers: { apikey: key, Authorization: `Bearer ${key}` },
+          cache: "no-store",
+        }
+      );
+      if (!response.ok) throw new Error(`Supabase HTTP ${response.status}`);
+      const batch = (await response.json()) as CategoryWineLink[];
+      for (const wine of batch) {
+        const wineSlug = wine.slug?.trim();
+        if (!wineSlug || !wine.name?.trim()) continue;
+        if (!accepted.has(normalizeCategory(wine.category))) continue;
+        if (!unique.has(wineSlug)) unique.set(wineSlug, wine);
+      }
+      if (batch.length < pageSize) break;
+    }
+    return Array.from(unique.values()).sort((a, b) =>
+      String(a.name).localeCompare(String(b.name), "fr") ||
+      Number(b.vintage || 0) - Number(a.vintage || 0)
+    );
+  } catch (error) {
+    console.error("Erreur de lecture des liens catalogue :", error);
+    return [];
+  }
+}
+
 export default async function BoutiqueCategoryPage({
   params,
 }: PageProps) {
@@ -293,6 +354,7 @@ export default async function BoutiqueCategoryPage({
 
   const category = categories[slug];
   const appellationsToShow = popularAppellations[slug] || [];
+  const wineLinks = await getCategoryWineLinks(slug);
 
   return (
     <main className="min-h-screen bg-white text-stone-800">
@@ -438,6 +500,32 @@ export default async function BoutiqueCategoryPage({
                 </p>
               </div>
             </div>
+          </details>
+        </section>
+      )}
+      {wineLinks.length > 0 && (
+        <section className="mx-auto max-w-7xl px-5 pb-10 md:px-6">
+          <details className="border-t border-stone-200 pt-5">
+            <summary className="cursor-pointer font-serif text-xl text-[#8a1f1f]">
+              Consulter toutes les fiches vins de cette sélection ({wineLinks.length})
+            </summary>
+            <ul className="mt-5 grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-3">
+              {wineLinks.map((wine) => (
+                <li key={wine.slug}>
+                  <Link
+                    href={`/boutique/vin/${encodeURIComponent(wine.slug!.trim())}`}
+                    prefetch={false}
+                    className="block py-1 text-stone-700 hover:text-[#8a1f1f] hover:underline"
+                  >
+                    {wine.name}
+                    {wine.vintage && !String(wine.name).includes(String(wine.vintage))
+                      ? ` ${wine.vintage}` : ""}
+                    {[wine.bottle_size, wine.packaging].filter(Boolean).length > 0
+                      ? ` · ${[wine.bottle_size, wine.packaging].filter(Boolean).join(" · ")}` : ""}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </details>
         </section>
       )}
