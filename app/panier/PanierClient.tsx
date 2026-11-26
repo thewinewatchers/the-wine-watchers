@@ -281,10 +281,10 @@ export default function PanierClient() {
       <div className="mx-auto max-w-6xl">
         <div className="mb-8">
           <a
-            href="/boutique/bourgogne"
-            className="text-sm uppercase tracking-[0.25em] text-[#8a6a2f] hover:text-black"
+            href="/boutique"
+            className="inline-flex items-center justify-center rounded-full border border-[#8a6a2f] bg-[#fffaf3] px-6 py-3 text-sm font-semibold text-[#8a6a2f] transition hover:bg-[#8a6a2f] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a6a2f]"
           >
-            ← Continuer mes achats
+            ← Poursuivre vos achats
           </a>
 
           <h1 className="mt-4 text-3xl font-serif text-black md:text-5xl">
@@ -318,7 +318,7 @@ export default function PanierClient() {
             </p>
 
             <a
-              href="/boutique/bourgogne"
+              href="/boutique"
               className="mt-6 inline-flex rounded-full bg-black px-6 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-[#8a6a2f]"
             >
               Retour à la boutique
@@ -516,10 +516,10 @@ export default function PanierClient() {
               )}
 
               <a
-                href="/boutique/bourgogne"
+                href="/boutique"
                 className="mt-4 flex w-full items-center justify-center rounded-full border border-black px-6 py-4 text-sm font-semibold uppercase tracking-[0.2em] text-black transition hover:border-[#8a6a2f] hover:text-[#8a6a2f]"
               >
-                Continuer mes achats
+                Poursuivre vos achats
               </a>
 
               <button
