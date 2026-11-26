@@ -1,4 +1,3 @@
-
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -71,6 +70,12 @@ const nextConfig: NextConfig = {
         source: "/boutique/vin/chateau-la-mission-haut-brion-2025",
         destination:
           "/boutique/vin/chateau-la-mission-haut-brion-rouge-2025",
+        permanent: true,
+      },
+      {
+        source: "/boutique/vin/chambolle-musigny-2020-g-roumier",
+        destination:
+          "/boutique/vin/chambolle-musigny-1er-cru-les-cras-2022-6-bt-g-roumier",
         permanent: true,
       },
     ];
