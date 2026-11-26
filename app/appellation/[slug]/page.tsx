@@ -6,6 +6,7 @@ const SITE_URL = "https://www.thewinewatchers.com";
 
 const appellationRedirects: Record<string, string> = {
   toscane: "toscana",
+  "clos-de-vougeot": "clos-de-vougeot-grand-cru",
   "super-toscans": "toscana-igt",
   "corton-grand-cru": "corton",
   "clos-de-tart-grand-cru-monopole": "clos-de-tart",
@@ -1246,6 +1247,9 @@ function slugify(value: string) {
 
 function getComparableAppellationSlug(value?: string | null) {
   return slugify(String(value || ""))
+    .replace(/^aoc-/, "")
+    .replace(/-st-vivant(?=-|$)/, "-saint-vivant")
+    .replace(/-monopole$/, "")
     .replace(/-grand-cru$/, "")
     .replace(/-premier-cru$/, "")
     .replace(/-1er-cru$/, "")
@@ -1265,6 +1269,42 @@ function getComparableAppellationSlug(value?: string | null) {
     .replace(/-denominazione-di-origine-controllata$/, "")
     .replace(/-indicazione-geografica-tipica$/, "")
     .replace(/-appellation-d-origine-controlee$/, "");
+}
+
+const regionalAppellations: Record<string, string[]> = {
+  "cote-de-nuits": [
+    "gevrey-chambertin", "chambertin", "chambertin-clos-de-beze",
+    "chapelle-chambertin", "charmes-chambertin", "mazis-chambertin",
+    "mazoyeres-chambertin", "griotte-chambertin", "latricieres-chambertin",
+    "ruchottes-chambertin", "morey-saint-denis", "clos-de-la-roche",
+    "clos-saint-denis", "clos-des-lambrays", "clos-de-tart",
+    "chambolle-musigny", "musigny", "bonnes-mares", "vougeot",
+    "clos-de-vougeot", "flagey-echezeaux", "echezeaux", "grands-echezeaux",
+    "vosne-romanee", "richebourg", "romanee-saint-vivant", "la-tache",
+    "romanee-conti", "la-romanee", "la-grande-rue", "nuits-saint-georges",
+  ],
+  "cote-de-beaune": [
+    "aloxe-corton", "pernand-vergelesses", "savigny-les-beaune", "beaune",
+    "pommard", "volnay", "meursault", "puligny-montrachet",
+    "chassagne-montrachet", "saint-aubin", "auxey-duresses", "monthelie",
+    "saint-romain", "corton", "corton-charlemagne", "montrachet",
+    "chevalier-montrachet", "batard-montrachet", "bienvenues-batard-montrachet",
+    "criots-batard-montrachet", "ladoix", "chorey-les-beaune", "santenay",
+    "maranges", "blagny",
+  ],
+  toscana: ["toscana", "toscane", "bolgheri", "bolgheri-superiore",
+    "bolgheri-sassicaia", "brunello-di-montalcino", "rosso-di-montalcino",
+    "montalcino", "chianti", "chianti-classico", "vino-nobile-di-montepulciano"],
+};
+
+function matchesAppellation(wine: AppellationWine, slug: string, target: string) {
+  const wineAppellation = getComparableAppellationSlug(wine.appellation);
+  if (wineAppellation === target) return true;
+  const members = regionalAppellations[slug];
+  if (!members) return false;
+  const region = slugify(String(wine.region || ""));
+  return members.includes(wineAppellation) || region === slug ||
+    (slug === "toscana" && region === "toscane");
 }
 
 function getProducerHref(producer?: string | null) {
@@ -1482,52 +1522,36 @@ export default async function AppellationPage({
     notFound();
   }
 
-  const appellationSearchTerms = Array.from(
-    new Set([
-      appellation.name,
-      `${appellation.name} Grand Cru`,
-      `${appellation.name} Premier Cru`,
-      `${appellation.name} 1er Cru`,
-      `${appellation.name} DOC`,
-      `${appellation.name} DOCG`,
-      `${appellation.name} IGT`,
-      `${appellation.name} DO`,
-      `${appellation.name} DOCa`,
-      `${appellation.name} VT`,
-      `${appellation.name} AVA`,
-    ])
-  );
-
-  const appellationQueries = await Promise.all(
-    appellationSearchTerms.map((term) =>
-      supabase
-        .from("wines")
-        .select(
-          "id, slug, name, producer, vintage, price, image, appellation, region, category, classification, bottle_size, packaging, hidden_from_site"
-        )
-        .ilike("appellation", term)
-        .neq("hidden_from_site", true)
-    )
-  );
-
-  const nameQuery = await supabase
-    .from("wines")
-    .select(
-      "id, slug, name, producer, vintage, price, image, appellation, region, category, classification, bottle_size, packaging, hidden_from_site"
-    )
-    .ilike("name", `%${appellation.name}%`)
-    .neq("hidden_from_site", true);
-
-  const error =
-    appellationQueries.find((result) => result.error)?.error || nameQuery.error;
-
+  const target = getComparableAppellationSlug(appellation.name);
   const wineMap = new Map<string, AppellationWine>();
+  let error: { message: string } | null = null;
+  const pageSize = 500;
 
-  [...appellationQueries, nameQuery].forEach((result) => {
-    ((result.data || []) as AppellationWine[]).forEach((wine) => {
-      wineMap.set(wine.id, wine);
-    });
-  });
+  for (let offset = 0; ; offset += pageSize) {
+    const result = await supabase
+      .from("wines")
+      .select(
+        "id, slug, name, producer, vintage, price, image, appellation, region, category, classification, bottle_size, packaging, hidden_from_site"
+      )
+      .or("hidden_from_site.eq.false,hidden_from_site.is.null")
+      .order("id", { ascending: true })
+      .range(offset, offset + pageSize - 1);
+
+    if (result.error) {
+      error = result.error;
+      wineMap.clear();
+      break;
+    }
+
+    const rows = (result.data || []) as AppellationWine[];
+    for (const wine of rows) {
+      if (matchesAppellation(wine, slug, target)) {
+        wineMap.set(wine.id, wine);
+      }
+    }
+
+    if (rows.length < pageSize) break;
+  }
 
   const visibleWines = Array.from(wineMap.values()).sort((a, b) => {
     const producerComparison = String(a.producer || "").localeCompare(
