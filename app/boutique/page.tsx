@@ -1,5 +1,20 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+
+export const metadata: Metadata = {
+  title: "Acheter des grands vins en ligne | The Wine Watchers",
+  description: "Découvrez notre catalogue de grands vins de Bordeaux, Bourgogne, Rhône, Champagne, Italie, Espagne et États-Unis. Vins rares et Primeurs 2025.",
+  alternates: { canonical: "/boutique" },
+  openGraph: {
+    type: "website",
+    locale: "fr_FR",
+    siteName: "The Wine Watchers",
+    url: "https://www.thewinewatchers.com/boutique",
+    title: "Acheter des grands vins en ligne | The Wine Watchers",
+    description: "Découvrez notre catalogue de grands vins de Bordeaux, Bourgogne, Rhône, Champagne, Italie, Espagne et États-Unis. Vins rares et Primeurs 2025.",
+  },
+};
 
 const categories = [
   {

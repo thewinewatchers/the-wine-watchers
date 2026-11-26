@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { blogPosts } from "../blogPosts";
@@ -288,15 +289,29 @@ export async function generateStaticParams() {
   }));
 }
 
-export async function generateMetadata({ params }: Props) {
+const SITE_URL = "https://www.thewinewatchers.com";
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const post = blogPosts.find((article) => article.slug === slug);
 
   if (!post) return {};
 
+  const url = `${SITE_URL}/blog/${post.slug}`;
+  const title = `${post.title} | The Wine Watchers`;
+
   return {
-    title: `${post.title} | The Wine Watchers`,
+    title,
     description: post.description,
+    alternates: { canonical: url },
+    openGraph: {
+      type: "article",
+      locale: "fr_FR",
+      siteName: "The Wine Watchers",
+      url,
+      title,
+      description: post.description,
+    },
   };
 }
 
@@ -327,9 +342,33 @@ export default async function BlogArticlePage({ params }: Props) {
     });
 
   const links = articleLinks[post.slug];
+  const url = `${SITE_URL}/blog/${post.slug}`;
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "@id": `${url}#article`,
+    url,
+    mainEntityOfPage: { "@type": "WebPage", "@id": url },
+    headline: post.title,
+    description: post.description,
+    articleSection: post.category,
+    inLanguage: "fr-FR",
+    publisher: {
+      "@type": "Organization",
+      "@id": `${SITE_URL}/#organization`,
+      name: "The Wine Watchers",
+      url: SITE_URL,
+    },
+  };
 
   return (
     <main className="min-h-screen bg-white text-stone-800">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(structuredData).replace(/</g, "\\u003c"),
+        }}
+      />
       <div className="mx-auto max-w-6xl px-5 py-8 md:px-8 md:py-10">
         <nav
           aria-label="Fil d’Ariane"

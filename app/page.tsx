@@ -1,3 +1,19 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Grands vins et vins rares | The Wine Watchers",
+  description: "Sélection de grands vins, vins rares et bouteilles de collection de Bordeaux, Bourgogne, Champagne et grandes régions viticoles. Découvrez nos offres et primeurs.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    locale: "fr_FR",
+    siteName: "The Wine Watchers",
+    url: "https://www.thewinewatchers.com/",
+    title: "Grands vins et vins rares | The Wine Watchers",
+    description: "Sélection de grands vins, vins rares et bouteilles de collection de Bordeaux, Bourgogne, Champagne et grandes régions viticoles. Découvrez nos offres et primeurs.",
+  },
+};
+
 import Link from "next/link";
 import Image from "next/image";
 import NewsletterForm from "./components/NewsletterForm";

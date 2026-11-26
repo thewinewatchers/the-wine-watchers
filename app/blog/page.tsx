@@ -1,10 +1,23 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { blogPosts } from "./blogPosts";
 
-export const metadata = {
-  title: "Blog Vin | The Wine Watchers",
-  description:
-    "Actualités, analyses, primeurs, appellations, millésimes et grands vins.",
+const title = "Blog Vin – Analyses et grands millésimes | The Wine Watchers";
+const description =
+  "Analyses des grands vins, primeurs de Bordeaux, domaines de Bourgogne, appellations, millésimes et conseils pour les amateurs de vins rares.";
+
+export const metadata: Metadata = {
+  title,
+  description,
+  alternates: { canonical: "/blog" },
+  openGraph: {
+    type: "website",
+    locale: "fr_FR",
+    siteName: "The Wine Watchers",
+    url: "https://www.thewinewatchers.com/blog",
+    title,
+    description,
+  },
 };
 
 export default function BlogPage() {

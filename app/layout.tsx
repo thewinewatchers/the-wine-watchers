@@ -1,4 +1,3 @@
-
 import type { Metadata } from "next";
 import Script from "next/script";
 
@@ -18,18 +17,11 @@ const description =
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
 
-  title: {
-    default: "The Wine Watchers",
-    template: "%s | The Wine Watchers",
-  },
+  title: "The Wine Watchers",
 
   description,
 
   applicationName: "The Wine Watchers",
-
-  alternates: {
-    canonical: "/",
-  },
 
   icons: {
     icon: [
@@ -45,7 +37,6 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "fr_FR",
-    url: SITE_URL,
     siteName: "The Wine Watchers",
     title: "The Wine Watchers",
     description,
