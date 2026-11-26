@@ -176,6 +176,19 @@ export default async function Primeurs2025Page() {
             Margaux, Saint-Julien, Saint-Estèphe, Pomerol, Saint-Émilion et
             Pessac-Léognan.
           </p>
+
+          <div className="mt-6 max-w-3xl rounded-lg border border-[#d8b56d]/50 p-5">
+            <h2 className="mb-2 font-semibold text-[#d8b56d]">
+              Conditions de livraison
+            </h2>
+            <p className="text-sm leading-7 text-white/90">
+              Livraison estimée au premier semestre 2027.
+              <br />
+              Les frais de livraison seront facturés au moment de la livraison.
+              <br />
+              Assurance transport comprise.
+            </p>
+          </div>
         </div>
       </section>
 

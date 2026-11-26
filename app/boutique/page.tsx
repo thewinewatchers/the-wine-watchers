@@ -72,7 +72,7 @@ const categories = [
     title: "Primeurs 2025",
     slug: "primeurs-2025",
     image: "/images/bordeaux-degustation-primeur.jpg",
-    text: "Bordeaux en précommande. Livraison estimée en 2027.",
+    text: "Bordeaux en précommande. Livraison estimée au premier semestre 2027.",
   },
 ];
 

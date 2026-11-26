@@ -478,6 +478,12 @@ export default function PanierClient() {
                   30 minutes. Les frais de livraison seront confirmés selon la
                   destination, le poids et les conditions de transport.
                 </p>
+
+                <p className="text-xs leading-5 text-neutral-500">
+                  Pour les Primeurs 2025 : livraison estimée au premier
+                  semestre 2027. Les frais de livraison seront facturés au
+                  moment de la livraison. Assurance transport comprise.
+                </p>
               </div>
 
               <div className="mt-5 flex items-center justify-between text-xl font-semibold">

@@ -874,7 +874,8 @@ export default function WinePage({ initialWine }: { initialWine: Wine }) {
   }
 
   const isPrimeur =
-    categoryToSlug(wine.category) === "primeurs-2025";
+    normalizeSlugSource(wine.category).includes("primeur") &&
+    /\b2025\b/.test(normalizeSlugSource(wine.category));
 
   const displayName =
     vintage && !String(wine.name || "").includes(vintage)
@@ -1069,8 +1070,9 @@ export default function WinePage({ initialWine }: { initialWine: Wine }) {
 
               {isPrimeur && (
                 <p className="mt-2 text-sm leading-6 text-[#8a1f1f]">
-                  Vin en précommande. Livraison estimée en 2027.
-                  Sans frais de livraison.
+                  Vin en précommande. Livraison estimée au premier semestre 2027.
+                  Les frais de livraison seront facturés au moment de la livraison.
+                  Assurance transport comprise.
                 </p>
               )}
             </div>

@@ -128,25 +128,7 @@ function getCountryCode(country?: string) {
   return COUNTRY_NAME_TO_CODE[trimmed] || "OTHER";
 }
 
-function isPrimeurText(values: Array<string | null | undefined>) {
-  const text = values.filter(Boolean).join(" ").toLowerCase();
-
-  return (
-    text.includes("primeur") ||
-    text.includes("primeurs") ||
-    text.includes("primeurs-2025")
-  );
-}
-
-function isPrimeurCartItem(item: CartItem) {
-  return isPrimeurText([
-    item.category,
-    item.slug,
-    item.name,
-    item.producer,
-    item.appellation,
-  ]);
-}
+class CartShippingError extends Error {}
 
 function calculateVat({
   totalExclVat,
@@ -282,9 +264,10 @@ async function getCartShippingInfo(cart: CartItem[]) {
   let shippableWeightKg = 0;
   let shippableItemsCount = 0;
   let primeurItemsCount = 0;
+  let primeur2025ItemsCount = 0;
 
   cart.forEach((item) => {
-    const quantity = Number(item.quantity || 1);
+    const quantity = Number(item.quantity ?? 1);
     const id = item.id ? String(item.id) : null;
     const slug = item.slug || null;
 
@@ -293,22 +276,22 @@ async function getCartShippingInfo(cart: CartItem[]) {
       (slug ? winesBySlug.get(slug) : undefined) ??
       null;
 
-    const isPrimeur = wine
-      ? isPrimeurText([
-          wine.category,
-          wine.slug,
-          wine.name,
-          wine.producer,
-          wine.appellation,
-        ])
-      : isPrimeurCartItem(item);
+    if (!wine || (id && String(wine.id) !== id) || !Number.isSafeInteger(quantity) || quantity <= 0) {
+      throw new CartShippingError("Vin introuvable ou quantité invalide dans le panier.");
+    }
 
-    if (isPrimeur) {
+    const category = (wine.category || "").trim().toLowerCase().replace(/[-_]+/g, " ").replace(/\s+/g, " ");
+    if (!category) throw new CartShippingError("Catégorie du vin manquante.");
+    if (/^primeurs?(?: |$)/.test(category)) {
       primeurItemsCount += quantity;
+      if (/^primeurs? 2025$/.test(category)) primeur2025ItemsCount += quantity;
       return;
     }
 
-    const weight = wine ? parsePrice(wine.weight_kg) : 0;
+    const weight = Number(wine.weight_kg);
+    if (!Number.isFinite(weight) || weight <= 0) {
+      throw new CartShippingError("Poids manquant ou invalide pour un vin du panier.");
+    }
 
     shippableWeightKg += weight * quantity;
     shippableItemsCount += quantity;
@@ -318,6 +301,7 @@ async function getCartShippingInfo(cart: CartItem[]) {
     shippableWeightKg: roundWeight(shippableWeightKg),
     shippableItemsCount,
     primeurItemsCount,
+    primeur2025ItemsCount,
     primeurOnly: shippableItemsCount === 0 && primeurItemsCount > 0,
     hasPrimeurItems: primeurItemsCount > 0,
   };
@@ -439,9 +423,19 @@ console.log("===== API ORDERS TWW =====");
             shippableWeightKg: 0,
             shippableItemsCount: 0,
             primeurItemsCount: 0,
+            primeur2025ItemsCount: 0,
             primeurOnly: false,
             hasPrimeurItems: false,
           };
+
+    const primeurMessage = [
+      shippingInfo.primeur2025ItemsCount > 0
+        ? "Primeurs 2025 : livraison estimée au premier semestre 2027. Les frais de livraison seront facturés au moment de la livraison. Assurance transport comprise."
+        : "",
+      shippingInfo.primeurItemsCount > shippingInfo.primeur2025ItemsCount
+        ? "Les autres vins en primeur seront livrés à leur libération. Aucun frais de livraison n’est facturé maintenant pour ces vins."
+        : "",
+    ].filter(Boolean).join(" ");
 
     let shippingRate: ShippingRate | null = null;
     let safeDeliveryFee = 0;
@@ -450,10 +444,9 @@ console.log("===== API ORDERS TWW =====");
 
     if (selectedDeliveryMethod === "delivery") {
       if (shippingInfo.primeurOnly) {
-        deliveryLabel = "Livraison à la libération des vins";
+        deliveryLabel = "Livraison Primeurs — facturation différée";
 
-        safeDeliveryNote =
-          "Livraison à la libération des vins. Aucun frais de livraison n’est facturé maintenant pour les vins en primeur.";
+        safeDeliveryNote = primeurMessage;
       } else {
         if (billingCountryCode === "OTHER") {
           return NextResponse.json(
@@ -504,7 +497,7 @@ console.log("===== API ORDERS TWW =====");
           `Frais de livraison HT : ${formatMoney(safeDeliveryFee)}.`,
           "Assurance transport comprise.",
           shippingInfo.hasPrimeurItems
-            ? "Les vins en primeur seront livrés à leur libération."
+            ? "Ces frais concernent uniquement les vins livrables maintenant. " + primeurMessage
             : "",
         ]
           .filter(Boolean)
@@ -709,6 +702,7 @@ console.log(
       shippingCarrier: shippingRate?.carrier || null,
       shippableItemsCount: shippingInfo.shippableItemsCount,
       primeurItemsCount: shippingInfo.primeurItemsCount,
+      primeur2025ItemsCount: shippingInfo.primeur2025ItemsCount,
       primeurOnly: shippingInfo.primeurOnly,
       hasPrimeurItems: shippingInfo.hasPrimeurItems,
 
@@ -726,6 +720,9 @@ console.log(
       emailDiagnostic,
     });
   } catch (error) {
+    if (error instanceof CartShippingError) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
     console.error("Erreur API orders :", error);
 
     return NextResponse.json(

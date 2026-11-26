@@ -72,29 +72,26 @@ function nl2br(value: string | null | undefined) {
 
 function getDeliveryFeeLabel({
   selectedDeliveryMethod,
-  safeDeliveryNote,
+  deliveryLabel,
+  totalExclVat,
+  winesTotalExclVat,
 }: {
   selectedDeliveryMethod: "pickup" | "delivery";
-  safeDeliveryNote: string;
+  deliveryLabel: string;
+  totalExclVat: number;
+  winesTotalExclVat: number;
 }) {
   if (selectedDeliveryMethod === "pickup") {
     return "Gratuit";
   }
 
-  if (
-    safeDeliveryNote.toLowerCase().includes("libération des vins") ||
-    safeDeliveryNote.toLowerCase().includes("aucun frais de livraison")
-  ) {
-    return "0,00 € HT";
+  const deliveryFee = Math.round((totalExclVat - winesTotalExclVat) * 100) / 100;
+
+  if (deliveryFee === 0 && deliveryLabel === "Livraison Primeurs — facturation différée") {
+    return "Facturation différée";
   }
 
-  const match = safeDeliveryNote.match(/Frais de livraison HT\s*:\s*([^\n.]+)/i);
-
-  if (match?.[1]) {
-    return `${match[1].trim()} HT`;
-  }
-
-  return "Nous contacter";
+  return `${formatPrice(deliveryFee)} HT`;
 }
 
 function logResendResult(label: string, result: unknown) {
@@ -162,7 +159,9 @@ export async function sendOrderEmails({
 
     const deliveryFeeLabel = getDeliveryFeeLabel({
       selectedDeliveryMethod,
-      safeDeliveryNote,
+      deliveryLabel,
+      totalExclVat,
+      winesTotalExclVat,
     });
 
     const formattedItems = items
@@ -227,7 +226,7 @@ ${deliveryLabel}
 
 ${safeDeliveryNote}
 
-Frais livraison :
+Frais de livraison à la commande :
 ${deliveryFeeLabel}
 
 Total HT commande :
@@ -236,7 +235,7 @@ ${formatPrice(totalExclVat)}
 TVA :
 ${formatPrice(vatAmount)}
 
-Total TTC / Total à payer :
+Total TTC à payer maintenant :
 ${formatPrice(finalTotalToPay)}
 
 Régime TVA :
@@ -305,10 +304,10 @@ The Wine Watchers SL`,
       <strong>Total HT vins :</strong> ${formatPrice(winesTotalExclVat)}<br />
       <strong>Retrait / livraison :</strong> ${escapeHtml(deliveryLabel)}<br />
       ${safeDeliveryNote ? `${nl2br(safeDeliveryNote)}<br />` : ""}
-      <strong>Frais livraison :</strong> ${escapeHtml(deliveryFeeLabel)}<br />
+      <strong>Frais de livraison à la commande :</strong> ${escapeHtml(deliveryFeeLabel)}<br />
       <strong>Total HT commande :</strong> ${formatPrice(totalExclVat)}<br />
       <strong>TVA :</strong> ${formatPrice(vatAmount)}<br />
-      <strong>Total TTC :</strong> ${formatPrice(finalTotalToPay)}
+      <strong>Total TTC à payer maintenant :</strong> ${formatPrice(finalTotalToPay)}
     </p>
 
     <p>
@@ -357,7 +356,7 @@ ${deliveryLabel}
 
 ${safeDeliveryNote}
 
-Frais livraison :
+Frais de livraison à la commande :
 ${deliveryFeeLabel}
 
 Total HT commande :
@@ -366,7 +365,7 @@ ${formatPrice(totalExclVat)}
 TVA :
 ${formatPrice(vatAmount)}
 
-Total TTC :
+Total TTC à payer maintenant :
 ${formatPrice(finalTotalToPay)}
 `,
     });

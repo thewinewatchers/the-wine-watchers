@@ -27,23 +27,17 @@ function todayInvoicePrefix() {
 }
 
 function getDeliveryFeeLabel(order: any) {
-  if (order.payment_method === "pickup") return "Gratuit";
-
   const shippingPrice = Number(order.shipping_price_excl_vat || 0);
+  const note = String(order.shipping_note || "").toLowerCase();
 
-  if (shippingPrice > 0) {
-    return `${formatPrice(shippingPrice)} HT`;
+  if (shippingPrice > 0) return `${formatPrice(shippingPrice)} HT`;
+  if (note.includes("retrait gratuit")) return "Gratuit";
+  if (note.includes("frais de livraison seront facturés au moment de la livraison")) {
+    return "Facturation différée";
   }
-
-  const note = String(order.shipping_note || "");
-
-  if (
-    note.toLowerCase().includes("libération des vins") ||
-    note.toLowerCase().includes("aucun frais de livraison")
-  ) {
+  if (note.includes("libération des vins") || note.includes("aucun frais de livraison")) {
     return "0,00 EUR HT";
   }
-
   return "Nous contacter";
 }
 
@@ -204,15 +198,9 @@ export async function GET(
       return sum + Number(item.total_price || 0);
     }, 0);
 
-    const shippingPriceExclVat = Number(order.shipping_price_excl_vat || 0);
     const deliveryFeeLabel = getDeliveryFeeLabel(order);
 
-    const deliveryLabel =
-      shippingPriceExclVat > 0
-        ? "Livraison HT — assurance transport comprise"
-        : String(order.shipping_note || "").toLowerCase().includes("libération")
-        ? "Livraison à la libération des vins"
-        : "Retrait / livraison";
+    const deliveryLabel = "Transport HT";
 
     const doc = new jsPDF({
       unit: "mm",
@@ -358,7 +346,7 @@ export async function GET(
 
     y += 4;
 
-    if (y > 225) {
+    if (y > 215) {
       doc.addPage();
       y = 18;
     }
@@ -375,7 +363,7 @@ export async function GET(
     y += 6;
 
     doc.text(deliveryLabel, 118, y);
-    doc.text(deliveryFeeLabel, 170, y);
+    doc.text(deliveryFeeLabel, 195, y, { align: "right" });
 
     y += 6;
 
@@ -404,8 +392,15 @@ export async function GET(
         pageWidth - 30
       );
 
-      doc.text(shippingLines, 15, y);
-      y += shippingLines.length * 4.5 + 3;
+      for (const line of shippingLines) {
+        if (y > 265) {
+          doc.addPage();
+          y = 18;
+        }
+        doc.text(line, 15, y);
+        y += 4.5;
+      }
+      y += 3;
     }
 
     if (order.vat_note) {

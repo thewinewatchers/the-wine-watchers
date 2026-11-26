@@ -387,8 +387,9 @@ export default async function BoutiqueCategoryPage({
 
         {slug === "primeurs-2025" && (
           <p className="mt-2 text-sm leading-6 text-[#8a1f1f]">
-            Vins en précommande · Livraison estimée en 2027 · Sans frais de
-            livraison.
+            Vins en précommande. Livraison estimée au premier semestre 2027.
+            Les frais de livraison seront facturés au moment de la livraison.
+            Assurance transport comprise.
           </p>
         )}
 

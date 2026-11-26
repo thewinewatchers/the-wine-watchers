@@ -314,6 +314,39 @@ export async function GET(
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
 
+    const winesTotalExclVat = (items || []).reduce(
+      (sum: number, item: any) => sum + Number(item.total_price || 0),
+      0
+    );
+
+    const shippingPrice = Number(order.shipping_price_excl_vat || 0);
+    const shippingNote = String(order.shipping_note || "");
+    const note = shippingNote.toLowerCase();
+
+    const deliveryFeeLabel =
+      shippingPrice > 0
+        ? formatPrice(shippingPrice)
+        : note.includes("retrait gratuit")
+          ? "Gratuit"
+          : note.includes("frais de livraison seront facturés au moment de la livraison")
+            ? "Différée"
+            : formatPrice(shippingPrice);
+
+    if (y > 210) {
+      doc.addPage();
+      y = 20;
+    }
+
+    doc.text("Total HT vins", 105, y);
+    doc.text(formatPrice(winesTotalExclVat), 195, y, { align: "right" });
+
+    y += 7;
+
+    doc.text("Livraison à la commande", 105, y);
+    doc.text(deliveryFeeLabel, 195, y, { align: "right" });
+
+    y += 7;
+
     doc.text("Total HT", 130, y);
     doc.text(formatPrice(totalExclVat), 168, y);
 
@@ -334,7 +367,30 @@ export async function GET(
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
 
+    if (shippingNote) {
+      const shippingLines = doc.splitTextToSize(
+        `Livraison / retrait : ${shippingNote}`,
+        pageWidth - 30
+      );
+
+      for (const line of shippingLines) {
+        if (y > 260) {
+          doc.addPage();
+          y = 20;
+        }
+
+        doc.text(line, 15, y);
+        y += 5;
+      }
+
+      y += 4;
+    }
+
     if (order.vat_note) {
+      if (y > 235) {
+        doc.addPage();
+        y = 20;
+      }
       const vatLines = doc.splitTextToSize(
         `Régime TVA : ${order.vat_note}`,
         pageWidth - 30

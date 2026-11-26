@@ -42,6 +42,7 @@ type ShippingCalculation = {
   hasPrimeurItems?: boolean;
   shippableItemsCount?: number;
   primeurItemsCount?: number;
+  primeur2025ItemsCount?: number;
   countryCode: string;
   countryName: string;
   totalWeightKg: number;
@@ -466,7 +467,7 @@ export default function CheckoutPage() {
     deliveryMethod === "pickup"
       ? "Retrait entrepôt"
       : isPrimeurOnly
-      ? "Livraison à la libération des vins"
+      ? "Livraison Primeurs — hors paiement immédiat"
       : "Livraison HT — Assurance transport comprise";
 
   const deliveryNote =
@@ -949,7 +950,9 @@ export default function CheckoutPage() {
                       Pas de livraison — retrait gratuit à l’entrepôt
                     </span>
                     <span className="mt-1 block text-sm text-neutral-600">
-                      Aucun frais de livraison ajouté à la commande.
+                      Aucun frais de livraison ajouté à la commande. Pour les
+                      Primeurs 2025, retrait après mise à disposition estimée
+                      au premier semestre 2027.
                     </span>
                   </span>
                 </label>
@@ -996,8 +999,7 @@ export default function CheckoutPage() {
                               </strong>
                             </p>
                             <p className="text-neutral-600">
-                              Aucun frais de livraison n’est facturé maintenant
-                              pour les vins en primeur.
+                              {shippingCalculation.message}
                             </p>
                           </>
                         ) : (
@@ -1035,9 +1037,7 @@ export default function CheckoutPage() {
 
                             {hasMixedPrimeurCart && (
                               <p className="mt-3 rounded-xl bg-[#fffaf3] p-3 text-xs text-neutral-600">
-                                Les frais ci-dessus concernent uniquement les
-                                vins livrables maintenant. Les vins en primeur
-                                seront livrés à leur libération.
+                                {shippingCalculation.message}
                               </p>
                             )}
                           </>
@@ -1072,7 +1072,9 @@ export default function CheckoutPage() {
                       : isCalculatingShipping
                       ? "Calcul..."
                       : isPrimeurOnly
-                      ? "0,00 € HT"
+                      ? Number(shippingCalculation?.primeur2025ItemsCount || 0) > 0
+                         ? "Facturation différée"
+                         : "Non facturée maintenant"
                       : shippingCalculation?.available
                       ? formatPrice(deliveryFee)
                       : "Nous contacter"}
@@ -1090,7 +1092,7 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className="flex justify-between border-t border-[#e6dcc8] pt-3 text-base">
-                  <span>Total TTC à payer</span>
+                  <span>Total TTC à payer maintenant</span>
                   <strong>{formatPrice(totalToPay)}</strong>
                 </div>
 
@@ -1268,7 +1270,9 @@ export default function CheckoutPage() {
                       : isCalculatingShipping
                       ? "Calcul..."
                       : isPrimeurOnly
-                      ? "0,00 € HT"
+                      ? Number(shippingCalculation?.primeur2025ItemsCount || 0) > 0
+                         ? "Facturation différée"
+                         : "Non facturée maintenant"
                       : shippingCalculation?.available
                       ? formatPrice(deliveryFee)
                       : "Nous contacter"}
@@ -1286,7 +1290,7 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className="mt-4 flex items-center justify-between border-t border-neutral-300 pt-4 text-lg font-semibold">
-                  <span>Total TTC à payer</span>
+                  <span>Total TTC à payer maintenant</span>
                   <span>{formatPrice(totalToPay)}</span>
                 </div>
 
