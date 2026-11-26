@@ -31,6 +31,14 @@ export const metadata: Metadata = {
     siteName: "The Wine Watchers",
     locale: "fr_FR",
     type: "website",
+    images: [
+      {
+        url: `${SITE_URL}/images/og/primeurs-bordeaux.jpg`,
+        width: 1200,
+        height: 630,
+        alt: "Bordeaux Primeurs 2025 - The Wine Watchers",
+      },
+    ],
   },
 };
 
