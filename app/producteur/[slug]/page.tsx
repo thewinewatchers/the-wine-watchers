@@ -186,6 +186,10 @@ function getBoutiqueRegionUrl(region: string) {
     return "/boutique/usa";
   }
 
+  if (["morey-saint-denis", "cote-de-nuits", "cote-de-beaune"].includes(normalizedRegion)) {
+    return "/appellation/" + normalizedRegion;
+  }
+
   return "/boutique/" + normalizedRegion;
 }
 
@@ -241,6 +245,33 @@ function getAppellationUrl(
   }
 
   const appellationSlug = slugify(appellation);
+
+  const canonicalAppellationSlugs: Record<string, string> = {
+    "bonnes-mares-grand-cru": "bonnes-mares",
+    "chambertin-clos-de-beze-grand-cru": "chambertin-clos-de-beze",
+    "clos-de-la-roche-grand-cru": "clos-de-la-roche",
+    "grands-echezeaux-grand-cru": "grands-echezeaux",
+    "la-romanee-grand-cru": "la-romanee",
+    "la-tache-grand-cru": "la-tache",
+    "mazis-chambertin-grand-cru": "mazis-chambertin",
+    "montrachet-grand-cru": "montrachet",
+    "richebourg-grand-cru": "richebourg",
+    "romanee-st-vivant-grand-cru": "romanee-saint-vivant",
+    "romanee-saint-vivant-grand-cru": "romanee-saint-vivant",
+    "chapelle-chambertin-grand-cru": "chapelle-chambertin",
+    "charmes-chambertin-grand-cru": "charmes-chambertin",
+    "ruchottes-chambertin-grand-cru": "ruchottes-chambertin",
+    "echezeaux-grand-cru": "echezeaux",
+    "corton-grand-cru": "corton",
+    "corton-charlemagne-grand-cru": "corton-charlemagne",
+    "clos-de-tart-grand-cru-monopole": "clos-de-tart",
+    "romanee-conti-grand-cru": "romanee-conti",
+    "clos-de-vougeot": "clos-de-vougeot-grand-cru",
+  };
+
+  if (Object.prototype.hasOwnProperty.call(canonicalAppellationSlugs, appellationSlug)) {
+    return "/appellation/" + canonicalAppellationSlugs[appellationSlug];
+  }
 
   if (appellationSlug === "chambertin-grand-cru") {
     return "/appellation/chambertin";

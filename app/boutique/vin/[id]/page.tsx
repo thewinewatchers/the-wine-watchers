@@ -77,6 +77,54 @@ function slugify(value?: string | null) {
     .replace(/^-+|-+$/g, "");
 }
 
+const canonicalAppellationSlugs: Record<string, string> = {
+  "bonnes-mares-grand-cru": "bonnes-mares",
+  "chambertin-grand-cru": "chambertin",
+  "chambertin-clos-de-beze-grand-cru": "chambertin-clos-de-beze",
+  "clos-de-la-roche-grand-cru": "clos-de-la-roche",
+  "clos-des-lambrays-grand-cru": "clos-des-lambrays",
+  "clos-de-tart-grand-cru-monopole": "clos-de-tart",
+  "clos-de-tart-grand-cru": "clos-de-tart",
+  "clos-de-vougeot": "clos-de-vougeot-grand-cru",
+  "grands-echezeaux-grand-cru": "grands-echezeaux",
+  "la-romanee-grand-cru": "la-romanee",
+  "la-tache-grand-cru": "la-tache",
+  "mazis-chambertin-grand-cru": "mazis-chambertin",
+  "montrachet-grand-cru": "montrachet",
+  "richebourg-grand-cru": "richebourg",
+  "romanee-st-vivant-grand-cru": "romanee-saint-vivant",
+  "romanee-saint-vivant-grand-cru": "romanee-saint-vivant",
+  "romanee-conti-grand-cru": "romanee-conti",
+  "chapelle-chambertin-grand-cru": "chapelle-chambertin",
+  "charmes-chambertin-grand-cru": "charmes-chambertin",
+  "ruchottes-chambertin-grand-cru": "ruchottes-chambertin",
+  "echezeaux-grand-cru": "echezeaux",
+  "corton-grand-cru": "corton",
+  "corton-charlemagne-grand-cru": "corton-charlemagne",
+  "aoc-champagne": "champagne",
+  "chablis-1er-cru": "chablis",
+  "chablis-premier-cru": "chablis",
+  "chablis-grand-cru": "chablis",
+  "musigny-grand-cru": "musigny",
+  "toscane": "toscana",
+  "super-toscans": "toscana-igt",
+};
+
+function appellationToSlug(value?: string | null) {
+  const normalized = slugify(value);
+
+  if (
+    Object.prototype.hasOwnProperty.call(
+      canonicalAppellationSlugs,
+      normalized
+    )
+  ) {
+    return canonicalAppellationSlugs[normalized];
+  }
+
+  return normalized;
+}
+
 function categoryToSlug(value?: string | null) {
   if (!value) return "";
 
@@ -103,6 +151,51 @@ function categoryToSlug(value?: string | null) {
   if (normalized.includes("primeur")) return "primeurs-2025";
 
   return normalized;
+}
+
+const validCategorySlugs = new Set([
+  "bordeaux",
+  "bourgogne",
+  "rhone",
+  "italie",
+  "espagne",
+  "usa",
+  "champagne",
+  "primeurs-2025",
+]);
+
+const regionalAppellationSlugs = new Set([
+  "cote-de-nuits",
+  "cote-de-beaune",
+  "morey-saint-denis",
+  "toscana",
+  "californie",
+  "napa-valley",
+]);
+
+function getRegionHref(
+  region?: string | null,
+  category?: string | null
+) {
+  const normalizedRegion = appellationToSlug(region);
+
+  if (regionalAppellationSlugs.has(normalizedRegion)) {
+    return `/appellation/${normalizedRegion}`;
+  }
+
+  const regionSlug = categoryToSlug(region);
+
+  if (validCategorySlugs.has(regionSlug)) {
+    return `/boutique/${regionSlug}`;
+  }
+
+  const categorySlug = categoryToSlug(category);
+
+  if (validCategorySlugs.has(categorySlug)) {
+    return `/boutique/${categorySlug}`;
+  }
+
+  return "";
 }
 
 function isUuid(value: string) {
@@ -208,8 +301,11 @@ export default async function WinePage({ params }: Props) {
   const imageUrl = getImageUrl(wine.image);
   const canonicalUrl = `${SITE_URL}/boutique/vin/${slug}`;
   const regionName = wine.region || wine.category || "";
-  const regionSlug = categoryToSlug(regionName);
-  const appellationSlug = slugify(wine.appellation);
+  const regionHref = getRegionHref(wine.region, wine.category);
+  const appellationSlug = appellationToSlug(wine.appellation);
+  const appellationHref = appellationSlug
+    ? `/appellation/${appellationSlug}`
+    : "";
 
   const productJsonLd = {
     "@context": "https://schema.org",
@@ -257,21 +353,30 @@ export default async function WinePage({ params }: Props) {
     },
   ];
 
-  if (regionSlug) {
+  if (regionHref) {
     breadcrumbItems.push({
       "@type": "ListItem",
       position: breadcrumbItems.length + 1,
-      name: regionName || "Région",
-      item: `${SITE_URL}/boutique/${regionSlug}`,
+      name: regionHref.startsWith("/boutique/")
+        ? wine.category &&
+          categoryToSlug(wine.category) === regionHref.split("/").pop()
+          ? wine.category
+          : regionName || "Région"
+        : regionName || "Région",
+      item: `${SITE_URL}${regionHref}`,
     });
   }
 
-  if (wine.appellation && appellationSlug) {
+  if (
+    wine.appellation &&
+    appellationHref &&
+    appellationHref !== regionHref
+  ) {
     breadcrumbItems.push({
       "@type": "ListItem",
       position: breadcrumbItems.length + 1,
       name: wine.appellation,
-      item: `${SITE_URL}/appellation/${appellationSlug}`,
+      item: `${SITE_URL}${appellationHref}`,
     });
   }
 

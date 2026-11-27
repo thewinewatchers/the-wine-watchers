@@ -269,6 +269,8 @@ function normalizeSlugSource(value?: string | null) {
 function getMainCategorySlug(wine?: Wine | null) {
   if (!wine) return "";
 
+  if (categoryToSlug(wine.category) === "primeurs-2025") return "primeurs-2025";
+
   const values = [
     wine.category,
     wine.country,
@@ -368,18 +370,35 @@ function getMainCategorySlug(wine?: Wine | null) {
   return categoryToSlug(wine.category || wine.region || wine.country);
 }
 const DEDICATED_APPELLATION_SLUGS = new Set([
-  "pauillac", "margaux", "saint-julien", "saint-estephe",
-  "pomerol", "saint-emilion", "pessac-leognan", "sauternes",
-  "cote-de-nuits", "cote-de-beaune", "chablis", "meursault",
-  "puligny-montrachet", "gevrey-chambertin", "vosne-romanee",
-  "chambolle-musigny", "cote-rotie", "hermitage", "cornas",
-  "saint-joseph", "chateauneuf-du-pape", "gigondas",
-  "toscane", "piemont", "barolo", "barbaresco",
-  "brunello-di-montalcino", "bolgheri", "super-toscans",
-  "ribera-del-duero", "rioja", "priorat", "toro", "rias-baixas",
-  "napa-valley", "sonoma", "oakville", "rutherford",
-  "stags-leap-district", "montagne-de-reims", "vallee-de-la-marne",
-  "cote-des-blancs", "cote-des-bar", "champagne",
+  "pauillac", "margaux", "pomerol", "saint-emilion",
+  "saint-julien", "saint-estephe", "pessac-leognan", "sauternes",
+  "meursault", "cote-de-nuits", "cote-de-beaune", "chablis",
+  "puligny-montrachet", "vosne-romanee", "gevrey-chambertin", "chambolle-musigny",
+  "morey-saint-denis", "nuits-saint-georges", "vougeot", "flagey-echezeaux",
+  "aloxe-corton", "pernand-vergelesses", "savigny-les-beaune", "beaune",
+  "pommard", "volnay", "chassagne-montrachet", "saint-aubin",
+  "auxey-duresses", "monthelie", "saint-romain", "corton",
+  "corton-charlemagne", "clos-de-vougeot-grand-cru", "clos-de-la-roche", "clos-saint-denis",
+  "clos-des-lambrays", "clos-de-tart", "musigny", "bonnes-mares",
+  "chambertin", "chambertin-clos-de-beze", "chapelle-chambertin", "charmes-chambertin",
+  "mazoyeres-chambertin", "mazis-chambertin", "griotte-chambertin", "latricieres-chambertin",
+  "ruchottes-chambertin", "echezeaux", "grands-echezeaux", "richebourg",
+  "romanee-saint-vivant", "la-tache", "romanee-conti", "la-romanee",
+  "la-grande-rue", "montrachet", "chevalier-montrachet", "batard-montrachet",
+  "bienvenues-batard-montrachet", "criots-batard-montrachet", "bolgheri", "bolgheri-doc",
+  "bolgheri-superiore", "bolgheri-sassicaia", "bolgheri-sassicaia-doc", "toscana",
+  "toscana-igt", "brunello-di-montalcino", "brunello-di-montalcino-docg", "montalcino",
+  "barolo", "barolo-docg", "barbaresco", "barbaresco-docg",
+  "ribera-del-duero", "ribera-del-duero-do", "rioja", "rioja-doca",
+  "priorat", "priorat-doca", "castille-et-leon", "castilla-y-leon",
+  "castilla-y-leon-vt", "toro", "toro-do", "rias-baixas",
+  "rias-baixas-do", "cote-rotie", "champagne", "napa-valley",
+  "napa-valley-ava", "oakville", "oakville-ava", "rutherford",
+  "rutherford-ava", "yountville", "yountville-ava", "st-helena",
+  "st-helena-ava", "stags-leap-district", "stags-leap-district-ava", "californie",
+  "california", "hermitage", "cote-des-bar", "cornas",
+  "piemont", "sonoma", "chateauneuf-du-pape", "saint-joseph",
+  "vallee-de-la-marne", "gigondas", "montagne-de-reims", "cote-des-blancs",
 ]);
 
 function getAppellationHref(wine?: Wine | null) {
@@ -433,8 +452,58 @@ function producerToSlug(producer?: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+const canonicalAppellationSlugs: Record<string, string> = {
+  "bonnes-mares-grand-cru": "bonnes-mares",
+  "chambertin-grand-cru": "chambertin",
+  "chambertin-clos-de-beze-grand-cru": "chambertin-clos-de-beze",
+  "clos-de-la-roche-grand-cru": "clos-de-la-roche",
+  "clos-des-lambrays-grand-cru": "clos-des-lambrays",
+  "clos-de-tart-grand-cru": "clos-de-tart",
+  "grands-echezeaux-grand-cru": "grands-echezeaux",
+  "la-romanee-grand-cru": "la-romanee",
+  "la-tache-grand-cru": "la-tache",
+  "mazis-chambertin-grand-cru": "mazis-chambertin",
+  "montrachet-grand-cru": "montrachet",
+  "richebourg-grand-cru": "richebourg",
+  "romanee-saint-vivant-grand-cru": "romanee-saint-vivant",
+  "romanee-conti-grand-cru": "romanee-conti",
+  "chapelle-chambertin-grand-cru": "chapelle-chambertin",
+  "charmes-chambertin-grand-cru": "charmes-chambertin",
+  "ruchottes-chambertin-grand-cru": "ruchottes-chambertin",
+  "echezeaux-grand-cru": "echezeaux",
+  "corton-grand-cru": "corton",
+  "corton-charlemagne-grand-cru": "corton-charlemagne",
+  "musigny-grand-cru": "musigny",
+  "clos-de-tart-grand-cru-monopole": "clos-de-tart",
+  "clos-de-vougeot": "clos-de-vougeot-grand-cru",
+  "romanee-st-vivant-grand-cru": "romanee-saint-vivant",
+  "aoc-champagne": "champagne",
+  "chablis-1er-cru": "chablis",
+  "chablis-premier-cru": "chablis",
+  "chablis-grand-cru": "chablis",
+  "toscane": "toscana",
+  "super-toscans": "toscana-igt",
+};
+
 function appellationToSlug(appellation?: string) {
-  return producerToSlug(appellation);
+  const slug = producerToSlug(appellation);
+  return Object.prototype.hasOwnProperty.call(canonicalAppellationSlugs, slug)
+    ? canonicalAppellationSlugs[slug]
+    : slug;
+}
+
+function getProducerSlug(producer?: string) {
+  const slug = producerToSlug(producer);
+  return slug === "opus-one-winery" ? "opus-one" : slug;
+}
+
+function getRegionHref(wine?: Wine | null) {
+  const slug = appellationToSlug(wine?.region);
+  if (new Set(["cote-de-nuits", "cote-de-beaune", "morey-saint-denis", "toscana", "californie", "napa-valley"]).has(slug)) {
+    return `/appellation/${slug}`;
+  }
+  const category = getMainCategorySlug(wine);
+  return category ? `/boutique/${category}` : "";
 }
 
 function getWineUrl(wine: Wine) {
@@ -687,7 +756,7 @@ export default function WinePage({ initialWine }: { initialWine: Wine }) {
   }, [galleryImages.length, selectedImageIndex]);
 
   const categorySlug = getMainCategorySlug(wine);
-  const regionSlug = categorySlug;
+  const regionHref = getRegionHref(wine);
   const appellationHref = getAppellationHref(wine);
   const categoryLabel = getCategoryLabel(wine);
   const vintage = wine?.vintage ? String(wine.vintage) : undefined;
@@ -964,7 +1033,7 @@ export default function WinePage({ initialWine }: { initialWine: Wine }) {
               >
                 {wine.producer && (
                   <Link
-                    href={`/producteur/${producerToSlug(wine.producer)}`}
+                    href={`/producteur/${getProducerSlug(wine.producer)}`}
                     className="flex items-center justify-between gap-3 rounded border border-[#8a1f1f]/40 px-4 py-3 text-sm text-[#8a1f1f] transition-colors hover:border-[#8a1f1f] hover:bg-[#fcf7f7] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a1f1f]"
                   >
                     <span className="min-w-0">
@@ -1179,9 +1248,9 @@ export default function WinePage({ initialWine }: { initialWine: Wine }) {
                 <InfoCard
                   label="Région"
                   value={
-                    wine.region && regionSlug ? (
+                    wine.region && regionHref ? (
                       <Link
-                        href={`/boutique/${regionSlug}`}
+                        href={regionHref}
                         className="hover:text-[#8a1f1f] hover:underline"
                       >
                         {wine.region}
@@ -1246,7 +1315,7 @@ export default function WinePage({ initialWine }: { initialWine: Wine }) {
           <div className="mt-3 flex flex-wrap gap-x-6 gap-y-3 text-sm">
             {wine.producer && (
               <Link
-                href={`/producteur/${producerToSlug(wine.producer)}`}
+                href={`/producteur/${getProducerSlug(wine.producer)}`}
                 className="text-[#8a1f1f] hover:underline"
               >
                 Tous les vins de {wine.producer}
@@ -1271,8 +1340,7 @@ export default function WinePage({ initialWine }: { initialWine: Wine }) {
               </Link>
             )}
 
-            {(categorySlug === "bordeaux" ||
-              categorySlug === "primeurs-2025") && (
+            {categorySlug === "bordeaux" && (
               <Link
                 href="/boutique/primeurs-2025"
                 className="text-[#8a1f1f] hover:underline"

@@ -18,6 +18,16 @@ const appellationRedirects: Record<string, string> = {
   "echezeaux-grand-cru": "echezeaux",
   "chambertin-grand-cru": "chambertin",
   "clos-des-lambrays-grand-cru": "clos-des-lambrays",
+  "bonnes-mares-grand-cru": "bonnes-mares",
+  "chambertin-clos-de-beze-grand-cru": "chambertin-clos-de-beze",
+  "clos-de-la-roche-grand-cru": "clos-de-la-roche",
+  "grands-echezeaux-grand-cru": "grands-echezeaux",
+  "la-romanee-grand-cru": "la-romanee",
+  "la-tache-grand-cru": "la-tache",
+  "mazis-chambertin-grand-cru": "mazis-chambertin",
+  "montrachet-grand-cru": "montrachet",
+  "richebourg-grand-cru": "richebourg",
+  "romanee-st-vivant-grand-cru": "romanee-saint-vivant",
 };
 const appellations: Record<
   string,

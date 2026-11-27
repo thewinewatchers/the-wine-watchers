@@ -78,6 +78,11 @@ const nextConfig: NextConfig = {
           "/boutique/vin/chambolle-musigny-1er-cru-les-cras-2022-6-bt-g-roumier",
         permanent: true,
       },
+      {
+        source: "/boutique/morey-saint-denis",
+        destination: "/appellation/morey-saint-denis",
+        permanent: true,
+      },
     ];
   },
 };
