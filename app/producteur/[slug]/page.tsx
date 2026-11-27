@@ -189,7 +189,7 @@ function getBoutiqueRegionUrl(region: string) {
     return "/boutique/usa";
   }
 
-  if (["morey-saint-denis", "cote-de-nuits", "cote-de-beaune"].includes(normalizedRegion)) {
+  if (["morey-saint-denis", "cote-de-nuits", "cote-de-beaune", "pauillac"].includes(normalizedRegion)) {
     return "/appellation/" + normalizedRegion;
   }
 
