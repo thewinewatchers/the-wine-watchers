@@ -82,6 +82,7 @@ const editorialAppellations = [
   "oakville",
   "rutherford",
   "stags-leap-district",
+  "californie",
   "champagne",
 ];
 

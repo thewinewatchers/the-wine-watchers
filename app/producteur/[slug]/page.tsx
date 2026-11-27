@@ -144,6 +144,9 @@ function getAbsoluteWineUrl(wine: Wine) {
 function getBoutiqueRegionUrl(region: string) {
   const normalizedRegion = slugify(region);
 
+  if (["californie", "california"].includes(normalizedRegion)) return "/appellation/californie";
+  if (["napa-valley", "napa"].includes(normalizedRegion)) return "/appellation/napa-valley";
+
   const spanishRegions = [
     "castille-et-leon",
     "castille-leon",
@@ -199,7 +202,7 @@ function getAppellationUrl(
   category?: string | null
 ) {
   const dedicatedAppellationSlug = slugify(appellation);
-  if (["toscana-igt", "bolgheri"].includes(dedicatedAppellationSlug)) {
+  if (["toscana-igt", "bolgheri", "napa-valley", "oakville", "californie"].includes(dedicatedAppellationSlug)) {
     return "/appellation/" + dedicatedAppellationSlug;
   }
 

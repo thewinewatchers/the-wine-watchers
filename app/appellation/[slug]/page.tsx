@@ -1306,6 +1306,8 @@ const regionalAppellations: Record<string, string[]> = {
     "criots-batard-montrachet", "ladoix", "chorey-les-beaune", "santenay",
     "maranges", "blagny",
   ],
+  californie: ["californie", "napa-valley", "oakville", "rutherford", "yountville", "st-helena", "stags-leap-district", "sonoma", "sonoma-county", "sonoma-coast", "russian-river-valley"],
+  "napa-valley": ["napa-valley", "oakville", "rutherford", "yountville", "st-helena", "stags-leap-district"],
   toscana: ["toscana", "toscane", "toscana-igt", "bolgheri", "bolgheri-superiore",
     "bolgheri-sassicaia", "brunello-di-montalcino", "rosso-di-montalcino",
     "montalcino", "chianti", "chianti-classico", "vino-nobile-di-montepulciano"],
@@ -1826,6 +1828,19 @@ export default async function AppellationPage({
             chaque cuvée avant de consulter sa fiche détaillée.
           </p>
         </div>
+
+        {(slug === "oakville" || slug === "oakville-ava") && (
+          <div className="mb-8 rounded-2xl border border-[#dfcfb8] bg-white p-6 text-[#6d5b50]">
+            <p className="leading-7">
+              Opus One est un domaine implanté à Oakville. Retrouvez ses vins
+              commercialisés sous l’appellation Napa Valley dans notre sélection dédiée.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-4">
+              <Link href="/producteur/opus-one" className="underline">Découvrir Opus One</Link>
+              <Link href="/appellation/napa-valley" className="underline">Voir les vins de Napa Valley</Link>
+            </div>
+          </div>
+        )}
 
         {visibleWines.length === 0 ? (
           <div className="rounded-2xl bg-white p-6 text-gray-600 shadow-sm">
