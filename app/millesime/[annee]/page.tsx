@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 
@@ -599,12 +600,25 @@ export default async function MillesimePage({ params }: Props) {
                     )}
 
                     {image ? (
-                      <img
-                        src={image}
-                        alt={displayName}
-                        loading="lazy"
-                        className="max-h-40 w-auto max-w-full object-contain"
-                      />
+                      image.startsWith("/") && !image.startsWith("//") && !/\.svg(?:[?#]|$)/i.test(image) ? (
+                        <div className="relative h-full w-full">
+                          <Image
+                            src={image}
+                            alt={displayName}
+                            fill
+                            sizes="(min-width: 1280px) 250px, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                            className="object-contain"
+                            loading="lazy"
+                          />
+                        </div>
+                      ) : (
+                        <img
+                          src={image}
+                          alt={displayName}
+                          loading="lazy"
+                          className="max-h-40 w-auto max-w-full object-contain"
+                        />
+                      )
                     ) : (
                       <span className="text-sm text-stone-400">
                         Photo à venir
