@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound, permanentRedirect } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { PRODUCER_EDITORIAL_LIBRARY } from "@/lib/producer-editorial";
@@ -931,12 +932,25 @@ export default async function ProducteurPage({ params }: PageProps) {
                             )}
 
                             {image ? (
-                              <img
-                                src={image}
-                                alt={displayName}
-                                loading="lazy"
-                                className="max-h-40 w-auto max-w-full object-contain"
-                              />
+                              image.startsWith("/") && !image.startsWith("//") ? (
+                                <div className="relative h-40 w-full">
+                                  <Image
+                                    src={image}
+                                    alt={displayName}
+                                    fill
+                                    sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, (max-width: 1279px) 33vw, 260px"
+                                    loading="lazy"
+                                    className="object-contain"
+                                  />
+                                </div>
+                              ) : (
+                                <img
+                                  src={image}
+                                  alt={displayName}
+                                  loading="lazy"
+                                  className="max-h-40 w-auto max-w-full object-contain"
+                                />
+                              )
                             ) : (
                               <span className="text-sm text-stone-400">
                                 Photo à venir
