@@ -674,7 +674,7 @@ const appellations: Record<
     name: "Bolgheri",
     title: "Vins de Bolgheri – Grands vins de Toscane",
     description:
-      "Découvrez notre sélection de vins de Bolgheri : Sassicaia, Ornellaia, Masseto et grandes cuvées de la côte toscane.",
+      "Découvrez notre sélection de vins de Bolgheri : grandes cuvées de la côte toscane, domaines prestigieux et millésimes recherchés.",
     intro:
       "Bolgheri est l’un des terroirs les plus prestigieux d’Italie. Située sur la côte toscane, l’appellation est devenue célèbre pour ses grands vins rouges d’inspiration bordelaise, capables d’allier profondeur, élégance et remarquable potentiel de garde.",
     boutiqueHref: "/boutique/italie",
@@ -1256,7 +1256,11 @@ function slugify(value: string) {
 }
 
 function getComparableAppellationSlug(value?: string | null) {
-  return slugify(String(value || ""))
+  const normalized = slugify(String(value || ""));
+  if (["toscana-igt", "toscana-igp", "toscana-indicazione-geografica-tipica"].includes(normalized)) {
+    return "toscana-igt";
+  }
+  return normalized
     .replace(/^aoc-/, "")
     .replace(/-st-vivant(?=-|$)/, "-saint-vivant")
     .replace(/-monopole$/, "")
@@ -1302,7 +1306,7 @@ const regionalAppellations: Record<string, string[]> = {
     "criots-batard-montrachet", "ladoix", "chorey-les-beaune", "santenay",
     "maranges", "blagny",
   ],
-  toscana: ["toscana", "toscane", "bolgheri", "bolgheri-superiore",
+  toscana: ["toscana", "toscane", "toscana-igt", "bolgheri", "bolgheri-superiore",
     "bolgheri-sassicaia", "brunello-di-montalcino", "rosso-di-montalcino",
     "montalcino", "chianti", "chianti-classico", "vino-nobile-di-montepulciano"],
 };

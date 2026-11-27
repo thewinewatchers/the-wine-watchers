@@ -207,6 +207,7 @@ const validAppellations = new Set([
 ]);
 
 function getAppellationSlug(value: string | null) {
+  if (slugify(String(value || "")) === "toscana-igt") return "toscana-igt";
   const normalized = getComparableAppellationSlug(value);
   if (normalized === "clos-de-vougeot") return "clos-de-vougeot-grand-cru";
   if (validAppellations.has(normalized)) return normalized;

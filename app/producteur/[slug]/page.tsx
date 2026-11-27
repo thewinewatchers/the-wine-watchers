@@ -198,6 +198,11 @@ function getAppellationUrl(
   region?: string | null,
   category?: string | null
 ) {
+  const dedicatedAppellationSlug = slugify(appellation);
+  if (["toscana-igt", "bolgheri"].includes(dedicatedAppellationSlug)) {
+    return "/appellation/" + dedicatedAppellationSlug;
+  }
+
   const geographicValue = slugify(region || category || "");
 
   const spanishRegions = [
