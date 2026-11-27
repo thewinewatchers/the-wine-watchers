@@ -435,7 +435,7 @@ function getProducerHref(producer: string) {
     producerSlug === "domaine-armand-rousseau" ||
     producerSlug === "armand-rousseau"
   ) {
-    return "/producteur/armand-rousseau";
+    return "/producteur/domaine-armand-rousseau";
   }
 
   if (producerSlug.includes("opus-one")) {

@@ -494,6 +494,7 @@ function appellationToSlug(appellation?: string) {
 
 function getProducerSlug(producer?: string) {
   const slug = producerToSlug(producer);
+  if (slug === "armand-rousseau") return "domaine-armand-rousseau";
   return slug === "opus-one-winery" ? "opus-one" : slug;
 }
 

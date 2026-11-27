@@ -1329,7 +1329,7 @@ function getProducerHref(producer?: string | null) {
     producerSlug.endsWith("-armand-rousseau") ||
     producerSlug.includes("armand-rousseau")
   ) {
-    return "/producteur/armand-rousseau";
+    return "/producteur/domaine-armand-rousseau";
   }
 
   if (

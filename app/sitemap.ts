@@ -258,7 +258,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const pagesVins: MetadataRoute.Sitemap = Array.from(new Set(wines.map((wine) => wine.slug?.trim()).filter((slug): slug is string => Boolean(slug)))).map((slug) => ({
     url: `${siteUrl}/boutique/vin/${slug}`, changeFrequency: "monthly", priority: 0.85,
   }));
-  const producers = Array.from(new Set(wines.map((wine) => slugify(wine.producer || "")).map((slug) => slug === "opus-one-winery" ? "opus-one" : slug).filter(Boolean)));
+  const producers = Array.from(new Set(wines.map((wine) => slugify(wine.producer || "")).map((slug) => slug === "opus-one-winery" ? "opus-one" : slug === "armand-rousseau" ? "domaine-armand-rousseau" : slug).filter(Boolean)));
   const pagesProducteurs: MetadataRoute.Sitemap = producers.map((slug) => ({
     url: `${siteUrl}/producteur/${slug}`, changeFrequency: "weekly", priority: 0.8,
   }));

@@ -125,7 +125,7 @@ function getProducerHref(producer?: string | null) {
   if (!producerSlug) return "";
 
   if (producerSlug === "domaine-armand-rousseau") {
-    return "/producteur/armand-rousseau";
+    return "/producteur/domaine-armand-rousseau";
   }
 
   if (producerSlug === "opus-one-winery" || producerSlug === "opus-one") {

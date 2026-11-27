@@ -541,6 +541,10 @@ export default async function ProducteurPage({ params }: PageProps) {
     permanentRedirect("/producteur/opus-one");
   }
 
+  if (slug === "armand-rousseau") {
+    permanentRedirect("/producteur/domaine-armand-rousseau");
+  }
+
   const { data: producerData } = await supabase
     .from("wines")
     .select("producer");
