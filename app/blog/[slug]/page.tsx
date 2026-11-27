@@ -365,6 +365,12 @@ export default async function BlogArticlePage({ params }: Props) {
     image: [`${SITE_URL}${post.image}`],
     articleSection: post.category,
     inLanguage: "fr-FR",
+    author: {
+      "@type": "Organization",
+      "@id": `${SITE_URL}/#organization`,
+      name: "The Wine Watchers",
+      url: `${SITE_URL}/a-propos`,
+    },
     publisher: {
       "@type": "Organization",
       "@id": `${SITE_URL}/#organization`,
@@ -415,7 +421,11 @@ export default async function BlogArticlePage({ params }: Props) {
             </p>
 
             <p className="mt-4 text-xs text-stone-500">
-              {post.date}
+              Par{" "}
+              <Link href="/a-propos" className="font-medium text-[#8a1f1f] hover:underline">
+                The Wine Watchers
+              </Link>
+              {" · "}{post.date}
             </p>
           </header>
 
