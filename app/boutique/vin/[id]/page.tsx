@@ -38,18 +38,22 @@ function parsePrice(price?: string | number) {
   if (price === undefined || price === null || price === "") return 0;
 
   if (typeof price === "number") {
-    return price;
+    return Number.isFinite(price) ? price : 0;
   }
 
-  const cleaned = price
-    .toString()
-    .replace(/[€\s]/g, "")
-    .replace(/\./g, "")
-    .replace(",", ".");
+  let cleaned = price.trim().replace(/[€\s]/g, "");
 
+  if (cleaned.includes(",")) {
+    if (cleaned.lastIndexOf(",") > cleaned.lastIndexOf(".")) {
+      cleaned = cleaned.replace(/\./g, "").replace(",", ".");
+    } else {
+      cleaned = cleaned.replace(/,/g, "");
+    }
+  }
+
+  if (!/^\d+(\.\d+)?$/.test(cleaned)) return 0;
   const parsed = Number(cleaned);
-
-  return Number.isNaN(parsed) ? 0 : parsed;
+  return Number.isFinite(parsed) ? parsed : 0;
 }
 
 function getImageUrl(image?: string) {
