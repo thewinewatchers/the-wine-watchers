@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
@@ -984,11 +985,25 @@ export default function WinePage({ initialWine }: { initialWine: Wine }) {
           <div className="min-w-0">
             <div className="flex items-center justify-center">
               {selectedImage ? (
+                selectedImage.startsWith("/") && !selectedImage.startsWith("//") ? (
+                  <div className="relative h-[280px] w-full md:h-[380px]">
+                    <Image
+                      src={selectedImage}
+                      alt={`${displayName} — photo ${selectedImageIndex + 1}`}
+                      fill
+                      sizes="(max-width: 767px) calc(100vw - 40px), (max-width: 1151px) calc((100vw - 112px) / 2), 520px"
+                      className="object-contain"
+                      loading="eager"
+                      fetchPriority={selectedImageIndex === 0 ? "high" : "auto"}
+                    />
+                  </div>
+                ) : (
                 <img
                   src={selectedImage}
                   alt={`${displayName} — photo ${selectedImageIndex + 1}`}
                   className="h-[280px] w-full object-contain md:h-[380px]"
                 />
+                )
               ) : (
                 <div className="flex h-[280px] w-full items-center justify-center bg-stone-50 text-sm text-stone-400 md:h-[380px]">
                   Photo à venir
@@ -1011,11 +1026,21 @@ export default function WinePage({ initialWine }: { initialWine: Wine }) {
                         : "border-stone-200 hover:border-stone-400"
                     }`}
                   >
-                    <img
-                      src={image}
-                      alt=""
-                      className="h-14 w-14 object-contain"
-                    />
+                    {image.startsWith("/") && !image.startsWith("//") ? (
+                      <Image
+                        src={image}
+                        alt=""
+                        width={56}
+                        height={56}
+                        className="h-14 w-14 object-contain"
+                      />
+                    ) : (
+                      <img
+                        src={image}
+                        alt=""
+                        className="h-14 w-14 object-contain"
+                      />
+                    )}
                   </button>
                 ))}
               </div>
