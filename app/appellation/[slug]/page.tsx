@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound, permanentRedirect } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -1895,13 +1896,29 @@ export default async function AppellationPage({
                             <Link href={getWineHref(wine)} className="block">
                               <div className="flex h-[245px] items-center justify-center bg-[#efe3d2] p-6">
                                 {wine.image ? (
+                                  wine.image.startsWith("/") && !wine.image.startsWith("//") ? (
+                                  <div className="relative h-full w-full transition group-hover:scale-105">
+                                    <Image
+                                      src={wine.image}
+                                      alt={`Bouteille de ${
+                                        wine.name || "vin"
+                                      } - ${appellation.name}`}
+                                      fill
+                                      sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+                                      className="object-contain"
+                                      loading="lazy"
+                                    />
+                                  </div>
+                                  ) : (
                                   <img
                                     src={wine.image}
                                     alt={`Bouteille de ${
                                       wine.name || "vin"
                                     } - ${appellation.name}`}
+                                    loading="lazy"
                                     className="max-h-[205px] w-auto object-contain transition group-hover:scale-105"
                                   />
+                                  )
                                 ) : (
                                   <span className="text-sm text-[#8a6a2f]">
                                     Image non disponible
