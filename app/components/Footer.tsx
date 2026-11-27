@@ -54,6 +54,10 @@ export default function Footer() {
                 Primeurs 2025
               </Link>
 
+              <Link href="/blog" className="transition hover:text-[#d8b56d]">
+                Blog &amp; actualités
+              </Link>
+
               <Link href="/a-propos" className="transition hover:text-[#d8b56d]">
                 À propos
               </Link>
