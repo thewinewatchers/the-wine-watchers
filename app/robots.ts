@@ -9,11 +9,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: [
           "/admin/",
           "/api/",
-          "/checkout/",
-          "/panier/",
-          "/connexion/",
-          "/inscription/",
-          "/mon-compte/",
         ],
       },
     ],
