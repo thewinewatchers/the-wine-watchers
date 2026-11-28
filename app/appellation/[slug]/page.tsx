@@ -986,11 +986,11 @@ const appellations: Record<
   },
   oakville: {
     name: "Oakville",
-    title: "Vins d’Oakville – Grands Cabernet Sauvignon de Napa",
+    title: "Oakville AVA – Terroirs et grands vins de Napa Valley",
     description:
-      "Découvrez notre sélection de vins d’Oakville : Cabernet Sauvignon prestigieux et domaines emblématiques de Napa Valley.",
+      "Découvrez Oakville, ses terroirs, ses Cabernet Sauvignon et ses domaines emblématiques au cœur de Napa Valley.",
     intro:
-      "Oakville est l’une des sous-régions les plus renommées de Napa Valley. Elle produit des Cabernet Sauvignon profonds, structurés et particulièrement recherchés.",
+      "Située au cœur de Napa Valley, Oakville est une American Viticultural Area (AVA) réputée pour ses Cabernet Sauvignon et ses assemblages bordelais. La diversité des sols et des expositions contribue à la personnalité de ses vins.",
     boutiqueHref: "/boutique/usa",
     boutiqueLabel: "Retour à la boutique États-Unis",
   },
@@ -1006,11 +1006,11 @@ const appellations: Record<
   },
   rutherford: {
     name: "Rutherford",
-    title: "Vins de Rutherford – Napa Valley",
+    title: "Rutherford AVA – Terroirs et Cabernet Sauvignon",
     description:
-      "Découvrez notre sélection de vins de Rutherford : grands Cabernet Sauvignon, domaines historiques et millésimes de garde.",
+      "Explorez Rutherford dans Napa Valley : terroirs alluviaux, Cabernet Sauvignon, domaines historiques et identité du Rutherford Dust.",
     intro:
-      "Rutherford est une appellation historique de Napa Valley. Elle est célèbre pour ses Cabernet Sauvignon à la fois structurés, élégants et marqués par une texture distinctive.",
+      "Rutherford occupe une partie centrale de Napa Valley. Ses Cabernet Sauvignon sont souvent associés à une texture tannique fine et à une expression aromatique profonde.",
     boutiqueHref: "/boutique/usa",
     boutiqueLabel: "Retour à la boutique États-Unis",
   },
@@ -1066,11 +1066,11 @@ const appellations: Record<
   },
   "stags-leap-district": {
     name: "Stags Leap District",
-    title: "Stags Leap District – Grands Cabernet Sauvignon de Napa",
+    title: "Stags Leap District AVA – Terroirs et grands Cabernet",
     description:
-      "Découvrez notre sélection de vins de Stags Leap District, l’une des appellations les plus prestigieuses de Napa Valley.",
+      "Découvrez Stags Leap District, ses Cabernet Sauvignon, ses influences climatiques et ses domaines historiques de Napa Valley.",
     intro:
-      "Stags Leap District est célèbre pour ses Cabernet Sauvignon combinant puissance, finesse et texture soyeuse.",
+      "Sur le versant oriental de Napa Valley, Stags Leap District est réputé pour ses Cabernet Sauvignon associant intensité aromatique et finesse tannique.",
     boutiqueHref: "/boutique/usa",
     boutiqueLabel: "Retour à la boutique États-Unis",
   },
@@ -1443,6 +1443,43 @@ function getWineGroupTitle(wine: AppellationWine) {
 }
 
 const appellationEditorial: Record<string, { terroir: string; opinion: string; links: { href: string; label: string }[]; source: string; sourceLabel?: string }> = {
+  "oakville": {
+    terroir: "Les terrains alluviaux de la vallée et les sols des coteaux offrent des conditions différentes de maturation. Robert Mondavi Winery et Screaming Eagle comptent parmi les propriétés emblématiques du secteur. Opus One y est implanté, mais ses vins sont commercialisés sous l’appellation Napa Valley.",
+    opinion: "Nous privilégions les vins qui associent maturité du fruit, fraîcheur et précision tannique. La localisation d’un domaine ne suffit pas à déterminer l’appellation inscrite sur ses bouteilles.",
+    links: [
+      { href: "/producteur/opus-one", label: "Opus One" },
+      { href: "/appellation/rutherford", label: "Rutherford" },
+      { href: "/appellation/napa-valley", label: "Napa Valley" },
+      { href: "/appellation/californie", label: "Californie" },
+      { href: "/boutique/usa", label: "Grands vins des États-Unis" },
+    ],
+    source: "https://napavintners.com/",
+    sourceLabel: "Napa Valley Vintners",
+  },
+  "rutherford": {
+    terroir: "Les dépôts alluviaux et les sols drainants contribuent à la diversité du vignoble. L’expression Rutherford Dust évoque une signature sensorielle traditionnellement associée à certains vins du secteur, sans constituer un critère réglementaire. Inglenook et Beaulieu Vineyard illustrent son histoire viticole.",
+    opinion: "Nous apprécions les Rutherford dont la structure accompagne le fruit sans le dominer. Le domaine, la parcelle et le millésime restent déterminants pour apprécier leur potentiel de garde.",
+    links: [
+      { href: "/appellation/oakville", label: "Oakville" },
+      { href: "/appellation/napa-valley", label: "Napa Valley" },
+      { href: "/appellation/californie", label: "Californie" },
+      { href: "/boutique/usa", label: "Grands vins des États-Unis" },
+    ],
+    source: "https://napavintners.com/",
+    sourceLabel: "Napa Valley Vintners",
+  },
+  "stags-leap-district": {
+    terroir: "Les reliefs rocheux, les sols d’origine volcanique et alluviale ainsi que les influences fraîches venues du sud contribuent à la diversité des vins. Le Cabernet Sauvignon de Stag’s Leap Wine Cellars a marqué l’histoire du vignoble lors du Jugement de Paris de 1976.",
+    opinion: "Nous recherchons dans ces vins un équilibre entre profondeur, fraîcheur et texture soyeuse. La comparaison avec Oakville et Rutherford permet de mieux comprendre la diversité des Cabernet Sauvignon de Napa Valley.",
+    links: [
+      { href: "/appellation/oakville", label: "Oakville" },
+      { href: "/appellation/napa-valley", label: "Napa Valley" },
+      { href: "/appellation/californie", label: "Californie" },
+      { href: "/boutique/usa", label: "Grands vins des États-Unis" },
+    ],
+    source: "https://napavintners.com/",
+    sourceLabel: "Napa Valley Vintners",
+  },
   "rioja": {
     terroir: "Les influences atlantiques et méditerranéennes, les altitudes et les sols variés expliquent la diversité des profils. Les mentions Crianza, Reserva et Gran Reserva répondent à des exigences réglementaires d’élevage. López de Heredia, La Rioja Alta et Marqués de Murrieta illustrent différentes traditions de production.",
     opinion: "Nous apprécions les Rioja qui associent fraîcheur, finesse du fruit et intégration de l’élevage. La mention Gran Reserva ne suffit pas à définir le style ou la qualité : le terroir, le domaine et le millésime restent essentiels.",
