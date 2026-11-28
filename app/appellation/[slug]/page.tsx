@@ -834,11 +834,11 @@ const appellations: Record<
   },
   rioja: {
     name: "Rioja",
-    title: "Vins de Rioja – Grandes cuvées espagnoles",
+    title: "Rioja DOCa – Terroirs, cépages et grands vins",
     description:
-      "Découvrez notre sélection de vins de Rioja : Gran Reserva, Reserva, domaines historiques et millésimes de garde.",
+      "Découvrez les terroirs de Rioja, le Tempranillo, les traditions d’élevage et les producteurs historiques de cette appellation espagnole.",
     intro:
-      "Rioja est l’appellation espagnole la plus célèbre. Elle est reconnue pour ses vins élégants, complexes et harmonieux, souvent élevés longuement en fût puis en bouteille.",
+      "Au nord de l’Espagne, Rioja réunit trois zones viticoles : Rioja Alta, Rioja Alavesa et Rioja Oriental. Le Tempranillo domine les rouges, mais la Garnacha, le Graciano et le Mazuelo participent aussi à leur diversité. L’appellation produit également des blancs et des rosés.",
     boutiqueHref: "/boutique/espagne",
     boutiqueLabel: "Retour à la boutique Espagne",
   },
@@ -854,11 +854,11 @@ const appellations: Record<
   },
   priorat: {
     name: "Priorat",
-    title: "Vins du Priorat – Grands vins de Catalogne",
+    title: "Priorat DOQ – Terroirs de schiste et grands vins",
     description:
-      "Découvrez notre sélection de vins du Priorat : cuvées puissantes, domaines prestigieux et terroirs de llicorella.",
+      "Explorez le Priorat catalan, ses coteaux de llicorella, ses vieilles vignes de Garnacha et Cariñena et ses domaines emblématiques.",
     intro:
-      "Le Priorat est une appellation spectaculaire de Catalogne, célèbre pour ses coteaux escarpés et ses sols de schiste appelés llicorella. Ses vins sont profonds, minéraux et intensément méditerranéens.",
+      "Au cœur de la Catalogne, le Priorat se distingue par ses paysages de coteaux escarpés et ses sols de schiste appelés llicorella. La Garnacha et la Cariñena occupent une place majeure dans les rouges, dont les expressions varient selon les villages et les parcelles.",
     boutiqueHref: "/boutique/espagne",
     boutiqueLabel: "Retour à la boutique Espagne",
   },
@@ -904,11 +904,11 @@ const appellations: Record<
   },
   "toro": {
     name: "Toro",
-    title: "Vins de Toro – Rouges puissants d’Espagne",
+    title: "Toro DO – Tinta de Toro et grands vins de garde",
     description:
-      "Découvrez notre sélection de vins de Toro : Tinta de Toro, domaines prestigieux et millésimes recherchés.",
+      "Découvrez Toro, ses terroirs continentaux, la Tinta de Toro et les producteurs qui façonnent les grands rouges de Castille et León.",
     intro:
-      "Toro produit des vins rouges puissants et généreux, issus principalement de la Tinta de Toro, une adaptation locale du Tempranillo.",
+      "Située autour du Duero, dans les provinces de Zamora et Valladolid, Toro bénéficie d’un climat continental marqué par des étés chauds et des hivers froids. La Tinta de Toro, expression locale du Tempranillo, est au cœur de son identité viticole.",
     boutiqueHref: "/boutique/espagne",
     boutiqueLabel: "Retour à la boutique Espagne",
   },
@@ -924,11 +924,11 @@ const appellations: Record<
   },
   "rias-baixas": {
     name: "Rías Baixas",
-    title: "Vins de Rías Baixas – Grands blancs d’Espagne",
+    title: "Rías Baixas DO – Albariño et terroirs atlantiques",
     description:
-      "Découvrez notre sélection de vins de Rías Baixas : Albariño frais, précis et minéraux.",
+      "Découvrez les blancs de Rías Baixas, l’Albariño, les terroirs atlantiques de Galice et les domaines de référence de cette appellation.",
     intro:
-      "Rías Baixas est l’appellation emblématique de l’Albariño. Proche de l’Atlantique, elle produit des blancs frais, aromatiques et élégants.",
+      "Dans le sud-ouest de la Galice, Rías Baixas est une appellation de forte influence atlantique. L’Albariño y occupe une place centrale, donnant des blancs dont la fraîcheur et la diversité aromatique reflètent les conditions de chaque secteur.",
     boutiqueHref: "/boutique/espagne",
     boutiqueLabel: "Retour à la boutique Espagne",
   },
@@ -1443,6 +1443,49 @@ function getWineGroupTitle(wine: AppellationWine) {
 }
 
 const appellationEditorial: Record<string, { terroir: string; opinion: string; links: { href: string; label: string }[]; source: string; sourceLabel?: string }> = {
+  "rioja": {
+    terroir: "Les influences atlantiques et méditerranéennes, les altitudes et les sols variés expliquent la diversité des profils. Les mentions Crianza, Reserva et Gran Reserva répondent à des exigences réglementaires d’élevage. López de Heredia, La Rioja Alta et Marqués de Murrieta illustrent différentes traditions de production.",
+    opinion: "Nous apprécions les Rioja qui associent fraîcheur, finesse du fruit et intégration de l’élevage. La mention Gran Reserva ne suffit pas à définir le style ou la qualité : le terroir, le domaine et le millésime restent essentiels.",
+    links: [
+      { href: "/appellation/ribera-del-duero", label: "Ribera del Duero" },
+      { href: "/appellation/toro", label: "Toro" },
+      { href: "/boutique/espagne", label: "Grands vins d’Espagne" },
+    ],
+    source: "https://riojawine.com/",
+    sourceLabel: "Consejo Regulador DOCa Rioja",
+  },
+  "priorat": {
+    terroir: "Les sols pierreux, les faibles réserves en eau et les expositions contrastées influencent la maturation. La tradition viticole liée à la chartreuse de Scala Dei précède de plusieurs siècles le renouveau contemporain du vignoble. Álvaro Palacios, Clos Mogador et Mas Doix figurent parmi les domaines emblématiques.",
+    opinion: "Nous recherchons des Priorat où la concentration ne masque ni la fraîcheur ni la finesse des tanins. Les vieilles vignes et la diversité des lieux offrent des pistes de comparaison particulièrement intéressantes.",
+    links: [
+      { href: "/appellation/rioja", label: "Rioja" },
+      { href: "/appellation/ribera-del-duero", label: "Ribera del Duero" },
+      { href: "/boutique/espagne", label: "Grands vins d’Espagne" },
+    ],
+    source: "https://www.doqpriorat.org/",
+    sourceLabel: "Consell Regulador DOQ Priorat",
+  },
+  "toro": {
+    terroir: "Les sols sableux, caillouteux ou argileux et les variations d’altitude contribuent à la diversité des vins. Certaines parcelles anciennes conservent des vignes franches de pied. Numanthia, Pintia et San Román comptent parmi les références de cette appellation.",
+    opinion: "Nous privilégions les Toro dont la densité s’accompagne de fraîcheur et de tanins maîtrisés. La comparaison avec Ribera del Duero permet de mieux comprendre les différentes expressions du Tempranillo dans la vallée du Duero.",
+    links: [
+      { href: "/appellation/ribera-del-duero", label: "Ribera del Duero" },
+      { href: "/appellation/rioja", label: "Rioja" },
+      { href: "/boutique/espagne", label: "Grands vins d’Espagne" },
+    ],
+    source: "https://www.dotoro.com/",
+    sourceLabel: "Consejo Regulador DO Toro",
+  },
+  "rias-baixas": {
+    terroir: "Les pluies, les sols souvent granitiques et la proximité maritime influencent le vignoble. Val do Salnés, O Rosal et Condado do Tea illustrent la diversité des sous-zones. Pazo de Señorans, Do Ferreiro et Zárate sont des références pour explorer les différentes expressions de l’Albariño.",
+    opinion: "Nous apprécions les blancs qui conjuguent précision, acidité et persistance. Certains élevages sur lies apportent de la texture et peuvent favoriser une évolution intéressante en bouteille. La fraîcheur ne doit pas être confondue avec un manque de profondeur.",
+    links: [
+      { href: "/appellation/rioja", label: "Rioja : autre tradition viticole espagnole" },
+      { href: "/boutique/espagne", label: "Grands vins d’Espagne" },
+    ],
+    source: "https://doriasbaixas.com/",
+    sourceLabel: "Consejo Regulador DO Rías Baixas",
+  },
   "barolo": {
     terroir: "Les marnes calcaires et les formations riches en grès, les expositions et les altitudes contribuent à la diversité des vins. Cannubi, Brunate et Bussia illustrent la richesse des mentions géographiques du cru. Giacomo Conterno, Bartolo Mascarello et Giuseppe Rinaldi comptent parmi les producteurs historiques. Les différences de vinification et d’élevage comptent autant que la situation des parcelles.",
     opinion: "Nous privilégions les Barolo dont la structure tannique accompagne la finesse du fruit et la longueur. Comparer les origines et les millésimes est plus instructif que d’opposer systématiquement tradition et modernité. Une longue garde peut être pertinente, selon le domaine et la cuvée.",
