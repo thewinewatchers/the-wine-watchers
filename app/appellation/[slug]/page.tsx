@@ -163,21 +163,21 @@ const appellations: Record<
   },
   "puligny-montrachet": {
     name: "Puligny-Montrachet",
-    title: "Vins de Puligny-Montrachet – Grands blancs de Bourgogne",
+    title: "Puligny-Montrachet – Terroirs et grands blancs",
     description:
-      "Découvrez notre sélection de vins de Puligny-Montrachet : grands blancs de Bourgogne, domaines prestigieux, premiers crus, grands crus et millésimes recherchés.",
+      "Découvrez les terroirs de Puligny-Montrachet, ses Chardonnay, ses premiers crus et les Grands Crus voisins de la Côte de Beaune.",
     intro:
-      "Puligny-Montrachet est l’une des appellations les plus prestigieuses de la Côte de Beaune. Elle est reconnue pour ses grands vins blancs d’une grande finesse, alliant tension, élégance et profondeur.",
+      "Entre Meursault et Chassagne-Montrachet, Puligny-Montrachet est un terroir de référence pour le Chardonnay. Les blancs dominent largement la production de cette appellation communale.",
     boutiqueHref: "/boutique/bourgogne",
     boutiqueLabel: "Retour à la boutique Bourgogne",
   },
   "vosne-romanee": {
     name: "Vosne-Romanée",
-    title: "Vins de Vosne-Romanée – Grands rouges de Bourgogne",
+    title: "Vosne-Romanée – Terroirs et crus de Bourgogne",
     description:
-      "Découvrez notre sélection de vins de Vosne-Romanée, appellation mythique de la Côte de Nuits.",
+      "Explorez Vosne-Romanée : Pinot Noir, premiers crus, terroirs calcaires et Grands Crus de la Côte de Nuits.",
     intro:
-      "Vosne-Romanée est l’un des villages les plus prestigieux de Bourgogne.",
+      "Au cœur de la Côte de Nuits, Vosne-Romanée est une appellation communale de vins rouges issus du Pinot Noir. Ses premiers crus et les Grands Crus du village permettent de comprendre la diversité des climats bourguignons.",
     boutiqueHref: "/boutique/bourgogne",
     boutiqueLabel: "Retour à la boutique Bourgogne",
   },
@@ -203,11 +203,11 @@ const appellations: Record<
   },
   "morey-saint-denis": {
     name: "Morey-Saint-Denis",
-    title: "Vins de Morey-Saint-Denis – Grands vins de la Côte de Nuits",
+    title: "Morey-Saint-Denis – Terroirs et crus de Bourgogne",
     description:
-      "Découvrez notre sélection de vins de Morey-Saint-Denis : premiers crus, grands crus, domaines prestigieux et millésimes recherchés.",
+      "Explorez Morey-Saint-Denis, ses Pinot Noir, ses premiers crus et les cinq Grands Crus situés totalement ou partiellement sur la commune.",
     intro:
-      "Morey-Saint-Denis est une appellation emblématique de la Côte de Nuits, réputée pour ses rouges profonds, élégants et structurés.",
+      "Situé entre Gevrey-Chambertin et Chambolle-Musigny, Morey-Saint-Denis possède une remarquable diversité de climats. Le Pinot Noir domine, avec une petite production de vins blancs.",
     boutiqueHref: "/boutique/bourgogne",
     boutiqueLabel: "Retour à la boutique Bourgogne",
   },
@@ -1442,6 +1442,49 @@ function getWineGroupTitle(wine: AppellationWine) {
     .trim();
 }
 
+const appellationEditorial: Record<string, { terroir: string; opinion: string; links: { href: string; label: string }[]; source: string }> = {
+  "vosne-romanee": {
+    terroir: "Les sols calcaires et marneux, la profondeur des terres et la position sur le coteau contribuent à des expressions différentes du Pinot Noir. Les Suchots, Aux Malconsorts et Cros Parantoux illustrent la diversité des premiers crus. Les Grands Crus possèdent leurs propres appellations, distinctes de Vosne-Romanée. Parmi les domaines emblématiques figurent le Domaine de la Romanée-Conti, Méo-Camuzet et le Domaine du Comte Liger-Belair.",
+    opinion: "Nous privilégions la précision du climat et le style du vigneron plutôt que le seul prestige du village. La finesse aromatique, la texture des tanins et la persistance constituent des repères utiles pour comparer les cuvées, sans présumer de leur qualité à partir du classement seul.",
+    links: [
+      { href: "/appellation/romanee-conti", label: "Romanée-Conti" },
+      { href: "/appellation/la-tache", label: "La Tâche" },
+      { href: "/appellation/richebourg", label: "Richebourg" },
+      { href: "/appellation/la-romanee", label: "La Romanée" },
+      { href: "/appellation/romanee-saint-vivant", label: "Romanée-Saint-Vivant" },
+      { href: "/appellation/la-grande-rue", label: "La Grande Rue" },
+      { href: "/appellation/cote-de-nuits", label: "Côte de Nuits" },
+    ],
+    source: "https://www.vins-bourgogne.fr/vins-et-terroirs/la-bourgogne-et-ses-appellations/la-bourgogne-une-localisation-privilegiee%2C2377%2C9170.html?args=Y29tcF9pZD0yMjA1JmFjdGlvbj12aWV3RmljaGVXaXRoVmlnbmVyb24maWQ9NDA4JmFwcGVsbGF0aW9uX2FwcGVsbGF0aW9uPVZvc25lLVJvbWFuJUMzJUE5ZSZhcHBlbGxhdGlvbl9kZXNjcmlwdGlvbj0mYXBwZWxsYXRpb25faWRfYWNjZXNzPTI4fA%3D%3D",
+  },
+  "puligny-montrachet": {
+    terroir: "La diversité des sols calcaires et marneux et la situation des parcelles sur le coteau favorisent des profils variés. Les Pucelles, Les Folatières et Les Combettes comptent parmi les premiers crus réputés. Montrachet et Bâtard-Montrachet sont partagés avec Chassagne-Montrachet ; Chevalier-Montrachet et Bienvenues-Bâtard-Montrachet se trouvent sur Puligny. Ces Grands Crus constituent des appellations distinctes. Le Domaine Leflaive et le Domaine Jean Chartron figurent parmi les références du village.",
+    opinion: "Pour apprécier Puligny, nous recherchons avant tout l’équilibre entre maturité, fraîcheur et précision de texture. La richesse du Chardonnay ne doit pas masquer les nuances du lieu. Comparer les premiers crus et les Grands Crus voisins permet de mieux comprendre ces différences, en tenant compte du millésime et de l’élevage.",
+    links: [
+      { href: "/appellation/montrachet", label: "Montrachet" },
+      { href: "/appellation/chevalier-montrachet", label: "Chevalier-Montrachet" },
+      { href: "/appellation/batard-montrachet", label: "Bâtard-Montrachet" },
+      { href: "/appellation/bienvenues-batard-montrachet", label: "Bienvenues-Bâtard-Montrachet" },
+      { href: "/appellation/meursault", label: "Meursault" },
+      { href: "/appellation/cote-de-beaune", label: "Côte de Beaune" },
+    ],
+    source: "https://www.vins-bourgogne.fr/nos-vins-nos-terroirs/la-bourgogne-et-ses-appellations/la-bourgogne-une-localisation-privilegiee%2C2377%2C9170.html?args=Y29tcF9pZD0yMjA1JmFjdGlvbj12aWV3RmljaGVXaXRoVmlnbmVyb24maWQ9Mzc3JmFwcGVsbGF0aW9uX2FwcGVsbGF0aW9uPVB1bGlnbnktTW9udHJhY2hldCZhcHBlbGxhdGlvbl9kZXNjcmlwdGlvbj0mYXBwZWxsYXRpb25faWRfYWNjZXNzPTQ5fA%3D%3D",
+  },
+  "morey-saint-denis": {
+    terroir: "Les variations de pente et de sols calcaires et marneux contribuent à la diversité des vins. Le village comprend notamment les premiers crus Les Millandes et Les Chaffots. Quatre Grands Crus se trouvent entièrement sur la commune : Clos de la Roche, Clos Saint-Denis, Clos de Tart et Clos des Lambrays. Bonnes-Mares est partagé avec Chambolle-Musigny. Ces cinq crus relèvent de leurs propres appellations. Le Domaine Dujac et le Domaine Arlaud comptent parmi les producteurs associés au village.",
+    opinion: "Morey-Saint-Denis mérite une lecture par climat plutôt qu’une comparaison sommaire avec ses voisins. Nous apprécions la diversité des textures et des équilibres que peuvent offrir ses terroirs. Pour constituer une cave, nous conseillons de comparer les styles des domaines et les millésimes avant de privilégier un classement.",
+    links: [
+      { href: "/appellation/clos-de-la-roche", label: "Clos de la Roche" },
+      { href: "/appellation/clos-saint-denis", label: "Clos Saint-Denis" },
+      { href: "/appellation/clos-de-tart", label: "Clos de Tart" },
+      { href: "/appellation/clos-des-lambrays", label: "Clos des Lambrays" },
+      { href: "/appellation/bonnes-mares", label: "Bonnes-Mares" },
+      { href: "/appellation/cote-de-nuits", label: "Côte de Nuits" },
+    ],
+    source: "https://www.vins-bourgogne.fr/vins-et-terroirs/la-bourgogne-et-ses-appellations/la-bourgogne-une-localisation-privilegiee%2C2377%2C9170.html?args=Y29tcF9pZD0yMjA1JmFjdGlvbj12aWV3RmljaGVXaXRoVmlnbmVyb24maWQ9MzU3JmFwcGVsbGF0aW9uX2FwcGVsbGF0aW9uPU1vcmV5LVNhaW50LURlbmlzJmFwcGVsbGF0aW9uX2Rlc2NyaXB0aW9uPSZhcHBlbGxhdGlvbl9pZF9hY2Nlc3M9MjB8",
+  },
+};
+
 export async function generateMetadata({
   params,
 }: {
@@ -1755,6 +1798,24 @@ export default async function AppellationPage({
             {appellation.intro}
           </p>
 
+          {appellationEditorial[slug] && (
+            <section className="mt-8 space-y-6">
+              <h2 className="font-serif text-2xl text-[#3b1f1f]">Terroirs et climats</h2>
+              <p className="max-w-4xl leading-8 text-[#6d5b50]">{appellationEditorial[slug].terroir}</p>
+              <div className="rounded-[1.75rem] border border-[#d8b56d]/45 bg-[#fffaf3] p-6 shadow-sm md:p-8">
+                <h2 className="text-sm uppercase tracking-[0.28em] text-[#8a6a2f]">✦ L’avis The Wine Watchers</h2>
+                <p className="mt-5 max-w-5xl leading-8 text-[#6d5b50]">{appellationEditorial[slug].opinion}</p>
+              </div>
+              <h2 className="font-serif text-2xl text-[#3b1f1f]">Explorer les terroirs associés</h2>
+              <div className="flex flex-wrap gap-3">
+                {appellationEditorial[slug].links.map((link) => (
+                  <Link key={link.href} href={link.href} className="rounded-full border border-[#d8b56d]/50 bg-white px-5 py-2 text-sm text-[#6d5b50] hover:underline">{link.label}</Link>
+                ))}
+              </div>
+              <p className="text-sm text-[#6d5b50]">Annuaire des producteurs : <a className="underline" href={appellationEditorial[slug].source}>Vins de Bourgogne (BIVB)</a>.</p>
+            </section>
+          )}
+
           {slug === "corton" && (
             <section className="mt-8 rounded-[1.75rem] border border-[#d8b56d]/45 bg-[#fffaf3] p-6 shadow-sm md:p-8">
               <p className="text-sm uppercase tracking-[0.28em] text-[#8a6a2f]">
@@ -1824,9 +1885,9 @@ export default async function AppellationPage({
           </h2>
 
           <p className="mt-4 max-w-3xl text-sm leading-7 text-[#6d5b50]">
-            Découvrez les vins actuellement disponibles dans cette appellation.
-            Comparez les domaines, les millésimes et les caractéristiques de
-            chaque cuvée avant de consulter sa fiche détaillée.
+            {appellationEditorial[slug] && visibleWines.length === 0
+              ? "Notre catalogue évolue régulièrement. En attendant de nouvelles références, explorez les terroirs associés présentés ci-dessus."
+              : "Découvrez les vins actuellement disponibles dans cette appellation. Comparez les domaines, les millésimes et les caractéristiques de chaque cuvée avant de consulter sa fiche détaillée."}
           </p>
         </div>
 
