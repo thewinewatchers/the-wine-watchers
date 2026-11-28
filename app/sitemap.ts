@@ -65,6 +65,7 @@ const editorialAppellations = [
   "gevrey-chambertin",
   "vosne-romanee",
   "chambolle-musigny",
+  "morey-saint-denis",
   "cote-rotie",
   "hermitage",
   "cornas",
