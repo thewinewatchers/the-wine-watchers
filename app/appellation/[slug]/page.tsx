@@ -743,11 +743,11 @@ const appellations: Record<
   },
   "brunello-di-montalcino": {
     name: "Brunello di Montalcino",
-    title: "Brunello di Montalcino DOCG – Grands vins de Toscane",
+    title: "Brunello di Montalcino DOCG – Sangiovese de Toscane",
     description:
-      "Découvrez notre sélection de Brunello di Montalcino DOCG : grands domaines, millésimes de garde et cuvées prestigieuses.",
+      "Explorez Brunello di Montalcino DOCG : Sangiovese, terroirs, élevage réglementaire, domaines et potentiel de garde.",
     intro:
-      "Brunello di Montalcino est l’une des appellations les plus prestigieuses d’Italie. Produit à partir de Sangiovese, ce grand vin toscan associe puissance, complexité et remarquable aptitude au vieillissement.",
+      "Au sud de Sienne, Brunello di Montalcino DOCG est issu exclusivement du Sangiovese, localement appelé Brunello. Son identité repose sur la diversité des collines de Montalcino et sur un élevage prolongé.",
     boutiqueHref: "/boutique/italie",
     boutiqueLabel: "Retour à la boutique Italie",
   },
@@ -773,11 +773,11 @@ const appellations: Record<
   },
   barolo: {
     name: "Barolo",
-    title: "Vins de Barolo DOCG – Grands Nebbiolo du Piémont",
+    title: "Barolo DOCG – Nebbiolo et terroirs des Langhe",
     description:
-      "Découvrez notre sélection de Barolo DOCG : grands domaines, crus prestigieux et millésimes de garde.",
+      "Explorez Barolo DOCG : Nebbiolo, terroirs des Langhe, producteurs historiques et critères de garde des grands vins du Piémont.",
     intro:
-      "Barolo est l’une des appellations les plus prestigieuses du Piémont. Issus du Nebbiolo, ses vins associent puissance, finesse aromatique et immense potentiel de vieillissement.",
+      "Au sud-ouest d’Alba, Barolo DOCG exprime le Nebbiolo dans les collines des Langhe. Ce cépage associe une acidité soutenue, des tanins affirmés et une palette aromatique qui évolue avec le temps.",
     boutiqueHref: "/boutique/italie",
     boutiqueLabel: "Retour à la boutique Italie",
   },
@@ -793,11 +793,11 @@ const appellations: Record<
   },
   barbaresco: {
     name: "Barbaresco",
-    title: "Vins de Barbaresco DOCG – Élégance du Piémont",
+    title: "Barbaresco DOCG – Nebbiolo et terroirs du Piémont",
     description:
-      "Découvrez notre sélection de Barbaresco DOCG : grands Nebbiolo, domaines réputés et millésimes recherchés.",
+      "Découvrez Barbaresco DOCG, ses collines, son Nebbiolo, ses producteurs emblématiques et les différences avec Barolo.",
     intro:
-      "Barbaresco est une grande appellation du Piémont, également fondée sur le Nebbiolo. Ses vins sont réputés pour leur élégance, leur finesse et leur expression aromatique.",
+      "À proximité d’Alba, Barbaresco DOCG est élaboré exclusivement à partir de Nebbiolo. Ses vins partagent avec Barolo une identité aromatique et une structure de garde, sans se confondre avec lui.",
     boutiqueHref: "/boutique/italie",
     boutiqueLabel: "Retour à la boutique Italie",
   },
@@ -1443,6 +1443,40 @@ function getWineGroupTitle(wine: AppellationWine) {
 }
 
 const appellationEditorial: Record<string, { terroir: string; opinion: string; links: { href: string; label: string }[]; source: string; sourceLabel?: string }> = {
+  "barolo": {
+    terroir: "Les marnes calcaires et les formations riches en grès, les expositions et les altitudes contribuent à la diversité des vins. Cannubi, Brunate et Bussia illustrent la richesse des mentions géographiques du cru. Giacomo Conterno, Bartolo Mascarello et Giuseppe Rinaldi comptent parmi les producteurs historiques. Les différences de vinification et d’élevage comptent autant que la situation des parcelles.",
+    opinion: "Nous privilégions les Barolo dont la structure tannique accompagne la finesse du fruit et la longueur. Comparer les origines et les millésimes est plus instructif que d’opposer systématiquement tradition et modernité. Une longue garde peut être pertinente, selon le domaine et la cuvée.",
+    links: [
+      { href: "/appellation/barbaresco", label: "Barbaresco" },
+      { href: "/appellation/piemont", label: "Piémont" },
+      { href: "/boutique/italie", label: "Grands vins d’Italie" },
+    ],
+    source: "https://www.langhevini.it/area-soci/",
+    sourceLabel: "Consorzio Langhe Vini – cartes et cahiers des charges",
+  },
+  "barbaresco": {
+    terroir: "Les vignobles se répartissent notamment entre Barbaresco, Neive et Treiso, ainsi qu’une partie d’Alba. Les sols marneux et les variations d’exposition façonnent des expressions diverses. Asili, Rabajà et Montefico sont des mentions géographiques réputées. Gaja, Bruno Giacosa et Produttori del Barbaresco illustrent des approches différentes du terroir.",
+    opinion: "Nous apprécions les Barbaresco qui conjuguent précision florale, fraîcheur et persistance. Leur réputation de finesse ne doit pas masquer la structure de certaines cuvées. Le choix du producteur, du lieu et du millésime reste déterminant.",
+    links: [
+      { href: "/appellation/barolo", label: "Barolo" },
+      { href: "/appellation/piemont", label: "Piémont" },
+      { href: "/boutique/italie", label: "Grands vins d’Italie" },
+    ],
+    source: "https://www.langhevini.it/area-soci/",
+    sourceLabel: "Consorzio Langhe Vini – cartes et cahiers des charges",
+  },
+  "brunello-di-montalcino": {
+    terroir: "Les différences d’altitude, d’exposition et de sols donnent des profils variés, des secteurs plus frais aux versants plus chauds. Le cahier des charges prévoit au moins deux ans en chêne et quatre mois en bouteille, six pour la Riserva. Biondi-Santi, Soldera et Il Marroneto sont des noms associés à l’histoire viticole de Montalcino, sans que toutes leurs cuvées relèvent nécessairement de cette DOCG.",
+    opinion: "Nous recherchons la précision du Sangiovese, une acidité qui soutient le fruit et une texture tannique équilibrée. La durée d’élevage ne garantit pas à elle seule la qualité. Comparer Brunello avec les autres expressions toscanes permet de distinguer cépage, terroir et choix du producteur.",
+    links: [
+      { href: "/appellation/toscana", label: "Toscane" },
+      { href: "/appellation/toscana-igt", label: "Toscana IGT" },
+      { href: "/appellation/bolgheri", label: "Bolgheri" },
+      { href: "/boutique/italie", label: "Grands vins d’Italie" },
+    ],
+    source: "https://www.consorziobrunellodimontalcino.it/it/586/il-brunello",
+    sourceLabel: "Consorzio del vino Brunello di Montalcino – fiche officielle",
+  },
   cornas: {
     terroir: "Les vignes occupent des pentes en terrasses, principalement sur des sols issus de la décomposition du granite, avec des nuances calcaires et limoneuses. L’exposition et la protection naturelle du relief favorisent la maturation de la Syrah. Auguste Clape, Thierry Allemand et le domaine Vincent Paris figurent parmi les références de Cornas. Les styles diffèrent selon les parcelles, les vinifications et les élevages.",
     opinion: "Nous recherchons dans les grands Cornas une alliance entre profondeur du fruit, fraîcheur et qualité des tanins. La puissance seule ne suffit pas : la précision aromatique et l’équilibre en finale sont essentiels. Une comparaison avec Côte-Rôtie ou Hermitage permet de mieux saisir la diversité de la Syrah septentrionale.",
