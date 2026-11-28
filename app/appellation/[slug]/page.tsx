@@ -1108,11 +1108,11 @@ const appellations: Record<
 
   hermitage: {
     name: "Hermitage",
-    title: "Vins d’Hermitage – Grandes Syrah de la Vallée du Rhône",
+    title: "Hermitage AOC – Syrah et grands blancs du Rhône",
     description:
-      "Découvrez notre sélection de vins d’Hermitage : grandes Syrah, cuvées prestigieuses, domaines emblématiques et millésimes recherchés.",
+      "Découvrez Hermitage : terroirs de la colline, Syrah, Marsanne et Roussanne, domaines historiques et potentiel de garde des rouges et blancs.",
     intro:
-      "Hermitage est l’une des appellations les plus prestigieuses de la Vallée du Rhône septentrionale. Ses coteaux granitiques donnent naissance à des Syrah profondes, complexes et remarquablement aptes au vieillissement.",
+      "Sur la rive gauche du Rhône, autour de Tain-l’Hermitage, cette appellation reconnue en 1937 réunit des terroirs aux profils contrastés. Les rouges reposent sur la Syrah, tandis que les blancs sont issus de Marsanne et de Roussanne. La diversité des lieux-dits explique une partie de la richesse stylistique de ces vins de garde.",
     boutiqueHref: "/boutique/rhone",
     boutiqueLabel: "Retour à la boutique Vallée du Rhône",
   },
@@ -1132,9 +1132,9 @@ const appellations: Record<
     name: "Cornas",
     title: "Vins de Cornas – Grandes Syrah du Rhône septentrional",
     description:
-      "Découvrez notre sélection de vins de Cornas : Syrah de caractère, domaines réputés et grands millésimes de la Vallée du Rhône.",
+      "Découvrez Cornas AOC : Syrah, coteaux granitiques de l’Ardèche, domaines emblématiques et caractéristiques de ses grands rouges de garde.",
     intro:
-      "Cornas est une appellation historique du Rhône septentrional exclusivement consacrée aux vins rouges issus de Syrah. Ses coteaux granitiques produisent des vins puissants, profonds et capables d’une longue évolution en cave.",
+      "Reconnue en 1938, Cornas occupe les coteaux de la commune ardéchoise du même nom, sur la rive droite du Rhône. La Syrah y est le seul cépage autorisé. Les rouges se distinguent souvent par leur densité, leur expression épicée et une structure tannique qui invite à la patience.",
     boutiqueHref: "/boutique/rhone",
     boutiqueLabel: "Retour à la boutique Vallée du Rhône",
   },
@@ -1442,7 +1442,31 @@ function getWineGroupTitle(wine: AppellationWine) {
     .trim();
 }
 
-const appellationEditorial: Record<string, { terroir: string; opinion: string; links: { href: string; label: string }[]; source: string }> = {
+const appellationEditorial: Record<string, { terroir: string; opinion: string; links: { href: string; label: string }[]; source: string; sourceLabel?: string }> = {
+  cornas: {
+    terroir: "Les vignes occupent des pentes en terrasses, principalement sur des sols issus de la décomposition du granite, avec des nuances calcaires et limoneuses. L’exposition et la protection naturelle du relief favorisent la maturation de la Syrah. Auguste Clape, Thierry Allemand et le domaine Vincent Paris figurent parmi les références de Cornas. Les styles diffèrent selon les parcelles, les vinifications et les élevages.",
+    opinion: "Nous recherchons dans les grands Cornas une alliance entre profondeur du fruit, fraîcheur et qualité des tanins. La puissance seule ne suffit pas : la précision aromatique et l’équilibre en finale sont essentiels. Une comparaison avec Côte-Rôtie ou Hermitage permet de mieux saisir la diversité de la Syrah septentrionale.",
+    links: [
+      { href: "/appellation/hermitage", label: "Hermitage" },
+      { href: "/appellation/cote-rotie", label: "Côte-Rôtie" },
+      { href: "/appellation/saint-joseph", label: "Saint-Joseph" },
+      { href: "/boutique/rhone", label: "Vins de la Vallée du Rhône" },
+    ],
+    source: "https://www.vins-rhone.com/fr/aoc-cru-des-cotes-du-rhone-cornas",
+    sourceLabel: "Inter Rhône – fiche Cornas",
+  },
+  hermitage: {
+    terroir: "La colline associe notamment les terrains granitiques de l’ouest, les sols à galets du Méal et des secteurs plus argileux vers l’est. Les Bessards, Le Méal et Les Greffieux illustrent cette diversité. Les rouges peuvent associer à la Syrah une proportion limitée de Marsanne ou de Roussanne. Jean-Louis Chave, M. Chapoutier et Paul Jaboulet Aîné figurent parmi les noms historiques du cru. Hermitage et Crozes-Hermitage sont deux appellations distinctes.",
+    opinion: "Hermitage nous intéresse autant pour ses blancs que pour ses rouges. Dans les Syrah, nous privilégions la profondeur soutenue par la fraîcheur ; dans les blancs, l’équilibre entre ampleur et précision. Les cuvées issues de lieux-dits et les assemblages de différentes parcelles proposent deux lectures complémentaires de la colline, à apprécier selon le millésime et le style du domaine.",
+    links: [
+      { href: "/appellation/cornas", label: "Cornas" },
+      { href: "/appellation/cote-rotie", label: "Côte-Rôtie" },
+      { href: "/appellation/saint-joseph", label: "Saint-Joseph" },
+      { href: "/boutique/rhone", label: "Vins de la Vallée du Rhône" },
+    ],
+    source: "https://www.vins-rhone.com/fr/aoc-cru-des-cotes-du-rhone-hermitage",
+    sourceLabel: "Inter Rhône – fiche Hermitage",
+  },
   "vosne-romanee": {
     terroir: "Les sols calcaires et marneux, la profondeur des terres et la position sur le coteau contribuent à des expressions différentes du Pinot Noir. Les Suchots, Aux Malconsorts et Cros Parantoux illustrent la diversité des premiers crus. Les Grands Crus possèdent leurs propres appellations, distinctes de Vosne-Romanée. Parmi les domaines emblématiques figurent le Domaine de la Romanée-Conti, Méo-Camuzet et le Domaine du Comte Liger-Belair.",
     opinion: "Nous privilégions la précision du climat et le style du vigneron plutôt que le seul prestige du village. La finesse aromatique, la texture des tanins et la persistance constituent des repères utiles pour comparer les cuvées, sans présumer de leur qualité à partir du classement seul.",
@@ -1812,7 +1836,7 @@ export default async function AppellationPage({
                   <Link key={link.href} href={link.href} className="rounded-full border border-[#d8b56d]/50 bg-white px-5 py-2 text-sm text-[#6d5b50] hover:underline">{link.label}</Link>
                 ))}
               </div>
-              <p className="text-sm text-[#6d5b50]">Annuaire des producteurs : <a className="underline" href={appellationEditorial[slug].source}>Vins de Bourgogne (BIVB)</a>.</p>
+              <p className="text-sm text-[#6d5b50]">{appellationEditorial[slug].sourceLabel ? "Source documentaire : " : "Annuaire des producteurs : "}<a className="underline" href={appellationEditorial[slug].source}>{appellationEditorial[slug].sourceLabel || "Vins de Bourgogne (BIVB)"}</a>.</p>
             </section>
           )}
 
